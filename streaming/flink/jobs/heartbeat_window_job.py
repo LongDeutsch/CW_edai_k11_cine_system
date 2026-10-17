@@ -1,4 +1,4 @@
-"""Job heartbeat: event-time, cửa sổ 1 phút / 5 phút, DLQ, Iceberg exactly-once.
+"""Job heartbeat: tumbling event-time 1 phút, DLQ, Iceberg exactly-once.
 
 Chạy local (không cần cụm) để kiểm chứng watermark::
 
@@ -17,9 +17,13 @@ import json
 from datetime import datetime, timezone
 
 from streaming.flink.config import CheckpointConfig, StreamJobConfig, flink_checkpoint_configs
-from streaming.flink.operators.late_policy import WindowSpec, late_records
+from streaming.flink.operators.late_policy import WindowSpec, dead_letter_record, is_too_late
 from streaming.flink.operators.watch_metrics import watched_delta_seconds
-from streaming.flink.operators.watermark_assigner import dlq_watermark_ms, extract_event_time_ms
+from streaming.flink.operators.watermark_assigner import (
+    advance_aligned_watermark,
+    extract_event_time_ms,
+    restored_watermark_ahead,
+)
 from streaming.flink.operators.window_engine import HeartbeatWindowEngine
 from streaming.flink.sinks.iceberg_sink import (
     apply_s3a,
@@ -32,7 +36,7 @@ from streaming.flink.sinks.kafka_dlq_sink import dead_letter_value, kafka_dlq_ta
 
 
 def _dlq_partition_key(_event: tuple) -> int:
-    """Một key: max event timestamp dùng chung cho heartbeat replay sau này."""
+    """Một key để cổng thấy watermark đã căn, tức min watermark các subtask nguồn."""
     return 0
 
 
@@ -170,12 +174,12 @@ def _parse_heartbeat(raw: str, heartbeat_seconds: int = 10):
 
 
 def run_flink(config: StreamJobConfig) -> None:
-    """Pipeline PyFlink. DLQ là đầu ra chính của toán tử keyed, không phải side output."""
+    """Tumbling 1 phút. DLQ là ``side_output_late_data``. Cổng recovery bù watermark không checkpoint."""
     from pyflink.common import Duration, RestartStrategies, Time, Types, WatermarkStrategy
     from pyflink.common.serialization import SimpleStringSchema
-    from pyflink.datastream import StreamExecutionEnvironment
+    from pyflink.datastream import OutputTag, StreamExecutionEnvironment
     from pyflink.datastream.connectors.kafka import KafkaOffsetsInitializer, KafkaSource
-    from pyflink.datastream.window import SlidingEventTimeWindows, TumblingEventTimeWindows
+    from pyflink.datastream.window import TumblingEventTimeWindows
     from pyflink.table import StreamTableEnvironment
 
     from streaming.flink.observability import job_configuration
@@ -187,7 +191,7 @@ def run_flink(config: StreamJobConfig) -> None:
         f"parallelism={config.parallelism} idle_timeout_s={config.idle_timeout_s} "
         f"restart=fixed-delay attempts={config.restart_attempts} delay_ms={config.restart_delay_ms}"
     )
-    dedup_fn, window_fn, late_fn, dlq_fn = _operator_classes()
+    dedup_fn, window_fn, gate_fn, late_json_fn = _operator_classes()
     env = StreamExecutionEnvironment.get_execution_environment(job_configuration(config))
     env.set_parallelism(config.parallelism)
     env.set_restart_strategy(
@@ -208,17 +212,16 @@ def run_flink(config: StreamJobConfig) -> None:
         .set_value_only_deserializer(SimpleStringSchema())
         .build()
     )
-    # UID tường minh là mốc savepoint của graph này. Phase 1 không có UID và
-    # không có savepoint production. TTL bọc serializer của state "seen", nên
-    # checkpoint lấy trước khi có TTL không restore được vào operator dedup.
+    # UID tường minh là mốc savepoint của graph này. Không có savepoint production.
+    # TTL bọc serializer của state "seen", nên checkpoint lấy trước khi có TTL
+    # không restore được vào operator dedup.
     raw = env.from_source(source, WatermarkStrategy.no_watermarks(), "kafka-heartbeats")
     parsed = raw.map(
         lambda raw_line: _parse_heartbeat(raw_line, config.heartbeat_seconds),
         output_type=_event_type(),
     ).name("json").uid("json")
     # with_idleness() trả về WatermarkStrategy mới và xóa _timestamp_assigner.
-    # Assigner phải gắn sau, nếu không mọi record giữ timestamp Long.MIN_VALUE,
-    # cửa sổ không đóng và side output không có dữ liệu.
+    # Assigner phải gắn sau, nếu không mọi record giữ timestamp Long.MIN_VALUE.
     # Watermark nằm sau parse: source không đọc được event_ts từ JSON.
     timed = parsed.assign_timestamps_and_watermarks(
         WatermarkStrategy.for_bounded_out_of_orderness(Duration.of_millis(config.out_of_orderness_ms))
@@ -229,38 +232,27 @@ def run_flink(config: StreamJobConfig) -> None:
     deduped = timed.key_by(lambda event: event[0], key_type=Types.LONG()).process(
         dedup_fn(config.dedup_ttl_ms), output_type=_event_type()
     ).name("dedup-heartbeat-id").uid("dedup-heartbeat-id")
-    classified = deduped.process(
-        late_fn(),
+    recovery_tag = OutputTag("recovery-dead-letter", Types.STRING())
+    late_tag = OutputTag("too-late", _event_type())
+    spec = WindowSpec.from_config(config)
+    gated = deduped.key_by(_dlq_partition_key, key_type=Types.INT()).process(
+        gate_fn(spec, recovery_tag),
         output_type=_event_type(),
-    ).name("late-split").uid("late-split")
-    # Một key cho cả subtask: max event timestamp phải sống sót sang heartbeat
-    # chưa có trong checkpoint. Watermark sống vẫn là watermark kết hợp của input.
-    dlq_json = deduped.key_by(_dlq_partition_key, key_type=Types.INT()).process(
-        dlq_fn(WindowSpec.from_config(config), config.out_of_orderness_ms),
-        output_type=Types.STRING(),
-    ).name("dlq-classify").uid("dlq-classify")
-
+    ).name("recovery-late-gate").uid("recovery-late-gate")
     tumbling = (
-        classified.key_by(lambda event: event[2], key_type=Types.LONG())
+        gated.key_by(lambda event: event[2], key_type=Types.LONG())
         .window(TumblingEventTimeWindows.of(Time.milliseconds(config.tumbling_ms)))
         .allowed_lateness(config.allowed_lateness_ms)
-        .process(window_fn("tumbling_1m"), output_type=_window_type())
+        .side_output_late_data(late_tag)
+        .process(window_fn(), output_type=_window_type())
         .name("tumbling-1m")
         .uid("tumbling-1m")
     )
-    sliding = (
-        classified.key_by(lambda event: event[2], key_type=Types.LONG())
-        .window(
-            SlidingEventTimeWindows.of(
-                Time.milliseconds(config.sliding_size_ms),
-                Time.milliseconds(config.sliding_slide_ms),
-            )
-        )
-        .allowed_lateness(config.allowed_lateness_ms)
-        .process(window_fn("sliding_5m"), output_type=_window_type())
-        .name("sliding-5m")
-        .uid("sliding-5m")
-    )
+    late_json = tumbling.get_side_output(late_tag).map(
+        late_json_fn(config.tumbling_ms),
+        output_type=Types.STRING(),
+    ).name("late-json").uid("late-json")
+    dlq_json = gated.get_side_output(recovery_tag).union(late_json)
     table_env = StreamTableEnvironment.create(env)
     apply_s3a(table_env, config)
     # Tạo sink Kafka khi catalog hiện hành vẫn là default_catalog.
@@ -270,7 +262,7 @@ def run_flink(config: StreamJobConfig) -> None:
     table_env.execute_sql("CREATE DATABASE IF NOT EXISTS silver")
     table_env.execute_sql(heartbeat_table_ddl(config))
     table_env.execute_sql(windows_table_ddl(config))
-    sessions = table_env.from_data_stream(classified).alias(
+    sessions = table_env.from_data_stream(deduped).alias(
         "heartbeat_id",
         "user_id",
         "movie_id",
@@ -281,9 +273,8 @@ def run_flink(config: StreamJobConfig) -> None:
         "raw_json",
     )
     table_env.create_temporary_view("deduped_heartbeats", sessions)
-    windows = table_env.from_data_stream(tumbling.union(sliding)).alias(
+    windows = table_env.from_data_stream(tumbling).alias(
         "movie_id",
-        "window_type",
         "window_start_ms",
         "window_end_ms",
         "total_watch_seconds",
@@ -301,7 +292,7 @@ def run_flink(config: StreamJobConfig) -> None:
     statement.add_insert_sql(
         f"""
         INSERT INTO {config.silver_windows_table}
-        SELECT movie_id, window_type,
+        SELECT movie_id,
                TO_TIMESTAMP_LTZ(window_start_ms, 3),
                TO_TIMESTAMP_LTZ(window_end_ms, 3),
                total_watch_seconds, heartbeat_count, active_users
@@ -365,7 +356,6 @@ def _window_type():
     return Types.TUPLE(
         [
             Types.LONG(),
-            Types.STRING(),
             Types.LONG(),
             Types.LONG(),
             Types.LONG(),
@@ -378,7 +368,7 @@ def _window_type():
 def _operator_classes():
     """Lớp toán tử chỉ nạp khi chạy ``--engine flink`` (cần PyFlink)."""
     from pyflink.common import Types
-    from pyflink.datastream.functions import KeyedProcessFunction, ProcessFunction, ProcessWindowFunction
+    from pyflink.datastream.functions import KeyedProcessFunction, MapFunction, ProcessWindowFunction
     from pyflink.datastream.state import ValueStateDescriptor
 
     class Dedup(KeyedProcessFunction):
@@ -414,9 +404,6 @@ def _operator_classes():
             yield value
 
     class WindowAgg(ProcessWindowFunction):
-        def __init__(self, window_type: str):
-            self.window_type = window_type
-
         def process(self, key, context, elements):
             rows = list(elements)
             users = {event[1] for event in rows}
@@ -425,7 +412,6 @@ def _operator_classes():
             return [
                 (
                     int(key),
-                    self.window_type,
                     int(window.start),
                     int(window.end),
                     watched,
@@ -434,53 +420,96 @@ def _operator_classes():
                 )
             ]
 
-    class LateSplit(ProcessFunction):
-        """Giữ UID ``late-split``. Heartbeat đã khử trùng đi tiếp, không phân loại DLQ."""
+    class RecoveryGate(KeyedProcessFunction):
+        """Chặn replay bằng watermark đầu vào đã checkpoint, không bằng max event time.
 
-        def process_element(self, value, ctx):
-            yield value
+        Key hằng đặt cổng sau bước căn watermark, nên ``current_watermark`` là
+        min các subtask nguồn, cùng watermark cửa sổ tumbling đang dùng.
+        ``side_output_late_data`` xử lý đường đang chạy. Sau restore, watermark
+        sống về ``Long.MIN_VALUE``. Cổng dùng bản đã lưu và không đưa event quá
+        cleanup vào cửa sổ.
 
-    class DlqEmit(KeyedProcessFunction):
-        def __init__(self, spec: WindowSpec, out_of_orderness_ms: int):
+        Timer processing time một giây ghi nhận watermark khi không có event,
+        kể cả khi subtask idle được nhả. Watermark chỉ tăng. Checkpoint lấy
+        trước khi watermark vượt cleanup không chứa quyết định muộn hơn; replay
+        của khoảng đó đi vào cửa sổ.
+        """
+
+        _SAMPLE_MS = 1000
+
+        def __init__(self, spec: WindowSpec, recovery_tag):
             self.spec = spec
-            self.out_of_orderness_ms = out_of_orderness_ms
+            self.recovery_tag = recovery_tag
 
         def open(self, runtime_context) -> None:
-            metrics = runtime_context.get_metrics_group()
-            self.late_tumbling = metrics.counter("lateObservationsTumbling")
-            self.late_sliding = metrics.counter("lateObservationsSliding")
-            self.dead_letters = metrics.counter("deadLetters")
-            # Không TTL: đây là max đã checkpoint, không phải dedup.
-            self.max_event_ts = runtime_context.get_state(ValueStateDescriptor("max_event_ts", Types.LONG()))
+            self.dead_letters = runtime_context.get_metrics_group().counter("deadLetters")
+            # UID operator giữ nguyên. Tên state đổi từ max_event_ts.
+            # Không có savepoint production. Checkpoint cũ bỏ state tên cũ;
+            # aligned_watermark bắt đầu rỗng nên không tái hiện max toàn cục.
+            self.aligned_watermark = runtime_context.get_state(
+                ValueStateDescriptor("aligned_watermark", Types.LONG())
+            )
             self._seen_element = False
-            self._restored_max = None
+            self._restored_watermark = None
+            self._timer_set = False
 
         def process_element(self, value, ctx):
-            event_ts = int(value[3])
-            stored = self.max_event_ts.value()
+            self._arm_timer(ctx)
+            live = ctx.timer_service().current_watermark()
+            stored = self.aligned_watermark.value()
             if not self._seen_element:
-                # Bản ghi đầu sau open() đọc state checkpoint. Các bản ghi sau
-                # trong cùng lần chạy không được coi là đã restore.
                 self._seen_element = True
-                self._restored_max = int(stored) if stored is not None else None
-            watermark = dlq_watermark_ms(
-                ctx.timer_service().current_watermark(),
-                self._restored_max,
-                self.out_of_orderness_ms,
-            )
-            new_max = event_ts if stored is None else max(int(stored), event_ts)
-            self.max_event_ts.update(new_max)
-            payload = json.loads(value[7])
-            for record in late_records(payload, event_ts, watermark, self.spec):
-                if record["record_kind"] == "dead_letter":
-                    self.dead_letters.inc()
-                elif record.get("window_type") == "sliding_5m":
-                    self.late_sliding.inc()
-                else:
-                    self.late_tumbling.inc()
-                yield dead_letter_value(record)
+                self._restored_watermark = int(stored) if stored is not None else None
+            self._store_watermark(stored, live)
+            ahead = restored_watermark_ahead(live, self._restored_watermark)
+            if ahead is not None and is_too_late(int(value[3]), ahead, self.spec):
+                self.dead_letters.inc()
+                payload = json.loads(value[7])
+                record = dead_letter_record(payload, int(value[3]), ahead, self.spec.tumbling_ms)
+                yield self.recovery_tag, dead_letter_value(record)
+                return
+            yield value
 
-    return Dedup, WindowAgg, LateSplit, DlqEmit
+        def on_timer(self, timestamp, ctx):
+            self._store_watermark(
+                self.aligned_watermark.value(),
+                ctx.timer_service().current_watermark(),
+            )
+            now = int(ctx.timer_service().current_processing_time())
+            ctx.timer_service().register_processing_time_timer(max(int(timestamp), now) + self._SAMPLE_MS)
+            if False:
+                yield None
+
+        def _arm_timer(self, ctx) -> None:
+            if self._timer_set:
+                return
+            self._timer_set = True
+            now = int(ctx.timer_service().current_processing_time())
+            ctx.timer_service().register_processing_time_timer(now + self._SAMPLE_MS)
+
+        def _store_watermark(self, stored, live) -> None:
+            updated = advance_aligned_watermark(None if stored is None else int(stored), live)
+            if updated is None:
+                return
+            if stored is None or int(stored) != updated:
+                self.aligned_watermark.update(updated)
+
+    class LateJson(MapFunction):
+        def __init__(self, tumbling_ms: int):
+            self.tumbling_ms = tumbling_ms
+
+        def open(self, runtime_context) -> None:
+            self.dead_letters = runtime_context.get_metrics_group().counter("deadLetters")
+
+        def map(self, value):
+            self.dead_letters.inc()
+            payload = json.loads(value[7])
+            record = dead_letter_record(payload, int(value[3]), None, self.tumbling_ms)
+            return dead_letter_value(record)
+
+    return Dedup, WindowAgg, RecoveryGate, LateJson
+
+
 
 
 def main() -> None:

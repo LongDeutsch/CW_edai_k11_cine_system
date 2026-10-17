@@ -6,12 +6,14 @@ import unittest
 
 from streaming.flink.config import StreamJobConfig
 from streaming.flink.jobs.heartbeat_window_job import proof_events
+from streaming.flink.operators.late_policy import WindowSpec, is_too_late
 from streaming.flink.operators.watermark_assigner import (
     WatermarkClock,
-    dlq_watermark_ms,
+    advance_aligned_watermark,
     extract_event_time_ms,
     flink_watermark_ms,
     is_window_late,
+    restored_watermark_ahead,
     tumbling_start_ms,
 )
 from streaming.flink.operators.window_engine import HeartbeatWindowEngine
@@ -26,13 +28,19 @@ class WatermarkAndLateDataTest(unittest.TestCase):
         self.assertEqual(previous, 1_000 - 15_000 - 1)
         self.assertEqual(clock.watermark_ms, 40_000 - 15_000 - 1)
 
-    def test_recovery_uses_checkpointed_max_only_while_live_watermark_is_absent(self) -> None:
-        self.assertEqual(dlq_watermark_ms(314_999, 330_000, 15_000), 314_999)
-        self.assertEqual(dlq_watermark_ms(-15_001, 330_000, 15_000), -15_001)
-        self.assertEqual(dlq_watermark_ms(None, 330_000, 15_000), 314_999)
-        self.assertEqual(dlq_watermark_ms(-1 << 63, 330_000, 15_000), 314_999)
-        self.assertIsNone(dlq_watermark_ms(None, None, 15_000))
-        self.assertIsNone(dlq_watermark_ms(-1 << 63, None, 15_000))
+    def test_recovery_uses_checkpointed_input_watermark_not_global_max(self) -> None:
+        self.assertIsNone(restored_watermark_ahead(314_999, 314_999))
+        self.assertEqual(restored_watermark_ahead(-1 << 63, -15_001), -15_001)
+        self.assertEqual(restored_watermark_ahead(None, 314_999), 314_999)
+        self.assertIsNone(restored_watermark_ahead(None, None))
+        self.assertIsNone(restored_watermark_ahead(-15_001, -15_001))
+        self.assertIsNone(advance_aligned_watermark(None, -1 << 63))
+        self.assertEqual(advance_aligned_watermark(None, -15_001), -15_001)
+        self.assertEqual(advance_aligned_watermark(-15_001, 314_999), 314_999)
+        self.assertEqual(advance_aligned_watermark(314_999, -15_001), 314_999)
+        spec = WindowSpec()
+        self.assertFalse(is_too_late(5_000, -15_001, spec))
+        self.assertTrue(is_too_late(0, 314_999, spec))
 
     def test_lateness_is_per_window_not_a_single_watermark_cut(self) -> None:
         self.assertFalse(is_window_late(60_000, None, 15_000))
@@ -45,17 +53,17 @@ class WatermarkAndLateDataTest(unittest.TestCase):
         self.assertEqual(event_ms, 90_000)
         self.assertEqual(tumbling_start_ms(90_000, 60_000), 60_000)
 
-    def test_disordered_stream_keeps_partially_late_heartbeat(self) -> None:
+    def test_disordered_stream_dead_letters_the_cleaned_tumbling_window(self) -> None:
         result = HeartbeatWindowEngine(StreamJobConfig()).process_all(proof_events())
-        self.assertEqual(result.accepted, 6)
+        self.assertEqual(result.accepted, 5)
         self.assertEqual(result.duplicates, 1)
-        self.assertEqual(result.dead_letters, [])
+        self.assertEqual([item["heartbeat_id"] for item in result.dead_letters], [4])
         self.assertEqual(result.final_watermark_ms, 164_999)
         self.assertEqual(len(result.session_rows), 6)
-        first = next(row for row in result.closed_windows if row.window_type == "tumbling_1m" and row.window_start_ms == 0)
+        first = next(row for row in result.closed_windows if row.window_start_ms == 0)
         self.assertEqual(first.heartbeat_count, 2)
         self.assertEqual(first.total_watch_seconds, 20)
-        second = next(row for row in result.closed_windows if row.window_type == "tumbling_1m" and row.window_start_ms == 60_000)
+        second = next(row for row in result.closed_windows if row.window_start_ms == 60_000)
         self.assertEqual(second.heartbeat_count, 2)
         self.assertEqual(second.total_watch_seconds, 20)
 

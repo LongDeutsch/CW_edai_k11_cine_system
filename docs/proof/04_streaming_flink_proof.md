@@ -1,191 +1,184 @@
-# Layer 4 — Flink, watermark và late data
+# Layer 4 — Flink tumbling window
 
-Job đọc `movie.playback.heartbeat`, gán event-time từ `event_ts`, giữ độ lệch 15 giây, rồi cho mỗi cửa sổ thêm 15 giây allowed lateness. Heartbeat đã khử trùng `heartbeat_id` được append vào `cinestream.silver.stg_playback_heartbeats`. Aggregate theo phim nằm ở `cinestream.silver.stg_playback_windows` (upsert). `cinestream.silver.stg_watch_sessions` là bảng phiên của batch Spark. Job streaming không ghi vào đó.
+Tài liệu ghi phần đã có trong source và phần đã đo trên cụm local. Nhãn:
 
-Kafka DLQ nhận hai loại bản ghi trên cùng topic `movie.playback.deadletter`:
+| Nhãn | Nghĩa |
+|---|---|
+| Implemented | Có trong job PyFlink 1.18.1 hiện tại |
+| Verified | Đã đo bằng test |
+| Known Limitation | Đã đo, và đó là giới hạn còn lại |
+| Not Verified | Chưa đo được trong lần chạy này |
+| Future Work | Chưa làm |
 
-- `late_observation`: một cửa sổ đã qua cleanup.
-- `dead_letter`: mọi cửa sổ được gán cho heartbeat đó đều đã qua cleanup. Một heartbeat chỉ có một dead letter.
+Một heartbeat quá cleanup là một `dead_letter`, `reason=window_past_cleanup`.
 
-## 1. Luồng
+## Kiến trúc
+
+Implemented. Job mặc định parallelism 1.
 
 ```mermaid
 flowchart LR
-  subgraph kafka [Kafka cinestream]
+  subgraph kafka [Kafka]
     HB[movie.playback.heartbeat]
     DLQ[movie.playback.deadletter]
   end
-  subgraph flink [Flink 1.18]
-    SRC[JSON + event_ts]
+  subgraph flink [Flink 1.18.1]
+    SRC[JSON]
     WM["Watermark max_ts - 15s - 1ms"]
-    DEDUP[State heartbeat_id]
-    SPLIT[LateSplit]
-    TUM[Tumbling 1 phút]
-    SLD[Sliding 5 phút / trượt 1 phút]
+    DEDUP["Dedup heartbeat_id, TTL 1h"]
+    GATE[recovery-late-gate]
+    TUM["Tumbling 1 phút, lateness 15s"]
   end
-  subgraph lake [Iceberg REST :8181]
-    HBICE[silver.stg_playback_heartbeats]
-    WIN[silver.stg_playback_windows]
+  subgraph lake [Iceberg REST và MinIO]
+    HBICE[stg_playback_heartbeats]
+    WIN[stg_playback_windows]
   end
-  HB --> SRC --> WM --> DEDUP --> SPLIT
-  SPLIT --> TUM --> WIN
-  SPLIT --> SLD --> WIN
-  SPLIT --> HBICE
-  SPLIT --> DLQ
+  HB --> SRC --> WM --> DEDUP
+  DEDUP --> HBICE
+  DEDUP --> GATE --> TUM --> WIN
+  TUM -->|side_output_late_data| DLQ
+  GATE -->|watermark đã checkpoint còn cao hơn watermark sống| DLQ
 ```
 
-`LateSplit` đứng sau dedup và trước hai cửa sổ. Mọi heartbeat đã khử trùng vẫn đi tiếp tới cửa sổ và bảng heartbeat. Side output chỉ thêm JSON chẩn đoán. Cửa sổ không dùng `side_output_late_data`. Allowed lateness vẫn bật trên tumbling và sliding để late firing cập nhật aggregate.
+`stg_watch_sessions` là bảng phiên của batch Spark. Job không ghi bảng đó và không `ALTER` hay `DROP` bảng production. `CREATE TABLE IF NOT EXISTS` không sửa bảng đã có.
 
-Trong mạng `cinestream_default` broker là `kafka:29092`. Cổng 9092 của container là listener EXTERNAL, advertised `localhost:19092`. Client trên host dùng `localhost:19092`. UI JobManager để ở `http://localhost:18081` vì 8081 đang bị schema-registry chiếm.
+Ví dụ cửa sổ `[0, 60s)`. Heartbeat tại 0s, 20s, 50s và 10s thuộc cửa sổ này. Event 80s đẩy watermark lên `64999`, cửa sổ đóng lần đầu. Event 5s sau đó vẫn vào cùng dòng vì cleanup là `74999`. Event 0s khi watermark đã `314999` là dead letter, không vào aggregate.
 
-Producer Layer 1 ghi `event_ts`, không ghi `event_timestamp`. Job đọc `event_ts` và chấp nhận `event_timestamp` nếu có. Độ trễ late data của producer là 10–35 phút. Allowed lateness của job là 15 giây, nên heartbeat muộn của producer đã qua cleanup của mọi cửa sổ chứa nó và thành một `dead_letter`. Event đúng giờ lệch 0–1 giây nằm trong watermark 15 giây.
+Watermark Flink phát ra là `max_ts - 15s - 1ms` trên từng subtask, rồi lấy min các subtask còn hoạt động. Cổng recovery khóa hằng `0`, nên watermark nó thấy là min đó, cùng giá trị cửa sổ tumbling nhận. Cổng không suy watermark từ max event time.
 
-`with_idleness(30s)` gắn trước timestamp assigner. `with_idleness()` trả strategy mới và xóa assigner. Assigner đọc `event_ts_ms` phải gắn sau. Source im hơn 30 giây thì watermark ngừng tiến.
+Trên đường đang chạy, `side_output_late_data` quyết định heartbeat quá hạn. Sau restore, generator không có max timestamp và `currentWatermark` không nằm trong checkpoint, nên watermark sống về `Long.MIN_VALUE` và side output không phát lại. Cổng dùng `aligned_watermark` đã checkpoint: chỉ tăng, bỏ `Long.MIN_VALUE`, và timer processing time 1 giây ghi nhận cả lúc không có event mới. Nếu watermark đã lưu vẫn cao hơn watermark sống và heartbeat đã quá cleanup, cổng viết một dead letter và không đưa heartbeat vào cửa sổ.
 
-## 2. Watermark và lateness theo cửa sổ
+## Thành phần
 
-Flink `BoundedOutOfOrdernessWatermarks.onPeriodicEmit` đặt
-
-```text
-watermark = max_event_ts - 15_000 - 1
-```
-
-Event được so với watermark **trước** khi đồng hồ cập nhật. Watermark chu kỳ không nhảy ngay trong cùng một record. Cửa sổ `[start, end)` có `maxTimestamp = end - 1`.
-
-| Mốc | Điều kiện |
-|---|---|
-| Main firing | `watermark >= end - 1` |
-| Late firing | Event tới sau main firing, trước cleanup. Aggregate phát lại với toàn bộ phần tử còn trong state |
-| Cleanup | `watermark >= (end - 1) + 15_000`. State cửa sổ bị xóa, không phát thêm |
-| Loại khỏi một cửa sổ | Cleanup của **cửa sổ đó** đã qua. Timestamp nhỏ hơn watermark hiện tại chưa đủ để loại |
-
-Tumbling 1 phút `[0, 60s)` có `maxTimestamp = 59999` và cleanup `74999`. Sliding 5 phút `[0, 300s)` có cleanup `314999`, nên ở watermark `164999` cửa sổ này vẫn mở. Flink gán cả cửa sổ `start` âm khi timestamp gần epoch. Chuỗi kiểm chứng dùng mốc 0 nên có `[-240s, 60s)` và `[-180s, 120s)`.
-
-Với tumbling 1 phút và sliding 5 phút / trượt 1 phút, cửa sổ sliding sớm nhất kết thúc cùng tumbling chứa timestamp đó. Heartbeat bị tumbling cleanup thì cũng bị sliding sớm nhất cleanup. Các sliding sau vẫn có thể nhận. Vì vậy "chỉ sliding từ chối, tumbling còn nhận" không xảy ra với kích thước production. Unit test đổi tumbling thành 5 phút và sliding thành 1 phút để chứng minh trường hợp đó.
-
-Mỗi heartbeat được nhận cộng `watched_delta_seconds` nếu payload có. Không có thì cộng `HEARTBEAT_STEP_SECONDS` (10). `current_position_seconds` là vị trí seek, giữ cột riêng, không cộng vào thời lượng xem. `active_users` là số `user_id` phân biệt. `total_watch_seconds` là tổng delta còn trong cửa sổ.
-
-### Chuỗi proof
-
-`proof_events()`, movie 42, vị trí 10, không có `watched_delta_seconds`. Watermark ghi bằng milli-giây.
-
-```text
-đến   id   event_ts   watermark trước   sau khi cập nhật   quyết định
-1     1    0          (chưa có)         -15001             nhận, tumbling [0, 60s)
-2     2    30s        -15001            14999              nhận, cùng cửa sổ
-3     3    90s        14999             74999              nhận, tumbling [60s, 120s).
-                                                            74999 vừa main-fire vừa cleanup [0, 60s)
-4     4    10s        74999             74999              observation tumbling [0, 60s)
-                                                            và sliding [-240s, 60s).
-                                                            Sliding sau vẫn nhận. Không dead letter
-5     5    70s        74999             74999              nhận, tumbling [60s, 120s)
-6     2    30s        74999             74999              trùng heartbeat_id, bỏ, không vào DLQ
-7     6    180s       74999             164999             nhận. Đóng tumbling [60s, 120s)
-                                                            và sliding [-180s, 120s)
-```
-
-```mermaid
-sequenceDiagram
-  participant E as Event
-  participant W as Watermark
-  participant Win as Cửa sổ
-  participant Q as DLQ
-  E->>W: id 3 tại 90s
-  W->>Win: watermark 74999, main fire rồi cleanup tumbling [0, 60s)
-  E->>Q: id 4 tại 10s, hai late_observation, không dead_letter
-  E->>Win: id 4 vẫn vào sliding [-180s, 120s) và [0, 300s)
-  E->>W: id 6 tại 180s
-  W->>Win: watermark 164999, đóng tumbling [60s, 120s)
-```
-
-`heartbeat_id=4` vẫn có hàng trong bảng heartbeat. Nhánh heartbeat tách trước phép loại của từng cửa sổ.
-
-### Late firing
-
-Chuỗi `0`, `20s`, `80s` đẩy watermark lên `64999`. Tumbling `[0, 60s)` main-fire với 2 heartbeat (20 giây, 2 user) vì `64999 >= 59999`, và chưa cleanup vì `64999 < 74999`. Event sau tại `5s` vào cửa sổ đang mở và late-fire thành 3 heartbeat, 30 giây, 3 user. Iceberg upsert thay hàng logical cũ. Cleanup không phát thêm một aggregate rỗng.
-
-## 3. DLQ
-
-`LateSplit` không giữ state để ghép tumbling với sliding. Quyết định chỉ dùng timestamp và watermark lúc event tới.
-
-| Trường hợp | Kết quả trên topic DLQ |
-|---|---|
-| Tumbling đã cleanup, còn sliding sau nhận | `late_observation` cho từng cửa sổ đã cleanup. Không có `dead_letter` |
-| Sliding đã cleanup, tumbling còn mở | Chỉ xảy ra khi đổi kích thước cửa sổ. Một observation `sliding_5m`. Heartbeat vẫn nằm trong tumbling |
-| Mọi cửa sổ được gán đều đã cleanup | Một `late_observation` cho mỗi cửa sổ, cộng một `dead_letter` (`reason=late_for_all_windows`, kèm `rejected_windows`) |
-
-Payload giữ JSON gốc, `event_ts_ms`, `watermark_ms` và `reason` (`window_past_cleanup` hoặc `late_for_all_windows`). Side output PyFlink phải yield `(OutputTag, json)`. Đảo thứ tự thì chuỗi JSON bị đẩy ra luồng chính và coder bigint của event tuple ném `TypeError`.
-
-Sink DLQ là bảng tạm `default_catalog.default_database.dlq_sink` (`format=raw`, `sink.delivery-guarantee=exactly-once`, prefix `cinestream-heartbeat-dlq`, `transaction.timeout.ms=600000`). `StatementSet.execute()` chỉ kéo lineage của `INSERT`, nên DLQ nằm trong cùng statement set với hai bảng Iceberg.
-
-## 4. Grain
-
-| Bảng | Một hàng là | Ghi bởi job streaming |
+| Thành phần | Mục đích | Trạng thái |
 |---|---|---|
-| `stg_playback_heartbeats` | Một heartbeat đã khử trùng `heartbeat_id` | Append. `watch_duration_seconds` = delta của nhịp |
-| `stg_watch_sessions` | Một phiên xem của batch (completion × runtime) | Không |
-| `stg_playback_windows` | Một aggregate `(movie_id, window_type, window_start)` | Upsert, format-version 2, primary key không enforced |
+| Event time từ `event_ts` | Cửa sổ theo thời điểm xem, không theo lúc record tới Flink | Implemented |
+| Watermark 15 giây | Chừa chỗ cho heartbeat tới lệch thứ tự trước khi đóng cửa sổ | Implemented |
+| Allowed lateness 15 giây | Sau main firing, heartbeat còn hạn cleanup upsert cùng `(movie_id, window_start)` | Implemented |
+| Dedup `heartbeat_id`, TTL 1 giờ | Cùng id không đếm hai lần trong replay và restart. Hết TTL thì id được nhận lại. Trần state, không phải SLA | Implemented |
+| RocksDB incremental | State dedup và watermark cổng sống qua TaskManager chết. Barrier mặc định 10 giây, exactly-once, `RETAIN_ON_CANCELLATION` | Implemented |
+| Iceberg heartbeat append | Một dòng mỗi id đã qua dedup. Seek ở `playback_position_seconds`. Watch duration là delta, mặc định 10 giây | Implemented |
+| Iceberg window upsert | Khóa `(movie_id, window_start)` không enforced, format v2, `write.upsert.enabled=true` | Implemented |
+| Kafka DLQ transactional | `exactly-once`, `transaction.timeout.ms=600000`, cùng statement set với Iceberg | Implemented |
 
-Cột heartbeat: `heartbeat_id`, `session_id`, `user_id`, `movie_id`, `event_ts`, `playback_position_seconds`, `watched_delta_seconds`, `watch_duration_seconds`, `event_date`, `dt`.
+Watched time cộng `watched_delta_seconds`. Không có thì cộng 10 giây. `current_position_seconds` không cộng vào thời lượng xem.
 
-Cột cửa sổ: `movie_id`, `window_type`, `window_start`, `window_end`, `total_watch_seconds`, `heartbeat_count`, `active_users`. `window_type` là `tumbling_1m` hoặc `sliding_5m`.
+## Lỗi đã xử lý
 
-## 5. Số đã đo
+| Việc | Nguyên nhân | Cách xử lý | Trạng thái |
+|---|---|---|---|
+| Ghi MinIO | `HadoopFileIO` cần JAR S3A, image Flink gốc không có | Image thêm Hadoop AWS/common và AWS SDK. Không thêm Hive | Implemented |
+| Checkpoint `LinkageError` | `add_jars` nạp Iceberg lần nữa, trùng Histogram Dropwizard | Iceberg chỉ ở `/opt/flink/lib`. Plugin Graphite đã gỡ | Implemented |
+| Timestamp `Long.MIN_VALUE` | `with_idleness()` làm rơi timestamp assigner | Assigner gắn sau idleness. Source dùng `no_watermarks()` | Implemented |
+| DLQ không vào graph | `sink_to` DataStream không được statement set kéo theo | DLQ là bảng Kafka tạm, `INSERT` cùng Iceberg | Implemented |
+| Side output sai coder | Tuple side output bị đảo | Yield `(OutputTag, value)` | Implemented |
+| Replay không phát lại dead letter | Watermark không nằm trong checkpoint. Transaction Kafka đang mở bị abort | Cổng recovery phát lại dead letter ở checkpoint sau | Implemented |
+| Parallelism 2 loại nhầm heartbeat còn hạn | `max_event_ts - 15s - 1` cao hơn min watermark các subtask | `aligned_watermark` thay cho max event time | Implemented, Verified |
 
-`make stream-test` chạy `unittest discover -s tests/streaming`. 10 test, không cần cụm.
+UID `recovery-late-gate` giữ nguyên. State đổi tên từ `max_event_ts` sang `aligned_watermark`. Không có savepoint production.
 
-Chuỗi proof, engine local (`HeartbeatWindowEngine`):
+Trước khi đổi, job `cde98db33694ccb71a323bc12c5595f2` có cửa sổ tại `-15001` trong khi max event time suy ra `314999`. Heartbeat tại 5 giây, sau restore, có trong `read_committed` dù cửa sổ chưa đóng.
 
-| Kết quả | Giá trị |
+## Môi trường và cách chạy lại
+
+Verified cho cụm đã dùng khi đo. Flink 1.18.1, Iceberg 1.6.1, RocksDB, một TaskManager 2 slot. Checkpoint `file:///opt/flink/checkpoints`. UI `http://localhost:18081`. Broker trong mạng là `kafka:29092`, trên host là `localhost:19092`. Iceberg REST `127.0.0.1:8181`, MinIO `127.0.0.1:9000`.
+
+Lệnh có trong repo:
+
+| Lệnh | Việc nó làm |
 |---|---|
-| Nhận vào ít nhất một cửa sổ | 6 |
-| Trùng `heartbeat_id` (id 2) | 1, không vào DLQ |
-| Dead letter | 0 |
-| Observation của id 4 | tumbling `[0, 60s)`, sliding `[-240s, 60s)`, watermark 74999 |
-| Watermark cuối | 164999 ms |
-| Hàng heartbeat đã khử trùng | 6, gồm id 4 |
-| Tumbling `[0, 60s)` đã đóng | id 1, 2. Count 2, 20 giây, 2 user |
-| Tumbling `[60s, 120s)` đã đóng | id 3, 5. Count 2, 20 giây, 2 user |
-| Sliding `[-240s, 60s)` đã đóng | id 1, 2. Count 2, 20 giây |
-| Sliding `[-180s, 120s)` đã đóng | id 1, 2, 3, 4, 5. Count 5, 50 giây |
-| Sliding `[0, 300s)` còn mở | id 1, 2, 3, 4, 5, 6. Count 6, 60 giây |
+| `make stream-test` | `unittest discover` trên `tests/streaming`. Không cần cụm |
+| `make stream-verify` | Chạy engine local `--scenario proof`, rồi `python -m streaming.flink.verify` |
+| `make stream-up` / `make stream-down` | Bật hoặc tắt JobManager và TaskManager |
+| `make stream-job-run` | Submit job production lên topic `movie.playback.heartbeat` |
 
-Seek: heartbeat vị trí 500, không có delta, cho `watch_duration_seconds = 10`. Payload có `watched_delta_seconds = 4` thì duration là 4. Cửa sổ không cộng 500.
+`streaming.flink.verify` in offset topic DLQ, tối đa 3 message, và vài prefix metadata trên bucket `lakehouse`. Consumer này không đặt `isolation_level`, nên không phải bằng chứng `read_committed`.
 
-Job Flink `c332a539c2e1fdeb94198468a703d482` trên topic và bảng tách biệt `it.p1c.heartbeat`, `it.p1c.deadletter`, `cinestream.silver.it_p1c_heartbeats`, `cinestream.silver.it_p1c_windows`:
+Lần đo 15 test dùng pytest trên `tests/streaming`. Lệnh pytest không có trong Makefile. `make stream-test` chưa được gọi lại trong lần đo đó.
 
-| Kết quả | Giá trị |
+Suite parallelism 1 và 2 nằm ở `streaming.flink.it_parallel_recovery`, có cờ `--from-case`. Không có target Make cho module này. Docstring `it_phase2.py` có một lệnh `uv run` cho chính module đó, không phải lệnh của suite parallelism. Bài đo không dùng `make stream-job-run`.
+
+Cách bài đo đọc DLQ và Iceberg nằm trong helper, không có lệnh Make riêng: Kafka consumer với `read_committed` và `read_uncommitted`; Spark `REFRESH TABLE` rồi đọc `.snapshots`.
+
+## Integration tests
+
+Verified. Topic `it.p2.*`, bảng `cinestream.silver.it_p2_*`. Offset production trước và sau vẫn 208 / 229 / 163. Snapshot `stg_watch_sessions` vẫn `1975472564804901513`, append. Hai bảng silver streaming production chưa tồn tại.
+
+| Scenario | Parallelism | Expected | Actual | Status |
+|---|---|---|---|---|
+| Đúng giờ, lệch thứ tự, allowed late, dedup | 1 | `[00:00, 00:01)` là 5 / 50 / 5 | 5 / 50 / 5 | Pass |
+| Hai lần kill, heartbeat 8 và 11 quá hạn | 1 | Mỗi id một bản committed | Committed `[8, 11]`. Uncommitted mỗi id hai lần | Pass |
+| Partition chậm, heartbeat tại 5 giây | 2 | Không vào DLQ. Cửa sổ nhận heartbeat | Watermark `-15001`. DLQ rỗng. Cửa sổ sau đó 2 / 20 / 2 | Pass |
+| Subtask idle rồi heartbeat quá hạn, watermark đã checkpoint | 2 | Một dead letter. Cửa sổ giữ 1 / 10 / 1 | Committed `[3]` một lần. Uncommitted `[3, 3]`. Cửa sổ 1 / 10 / 1 | Pass |
+| Duplicate, lệch thứ tự, allowed late, too-late trên đường đang chạy | 2 | Hai dòng cửa sổ. DLQ một bản | 5 / 50 / 5 và 3 / 30 / 3. Committed heartbeat 12 một lần | Pass |
+| Watermark vượt cleanup sau checkpoint cuối | 2 | Gap: replay vào cửa sổ, không có DLQ committed | DLQ committed rỗng. Cửa sổ 2 / 20 / 2 | Known Limitation |
+
+`read_uncommitted` còn bản của transaction bị abort. `read_committed` không tính các bản đó.
+
+### Evidence
+
+| Scenario | Job | Checkpoint | Snapshot |
+|---|---|---|---|
+| Parallelism 1 và hai lần kill | `8d1420066dd7fe59446ac8bd1b8f9ec4` | Restore `chk-4` (82376 byte), rồi `chk-6` (80371 byte) | Cửa sổ `4836744667291463079`, overwrite |
+| Partition chậm | `1905e8d82dcba306262bf6fd56ca1fe6` | Giữ `chk-1` (119573 byte). Checkpoint đang chạy fail. Sau restore committed id 3 | Cửa sổ `1792118595722442453`, overwrite |
+| Idle rồi too-late | `7c73db73bb722f1c33cfafa87b701c34` | `chk-4` (122841 byte, 112 ms). Checkpoint 5 fail, state size 0. DLQ commit ở checkpoint 6 | Cửa sổ `1389855237356219058`, overwrite |
+| Hợp đồng parallelism 2 | `dae5f6465da6c675508290f4dfe1dab2` | Không kill | Cửa sổ `4211150728522201537`, overwrite |
+| Checkpoint gap | `b4fb8d1c0f00c28aab58ab39551090a9` | Giữ checkpoint 2 | Không có snapshot riêng trong file kết quả |
+
+Lúc idle được nhả, source subtask 0 ở `Long.MIN_VALUE`, subtask 1 ở `314999`, rồi cửa sổ và cổng lên `314999`. Lúc partition chậm, cửa sổ và cổng ở `-15001`.
+
+## Benchmark
+
+Verified, một lần, không lặp. 300 heartbeat, event time cách nhau 1 giây, partition `index % 3`. Checkpoint 10 giây, idle timeout 30 giây. Đo từ lúc bắt đầu gửi đến khi Spark thấy đủ 300 `heartbeat_id`. Events/s là 300 chia cho khoảng đó. Duration checkpoint là các checkpoint `COMPLETED` trong history Flink REST ngay lúc đủ 300 dòng. Một TaskManager `cinestream-taskmanager-1`, 2 slot. Cả hai subtask parallelism 2 nằm trên TaskManager đó.
+
+| | Parallelism 1 | Parallelism 2 |
+|---|---|---|
+| Thời gian gửi | 0.545 giây | 0.516 giây |
+| Tới khi đủ heartbeat trong Iceberg | 9.888 giây | 6.909 giây |
+| Events/s tới Iceberg | 30.34 | 43.42 |
+| Checkpoint completed trong cửa sổ đo | 179 ms | 410 ms |
+| Dòng cửa sổ đã đóng | 4 | 4 |
+| Snapshot heartbeat | `8687685325905836756`, append | `2494848728927448033`, append |
+
+Nhận định từ một cặp số này: parallelism 2 tới Iceberg sớm hơn khoảng 30 phần trăm và cao hơn khoảng 43 phần trăm events/s. Mẫu checkpoint lại dài hơn. Chưa đủ để nói parallelism 2 luôn nhanh hơn. Counter `numRecordsIn` lúc lấy mẫu là 0, không dùng để chia tải. Lag Kafka không lấy được.
+
+## Checkpoint gap và exactly-once
+
+Known Limitation. Cổng chỉ biết watermark đã vào checkpoint. Heartbeat trở nên quá cleanup sau checkpoint cuối được replay vào cửa sổ. Job `b4fb8d1c0f00c28aab58ab39551090a9`: checkpoint 2 còn `Long.MIN_VALUE`, lúc gửi thì cửa sổ đã `314999`, kill trước checkpoint kế, DLQ committed rỗng và cửa sổ thành 2 / 20 / 2.
+
+Khi watermark cao đã nằm trong checkpoint, như `chk-4` của job idle, replay tạo một dead letter và cửa sổ không đổi.
+
+Kafka và Iceberg mỗi bên commit khi checkpoint của sink đó xong. Abort transaction Kafka không xóa snapshot Iceberg đã commit. Không có một giao dịch phân tán cho cả hai.
+
+TTL dedup là processing time. Checkpoint nằm trên đĩa container, không phải kho phân tán. Không có savepoint cho graph sliding window cũ.
+
+## Acceptance criteria
+
+| Tiêu chí | Trạng thái |
 |---|---|
-| Main fire tumbling `[0, 60s)` | count 2, watch 20, users 2 |
-| Late fire cùng key, trước cleanup | count 3, watch 30, users 3 |
-| Sau heartbeat bị tumbling từ chối và heartbeat bị mọi cửa sổ từ chối | cùng một hàng, vẫn 3 / 30 / 3 |
-| Lịch sử snapshot của key đó | 2, rồi 3, rồi 3 |
-| Property bảng cửa sổ | `format-version=2`, `write.upsert.enabled=true` |
-| Heartbeat id 2 | `playback_position_seconds=500`, `watch_duration_seconds=10` |
-| DLQ `read_committed` | một `dead_letter` heartbeat 8. Tám `late_observation` |
-| Checkpoint | 13 completed, 0 failed, 0 restored |
-| Graph | có `late-split`, tumbling, sliding, committer heartbeat, committer cửa sổ, `dlq_sink` Writer và Committer |
+| Một cửa sổ tumbling 1 phút, không sliding | Pass |
+| Parallelism 1: aggregate, dedup, late, DLQ sau hai lần restore | Pass |
+| Parallelism 2, ít nhất 3 partition | Pass |
+| Partition chậm không loại nhầm heartbeat còn hạn | Pass |
+| Subtask idle rồi watermark tiến lên | Pass |
+| Too-late thành DLQ committed sau khi watermark đã checkpoint | Pass |
+| Không trùng dead letter trong `read_committed` ở các ca đã kill | Pass |
+| Dòng Iceberg đúng sau recovery | Pass |
+| Checkpoint hoàn tất, checkpoint đang chạy lúc kill thì fail | Pass |
+| Offset và snapshot production không đổi | Pass |
+| Phân loại muộn đúng cả khi watermark đổi sau checkpoint cuối | Known Limitation |
+| Một giao dịch nguyên tử Kafka và Iceberg | Known Limitation |
+| Parallelism 2 luôn nhanh hơn | Not Verified |
+| Lag Kafka và số record từng subtask | Not Verified |
 
-Bảng production không đổi sau lần chạy đó: `movie.playback.heartbeat` offset 208 / 229 / 163, `stg_watch_sessions` snapshot `1975472564804901513`, 662.830 hàng.
+## Coursework readiness
 
-`make stream-verify` in báo cáo engine local (`--engine local --scenario proof`) rồi đọc topic DLQ mặc định và metadata MinIO nếu cụm đang chạy. `stream-job-run` submit với topic và bảng mặc định, tức `movie.playback.heartbeat` và `stg_playback_heartbeats`.
+Streaming layer đủ để nộp ở parallelism 1 và 2 cho các ca đã đo: tumbling, dedup, allowed lateness, DLQ committed, và restore khi watermark đã checkpoint.
 
-Image `cinestream-flink:1.18.1`: PyFlink 1.18.1, Kafka SQL connector, Iceberg runtime 1.6.1, plugin RocksDB (`frocksdbjni`). Plugin Graphite đã bỏ khỏi `/opt/flink/plugins/metrics-graphite`. Job không `add_jars` iceberg hay kafka. JAR iceberg nằm sẵn trong `/opt/flink/lib`. Thêm bản thứ hai lên ChildFirstClassLoader làm `Histogram` của Dropwizard bị nạp hai lần và checkpoint ném `LinkageError`.
+Giới hạn cần chấp nhận: khoảng giữa checkpoint cuối và lúc watermark vượt cleanup; exactly-once từng sink chứ không phải một commit chung; checkpoint trên đĩa local; TTL một giờ theo processing time. Benchmark chỉ là một lần chạy.
 
-## 6. Checkpoint
+## Future Work
 
-Checkpoint mỗi 10 giây, pause tối thiểu 5 giây, timeout 60 giây, mode `EXACTLY_ONCE`, RocksDB incremental, thư mục `file:///opt/flink/checkpoints`. `execution.checkpointing.externalized-checkpoint-retention=RETAIN_ON_CANCELLATION`. `execution.checkpointing.tolerable-failed-checkpoints=3`.
-
-Source Kafka, state `heartbeat_id`, state cửa sổ và hai sink nằm trong cùng barrier. Iceberg commit snapshot khi checkpoint thành công. Transaction Kafka DLQ commit cùng lúc. Checkpoint lỗi thì transaction Kafka abort.
-
-Lần chạy `it.p1c` cho thấy checkpoint hoàn tất, Iceberg có snapshot và DLQ đọc được ở `read_committed`. Chưa có bài thử kill job rồi restore từ checkpoint, nên khôi phục exactly-once chưa được chứng minh bằng failover.
-
-## 7. Chạy
-
-```bash
-make stream-test
-make stream-verify
-make stream-job-run
-```
-
-`stream-test` không cần cụm. `stream-job-run` build `infra/docker/Dockerfile.flink` (Flink 1.18.1, PyFlink 1.18.1, RocksDB, Kafka SQL connector, `iceberg-flink-runtime-1.18:1.6.1`) và submit vào JobManager. Image copy `streaming/` lúc build. Sửa code xong cần build lại. Catalog REST `http://iceberg-rest:8181`, S3 `http://minio:9000`, path-style.
+1. Nối aggregate tumbling sang Gold và Consumption. Streaming hiện dừng ở hai bảng silver.
+2. Benchmark lặp lại và workload dài hơn nếu cần kết luận về parallelism.
+3. Đưa checkpoint sang MinIO và thu hẹp checkpoint gap, không quay lại max event time toàn cục.

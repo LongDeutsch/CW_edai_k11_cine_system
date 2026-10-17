@@ -7,8 +7,8 @@
 - Watermark: ``currentInputWatermark`` và ``currentOutputWatermark`` theo
   subtask. Source ``kafka-heartbeats`` dùng ``no_watermarks``; watermark thật
   nằm ở ``bounded-out-of-orderness``, sau parse JSON.
-- Late observation: counter ``lateObservationsTumbling``, ``lateObservationsSliding``.
-- Dead letter: counter ``deadLetters``.
+- Dead letter: counter ``deadLetters`` trên side output của cửa sổ và trên
+  cổng recovery.
 - Dedup: ``dedupEmitted`` và ``dedupDropped``.
 - RocksDB: ``estimateNumKeys``, ``estimateLiveDataSize`` khi hai flag
   ``state.backend.rocksdb.metrics.estimate-*`` bật.
@@ -30,8 +30,6 @@ from streaming.flink.config import StreamJobConfig, flink_checkpoint_configs
 
 DEDUP_EMITTED = "dedupEmitted"
 DEDUP_DROPPED = "dedupDropped"
-LATE_TUMBLING = "lateObservationsTumbling"
-LATE_SLIDING = "lateObservationsSliding"
 DEAD_LETTERS = "deadLetters"
 
 

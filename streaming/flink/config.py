@@ -36,8 +36,6 @@ class StreamJobConfig:
     allowed_lateness_ms: int = 15_000
     heartbeat_seconds: int = 10
     tumbling_ms: int = 60_000
-    sliding_size_ms: int = 300_000
-    sliding_slide_ms: int = 60_000
     iceberg_rest_uri: str = "http://iceberg-rest:8181"
     warehouse: str = "s3a://lakehouse/"
     s3_endpoint: str = "http://minio:9000"

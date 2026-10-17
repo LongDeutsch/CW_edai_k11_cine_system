@@ -29,7 +29,7 @@ def _tumbling(result, start_ms: int):
     rows = [
         row
         for row in result.closed_windows + result.open_windows
-        if row.window_type == "tumbling_1m" and row.window_start_ms == start_ms
+        if row.window_start_ms == start_ms
     ]
     if len(rows) != 1:
         raise AssertionError(rows)

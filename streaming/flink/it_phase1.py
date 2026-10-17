@@ -90,7 +90,6 @@ def tumbling_epoch_zero(spark, table: str):
         SELECT heartbeat_count, total_watch_seconds, active_users
         FROM {table}
         WHERE movie_id = 42
-          AND window_type = 'tumbling_1m'
           AND CAST(window_start AS STRING) LIKE '1970-01-01 00:00:00%'
         """
     )
@@ -111,7 +110,7 @@ def main() -> None:
     target = next(
         row
         for row in expected.fired_windows
-        if row.window_type == "tumbling_1m" and row.window_start_ms == 0
+        if row.window_start_ms == 0
     )
     print(
         "expected tumbling[0]",
@@ -214,16 +213,15 @@ def _assert_tables(spark, args, expected) -> None:
         raise SystemExit(f"property cửa sổ sai: {props}")
     rows = spark.sql(
         f"""
-        SELECT window_type,
-               CAST(unix_millis(CAST(window_start AS TIMESTAMP)) AS BIGINT) AS start_ms,
+        SELECT CAST(unix_millis(CAST(window_start AS TIMESTAMP)) AS BIGINT) AS start_ms,
                heartbeat_count, total_watch_seconds, active_users, COUNT(*) AS copies
         FROM {args.windows_table}
-        GROUP BY window_type, window_start, heartbeat_count, total_watch_seconds, active_users
+        GROUP BY window_start, heartbeat_count, total_watch_seconds, active_users
         """
     ).collect()
-    actual: dict[tuple, tuple] = {}
+    actual: dict[int, tuple] = {}
     for row in rows:
-        key = (row["window_type"], int(row["start_ms"]))
+        key = int(row["start_ms"])
         if key in actual:
             raise SystemExit(f"hai aggregate cho cùng key {key}")
         actual[key] = (
@@ -233,12 +231,12 @@ def _assert_tables(spark, args, expected) -> None:
             int(row["copies"]),
         )
     for row in expected.fired_windows:
-        key = (row.window_type, row.window_start_ms)
+        key = row.window_start_ms
         got = actual.get(key)
         want = (row.heartbeat_count, row.total_watch_seconds, row.active_users, 1)
         if got != want:
             raise SystemExit(f"cửa sổ {key} spark={got} engine={want}")
-    extra = set(actual) - {(row.window_type, row.window_start_ms) for row in expected.fired_windows}
+    extra = set(actual) - {row.window_start_ms for row in expected.fired_windows}
     if extra:
         raise SystemExit(f"spark có cửa sổ thừa {extra}")
     spark.sql(f"REFRESH TABLE {args.heartbeats_table}")
@@ -267,7 +265,7 @@ def _assert_tables(spark, args, expected) -> None:
             """
             SELECT heartbeat_count
             FROM window_version
-            WHERE movie_id = 42 AND window_type = 'tumbling_1m'
+            WHERE movie_id = 42
               AND CAST(window_start AS STRING) LIKE '1970-01-01 00:00:00%'
             """
         ).collect()
@@ -291,22 +289,22 @@ def _assert_dlq(topic: str) -> None:
     consumer.assign([TopicPartition(topic, 0)])
     consumer.seek_to_beginning()
     records = [json.loads(message.value.decode()) for message in consumer]
-    dead = [item for item in records if item.get("record_kind") == "dead_letter"]
-    observations = [item for item in records if item.get("record_kind") == "late_observation"]
-    print("dlq dead", [item["heartbeat_id"] for item in dead], "observations", len(observations))
-    if [item["heartbeat_id"] for item in dead] != [8]:
+    dead = [item["heartbeat_id"] for item in records if item.get("record_kind") == "dead_letter"]
+    print("dlq dead", dead, "messages", len(records))
+    if dead != [6, 8]:
         raise SystemExit(f"dead letter {dead}")
-    tumbling_only = [item for item in observations if item["heartbeat_id"] == 6 and item["window_type"] == "tumbling_1m"]
-    if not tumbling_only:
-        raise SystemExit("thiếu observation tumbling của heartbeat 6")
-    if any(item["heartbeat_id"] == 6 and item.get("record_kind") == "dead_letter" for item in records):
-        raise SystemExit("heartbeat 6 không được là dead letter")
+    if any(item.get("record_kind") not in (None, "dead_letter") for item in records):
+        raise SystemExit(f"DLQ có record không phải dead letter: {records}")
 
 
 def _assert_job(job_id: str) -> None:
     job = _get(f"http://127.0.0.1:18081/jobs/{job_id}")
     names = [vertex["name"] for vertex in job["vertices"]]
     print("vertices", names)
+    if not any("tumbling-1m" in name for name in names):
+        raise SystemExit("graph không có tumbling-1m")
+    if any("sliding" in name.lower() for name in names):
+        raise SystemExit(f"graph còn sliding: {names}")
     if not any("dlq" in name for name in names):
         raise SystemExit("graph không có DLQ")
     checkpoints = _get(f"http://127.0.0.1:18081/jobs/{job_id}/checkpoints")

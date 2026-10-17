@@ -1,12 +1,9 @@
-"""Mô phỏng WindowOperator của Flink cho tumbling 1 phút và sliding 5 phút.
+"""Mô phỏng WindowOperator tumbling 1 phút của Flink.
 
 Dedup theo ``heartbeat_id`` xảy ra trước, với TTL processing time. Đồng hồ local
-chỉ chạy khi gọi ``advance_processing_time``. Trên Flink, processing time vẫn
-trôi khi task chết, nên downtime dài hơn TTL làm checkpoint trả lại id đã thấy.
-Hết hạn thì id đó được nhận lại và cửa sổ đếm thêm một lần. Mỗi cửa sổ tự xét
-cleanup. Main firing khi watermark qua ``end - 1``. Late firing khi event còn kịp allowed
-lateness sau main firing. Cleanup xóa state, không phát thêm. Event không bị
-loại chỉ vì timestamp nhỏ hơn watermark.
+chỉ chạy khi gọi ``advance_processing_time``. Main firing khi watermark qua
+``end - 1``. Late firing khi event còn kịp allowed lateness. Cleanup xóa state.
+Event sau cleanup là một dead letter và không vào aggregate.
 """
 
 from __future__ import annotations
@@ -14,7 +11,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from streaming.flink.config import StreamJobConfig
-from streaming.flink.operators.late_policy import WindowSpec, classify, late_records
+from streaming.flink.operators.late_policy import WindowSpec, dead_letter_record, is_too_late, tumbling_bounds
 from streaming.flink.operators.watermark_assigner import (
     WatermarkClock,
     extract_event_time_ms,
@@ -27,7 +24,6 @@ from streaming.flink.operators.watch_metrics import watched_delta_seconds
 @dataclass
 class WindowRow:
     movie_id: int
-    window_type: str
     window_start_ms: int
     window_end_ms: int
     heartbeat_count: int
@@ -38,7 +34,6 @@ class WindowRow:
     def as_dict(self) -> dict:
         return {
             "movie_id": self.movie_id,
-            "window_type": self.window_type,
             "window_start_ms": self.window_start_ms,
             "window_end_ms": self.window_end_ms,
             "heartbeat_count": self.heartbeat_count,
@@ -57,7 +52,6 @@ class WindowFiring:
 @dataclass
 class _Bucket:
     movie_id: int
-    window_type: str
     start_ms: int
     end_ms: int
     heartbeat_ids: list[int] = field(default_factory=list)
@@ -73,7 +67,6 @@ class _Bucket:
     def row(self) -> WindowRow:
         return WindowRow(
             movie_id=self.movie_id,
-            window_type=self.window_type,
             window_start_ms=self.start_ms,
             window_end_ms=self.end_ms,
             heartbeat_count=len(self.heartbeat_ids),
@@ -88,7 +81,6 @@ class EngineResult:
     accepted: int = 0
     duplicates: int = 0
     dead_letters: list[dict] = field(default_factory=list)
-    late_observations: list[dict] = field(default_factory=list)
     firings: list[WindowFiring] = field(default_factory=list)
     closed_windows: list[WindowRow] = field(default_factory=list)
     open_windows: list[WindowRow] = field(default_factory=list)
@@ -147,28 +139,25 @@ class HeartbeatWindowEngine:
         previous = self.clock.observe(event_ts)
         watched = watched_delta_seconds(payload, self.config.heartbeat_seconds)
         result.session_rows.append(_session_row(payload, event_ts, watched))
-        decision = classify(event_ts, previous, self.spec)
-        for record in late_records(payload, event_ts, previous, self.spec):
-            if record["record_kind"] == "dead_letter":
-                result.dead_letters.append(record)
-            else:
-                result.late_observations.append(record)
-        if not decision.accepted:
+        if is_too_late(event_ts, previous, self.spec):
+            result.dead_letters.append(
+                dead_letter_record(payload, event_ts, previous, self.spec.tumbling_ms)
+            )
             self._advance(result)
             return
         result.accepted += 1
         movie_id = int(payload["movie_id"])
         user_id = int(payload["user_id"])
-        for span in decision.accepted:
-            key = (span.window_type, movie_id, span.start_ms)
-            bucket = self._open.get(key)
-            if bucket is None:
-                bucket = _Bucket(movie_id, span.window_type, span.start_ms, span.end_ms)
-                self._open[key] = bucket
-            already_fired = bucket.main_fired
-            bucket.add(heartbeat_id, user_id, watched)
-            if already_fired:
-                result.firings.append(WindowFiring("late", bucket.row()))
+        start, end = tumbling_bounds(event_ts, self.spec.tumbling_ms)
+        key = (movie_id, start)
+        bucket = self._open.get(key)
+        if bucket is None:
+            bucket = _Bucket(movie_id, start, end)
+            self._open[key] = bucket
+        already_fired = bucket.main_fired
+        bucket.add(heartbeat_id, user_id, watched)
+        if already_fired:
+            result.firings.append(WindowFiring("late", bucket.row()))
         self._advance(result)
 
     def _advance(self, result: EngineResult) -> None:
@@ -189,7 +178,7 @@ class HeartbeatWindowEngine:
 
 
 def _sorted_rows(rows) -> list[WindowRow]:
-    return sorted(rows, key=lambda row: (row.window_type, row.window_start_ms, row.movie_id))
+    return sorted(rows, key=lambda row: (row.window_start_ms, row.movie_id))
 
 
 def _session_row(payload: dict, event_ts_ms: int, watched_seconds: int) -> dict:

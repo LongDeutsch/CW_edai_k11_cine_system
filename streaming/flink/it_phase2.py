@@ -380,11 +380,11 @@ def window_rows(spark, table: str) -> list[tuple]:
     spark.sql(f"REFRESH TABLE {table}")
     rows = spark.sql(
         f"""
-        SELECT window_type, CAST(window_start AS STRING) AS start_s,
+        SELECT CAST(window_start AS STRING) AS start_s,
                heartbeat_count, total_watch_seconds, active_users, COUNT(*) AS copies
         FROM {table}
-        GROUP BY window_type, window_start, heartbeat_count, total_watch_seconds, active_users
-        ORDER BY window_type, start_s
+        GROUP BY window_start, heartbeat_count, total_watch_seconds, active_users
+        ORDER BY start_s
         """
     ).collect()
     return [tuple(row) for row in rows]
@@ -394,9 +394,9 @@ def duplicate_window_keys(spark, table: str) -> list[tuple]:
     spark.sql(f"REFRESH TABLE {table}")
     rows = spark.sql(
         f"""
-        SELECT window_type, CAST(window_start AS STRING) AS start_s, COUNT(*) AS copies
+        SELECT CAST(window_start AS STRING) AS start_s, COUNT(*) AS copies
         FROM {table}
-        GROUP BY window_type, window_start
+        GROUP BY window_start
         HAVING COUNT(*) > 1
         """
     ).collect()
@@ -410,7 +410,6 @@ def tumbling_epoch(spark, table: str):
         SELECT heartbeat_count, total_watch_seconds, active_users
         FROM {table}
         WHERE movie_id = 42
-          AND window_type = 'tumbling_1m'
           AND CAST(window_start AS STRING) LIKE '1970-01-01 00:00:00%'
         """
     ).collect()
@@ -444,12 +443,7 @@ def dlq_summary(topic: str) -> dict:
 
     def kinds(records: list[dict]) -> dict:
         dead = [int(item["heartbeat_id"]) for item in records if item.get("record_kind") == "dead_letter"]
-        observations = [
-            (int(item["heartbeat_id"]), item.get("window_type"))
-            for item in records
-            if item.get("record_kind") == "late_observation"
-        ]
-        return {"dead": dead, "observations": observations, "messages": len(records)}
+        return {"dead": dead, "messages": len(records)}
 
     return {"read_committed": kinds(committed), "read_uncommitted": kinds(dirty)}
 

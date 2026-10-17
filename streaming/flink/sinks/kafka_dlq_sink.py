@@ -1,6 +1,7 @@
-"""Side output late data ghi sang topic ``movie.playback.deadletter``.
+"""Dead letter của tumbling window ghi sang topic ``movie.playback.deadletter``.
 
-Giá trị là JSON gốc cộng ``reason``, ``event_ts_ms`` và watermark tại lúc loại.
+Một heartbeat quá cleanup là một JSON: payload gốc, ``record_kind=dead_letter``,
+``reason=window_past_cleanup``. Sink Kafka giữ exactly-once theo checkpoint.
 """
 
 from __future__ import annotations

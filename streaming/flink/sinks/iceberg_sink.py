@@ -7,11 +7,13 @@ Grain các bảng streaming ghi ra:
   bằng ``watched_delta_seconds`` (ước lượng một nhịp), không phải vị trí.
 - ``stg_watch_sessions``: một phiên xem của batch Spark. Không phải heartbeat.
   Job streaming không ghi vào bảng này.
-- ``stg_playback_windows``: một aggregate theo ``(movie_id, window_type, window_start)``.
-  ``total_watch_seconds`` là tổng delta của heartbeat còn trong cửa sổ.
+- ``stg_playback_windows``: một aggregate tumbling 1 phút theo
+  ``(movie_id, window_start)``. ``total_watch_seconds`` là tổng delta của
+  heartbeat còn trong cửa sổ.
 
-Heartbeat vẫn nằm trong bảng heartbeat khi một cửa sổ đã cleanup mà cửa sổ khác
-còn nhận, vì nhánh heartbeat tách trước phép loại của từng cửa sổ.
+``CREATE TABLE IF NOT EXISTS`` không đổi bảng đã có. Job không ``ALTER`` và
+không ``DROP`` bảng production. Heartbeat quá cleanup vẫn được append vào
+bảng heartbeat; nhánh đó tách trước cửa sổ.
 """
 
 from __future__ import annotations
@@ -60,13 +62,12 @@ def windows_table_ddl(config: StreamJobConfig) -> str:
     return f"""
 CREATE TABLE IF NOT EXISTS {config.silver_windows_table} (
   movie_id BIGINT,
-  window_type STRING,
   window_start TIMESTAMP(3),
   window_end TIMESTAMP(3),
   total_watch_seconds BIGINT,
   heartbeat_count BIGINT,
   active_users BIGINT,
-  PRIMARY KEY (movie_id, window_type, window_start) NOT ENFORCED
+  PRIMARY KEY (movie_id, window_start) NOT ENFORCED
 ) WITH (
   'format-version' = '2',
   'write.upsert.enabled' = 'true'

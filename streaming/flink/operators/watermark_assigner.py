@@ -34,24 +34,34 @@ def flink_watermark_ms(max_event_ts_ms: int, out_of_orderness_ms: int) -> int:
     return max_event_ts_ms - out_of_orderness_ms - 1
 
 
-def dlq_watermark_ms(
-    live_watermark_ms: int | None,
-    restored_max_event_ts_ms: int | None,
-    out_of_orderness_ms: int,
-) -> int | None:
-    """Watermark để phân loại DLQ.
+def advance_aligned_watermark(stored: int | None, observed: int | None) -> int | None:
+    """Watermark đầu vào chỉ được tăng. ``Long.MIN_VALUE`` sau restore bị bỏ."""
+    if observed is None or observed < -1 << 62:
+        return stored
+    observed = int(observed)
+    if stored is None or observed > stored:
+        return observed
+    return stored
 
-    ``InternalTimersSnapshot`` không lưu ``currentWatermark``.
-    ``TimestampsAndWatermarksOperator`` cũng không checkpoint max timestamp.
-    Record replay sau restore tới khi watermark vẫn là ``Long.MIN_VALUE``.
-    Nếu checkpoint đã có max event timestamp, dùng đúng công thức watermark
-    chu kỳ. Watermark sống (kể cả giá trị âm hợp lệ) giữ nguyên.
+
+def restored_watermark_ahead(
+    live_watermark_ms: int | None,
+    restored_watermark_ms: int | None,
+) -> int | None:
+    """Watermark đầu vào đã checkpoint, khi watermark sống chưa theo kịp.
+
+    Giá trị lưu là watermark Flink đã căn (min các input) mà cổng quan sát,
+    không phải ``max_event_ts - out_of_orderness - 1``. Generator không
+    snapshot max timestamp và ``currentWatermark`` không nằm trong checkpoint.
+    ``None`` khi chưa có watermark thật, hoặc watermark sống đã bằng hoặc
+    vượt bản đã lưu.
     """
-    if live_watermark_ms is not None and live_watermark_ms >= -1 << 62:
-        return live_watermark_ms
-    if restored_max_event_ts_ms is None:
+    if restored_watermark_ms is None:
         return None
-    return flink_watermark_ms(int(restored_max_event_ts_ms), out_of_orderness_ms)
+    restored = int(restored_watermark_ms)
+    if live_watermark_ms is None or live_watermark_ms < -1 << 62 or live_watermark_ms < restored:
+        return restored
+    return None
 
 
 def window_start_ms(timestamp_ms: int, size_ms: int, offset_ms: int = 0) -> int:
@@ -65,19 +75,6 @@ def window_start_ms(timestamp_ms: int, size_ms: int, offset_ms: int = 0) -> int:
 
 def tumbling_start_ms(event_ts_ms: int, size_ms: int) -> int:
     return window_start_ms(event_ts_ms, size_ms)
-
-
-def sliding_starts_ms(event_ts_ms: int, size_ms: int, slide_ms: int) -> list[int]:
-    """Mọi start của cửa sổ trượt chứa ``event_ts``, cùng công thức Flink."""
-    if slide_ms <= 0 or size_ms <= 0:
-        raise ValueError("size và slide phải > 0")
-    last = window_start_ms(event_ts_ms, slide_ms)
-    starts: list[int] = []
-    start = last
-    while start > event_ts_ms - size_ms:
-        starts.append(start)
-        start -= slide_ms
-    return sorted(starts)
 
 
 def window_max_timestamp_ms(end_ms: int) -> int:
