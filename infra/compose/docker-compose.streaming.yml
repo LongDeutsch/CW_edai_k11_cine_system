@@ -1,0 +1,101 @@
+# Flink bám mạng cinestream_default (MinIO, Kafka, Iceberg REST đã chạy).
+# Trong mạng, broker là kafka:29092. Cổng 9092 của container là listener
+# EXTERNAL, advertised localhost:19092, client khác trong mạng không dùng được.
+# UI JobManager: http://localhost:18081  (8081 trên host đang bị chiếm).
+
+name: cinestream
+
+services:
+  checkpoint-init:
+    image: cinestream-flink:1.18.1
+    user: "0:0"
+    entrypoint: ["/bin/bash", "-c"]
+    command: ["mkdir -p /opt/flink/checkpoints && chown -R flink:flink /opt/flink/checkpoints"]
+    volumes:
+      - flink_checkpoints:/opt/flink/checkpoints
+    networks:
+      - cinestream_default
+
+  jobmanager:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.flink
+    image: cinestream-flink:1.18.1
+    command: jobmanager
+    hostname: jobmanager
+    ports:
+      - "18081:8081"
+    environment:
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: jobmanager
+        state.backend: rocksdb
+        state.backend.incremental: true
+        state.checkpoints.dir: file:///opt/flink/checkpoints
+        execution.checkpointing.interval: 10000
+        execution.checkpointing.mode: EXACTLY_ONCE
+        execution.checkpointing.min-pause: 5000
+        execution.checkpointing.externalized-checkpoint-retention: RETAIN_ON_CANCELLATION
+        restart-strategy: fixed-delay
+        restart-strategy.fixed-delay.attempts: 10
+        restart-strategy.fixed-delay.delay: 5 s
+        heartbeat.timeout: 15000
+        heartbeat.interval: 5000
+        state.backend.rocksdb.metrics.estimate-num-keys: true
+        state.backend.rocksdb.metrics.estimate-live-data-size: true
+        flink.hadoop.fs.s3a.endpoint: http://minio:9000
+        flink.hadoop.fs.s3a.path.style.access: true
+        flink.hadoop.fs.s3a.access.key: minioadmin
+        flink.hadoop.fs.s3a.secret.key: minioadmin
+        flink.hadoop.fs.s3a.connection.ssl.enabled: false
+        flink.hadoop.fs.s3a.aws.credentials.provider: org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider
+        flink.hadoop.fs.s3a.impl: org.apache.hadoop.fs.s3a.S3AFileSystem
+    volumes:
+      - flink_checkpoints:/opt/flink/checkpoints
+    depends_on:
+      checkpoint-init:
+        condition: service_completed_successfully
+    networks:
+      - cinestream_default
+
+  taskmanager:
+    image: cinestream-flink:1.18.1
+    command: taskmanager
+    depends_on:
+      checkpoint-init:
+        condition: service_completed_successfully
+      jobmanager:
+        condition: service_started
+    environment:
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: jobmanager
+        taskmanager.numberOfTaskSlots: 2
+        state.backend: rocksdb
+        state.backend.incremental: true
+        state.checkpoints.dir: file:///opt/flink/checkpoints
+        execution.checkpointing.interval: 10000
+        execution.checkpointing.mode: EXACTLY_ONCE
+        restart-strategy: fixed-delay
+        restart-strategy.fixed-delay.attempts: 10
+        restart-strategy.fixed-delay.delay: 5 s
+        heartbeat.timeout: 15000
+        heartbeat.interval: 5000
+        state.backend.rocksdb.metrics.estimate-num-keys: true
+        state.backend.rocksdb.metrics.estimate-live-data-size: true
+        flink.hadoop.fs.s3a.endpoint: http://minio:9000
+        flink.hadoop.fs.s3a.path.style.access: true
+        flink.hadoop.fs.s3a.access.key: minioadmin
+        flink.hadoop.fs.s3a.secret.key: minioadmin
+        flink.hadoop.fs.s3a.connection.ssl.enabled: false
+        flink.hadoop.fs.s3a.aws.credentials.provider: org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider
+        flink.hadoop.fs.s3a.impl: org.apache.hadoop.fs.s3a.S3AFileSystem
+    volumes:
+      - flink_checkpoints:/opt/flink/checkpoints
+    networks:
+      - cinestream_default
+
+networks:
+  cinestream_default:
+    external: true
+
+volumes:
+  flink_checkpoints:

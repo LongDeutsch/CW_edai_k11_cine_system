@@ -1,0 +1,24 @@
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+.DS_Store
+.env
+!.env.example
+
+# Parquet sinh bởi generator và job Spark/Flink. Seed MovieLens nằm ở data_offline/.
+data_generator/output/
+
+# JAR tải về lúc build image Spark. Dockerfile tự lấy lại.
+infra/spark/jars/*.jar
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+metastore_db/
+derby.log
+spark-warehouse/
+checkpoints/
