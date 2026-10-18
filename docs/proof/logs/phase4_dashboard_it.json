@@ -1,0 +1,514 @@
+{
+  "status": "PASS",
+  "failed": [],
+  "cases": [
+    {
+      "name": "static không nhúng số liệu",
+      "status": "PASS",
+      "expected": "trang chỉ có tên endpoint",
+      "actual": {
+        "leaked": []
+      }
+    },
+    {
+      "name": "retry, timeout và nhãn live",
+      "status": "PASS",
+      "expected": "503 được thử lại, 409 trả về, dữ liệu cũ không thành live",
+      "actual": {
+        "snapshot": "1073738621869077082",
+        "itemSnapshot": "4517552679501749559",
+        "mean": 3.5,
+        "recovered": {
+          "session_count": 4
+        },
+        "recoverCalls": 3,
+        "conflict": {
+          "status": 409,
+          "detail": "reader table đang trộn nhiều snapshot",
+          "calls": 3
+        },
+        "timeout": {
+          "status": 0,
+          "detail": "hết thời gian chờ FastAPI"
+        },
+        "heldLive": false,
+        "banner": "Số bên dưới là lần đọc trước. Không gắn nhãn live. FastAPI: hết thời gian chờ FastAPI",
+        "idleLive": false,
+        "reallyLive": true
+      }
+    },
+    {
+      "name": "batch it_it_af_real",
+      "status": "PASS",
+      "expected": "proxy trả đúng body FastAPI và model hiển thị đúng field",
+      "actual": {
+        "proxy": [
+          {
+            "path": "/analytics/overview",
+            "direct": 200,
+            "proxy": 200,
+            "same": true
+          },
+          {
+            "path": "/movies/top-rated?limit=10",
+            "direct": 200,
+            "proxy": 200,
+            "same": true
+          },
+          {
+            "path": "/movies/most-watched?limit=10",
+            "direct": 200,
+            "proxy": 200,
+            "same": true
+          },
+          {
+            "path": "/movies/trending?window_minutes=15&limit=10",
+            "direct": 503,
+            "proxy": 503,
+            "same": true
+          },
+          {
+            "path": "/serving/status",
+            "direct": 200,
+            "proxy": 200,
+            "same": true
+          }
+        ],
+        "model": {
+          "live": false,
+          "freshness": null,
+          "session_count": 662830,
+          "database": "it_it_af_real",
+          "banner": "trending: HTTP 503. ClickHouse HTTP 404: Code: 60. DB::Exception: Unknown table expression identifier 'it_it_af_real.movie_windows' in scope SELECT count() AS rows, uniqExact(iceberg_snapshot_id) AS v…",
+          "trend_items": 0
+        },
+        "checks": {
+          "live_matches_api": true,
+          "sessions": true,
+          "watch": true,
+          "watched_movies": true,
+          "rated_movies": true,
+          "ratings": true,
+          "mean": true,
+          "engagement_snapshot": true,
+          "ratings_snapshot": true,
+          "real_batch": true,
+          "trend_error_visible": true,
+          "batch_still_shown": true,
+          "status_database": true,
+          "status_consistent": true,
+          "top_ids": true,
+          "top_avg": true,
+          "watched_ids": true,
+          "watched_seconds": true
+        },
+        "samples": {
+          "/analytics/overview": {
+            "status": 200,
+            "session_count": 662830,
+            "total_watch_seconds": 3725663032,
+            "freshness": null,
+            "live": null,
+            "items": null
+          },
+          "/movies/top-rated?limit=10": {
+            "status": 200,
+            "session_count": null,
+            "total_watch_seconds": null,
+            "freshness": null,
+            "live": null,
+            "items": 10
+          },
+          "/movies/most-watched?limit=10": {
+            "status": 200,
+            "session_count": null,
+            "total_watch_seconds": null,
+            "freshness": null,
+            "live": null,
+            "items": 10
+          },
+          "/movies/trending?window_minutes=15&limit=10": {
+            "status": 503,
+            "session_count": null,
+            "total_watch_seconds": null,
+            "freshness": null,
+            "live": null,
+            "items": null
+          },
+          "/serving/status": {
+            "status": 200,
+            "session_count": null,
+            "total_watch_seconds": null,
+            "freshness": "sync_failed",
+            "live": false,
+            "items": null
+          }
+        }
+      }
+    },
+    {
+      "name": "trending it_e2e",
+      "status": "PASS",
+      "expected": "proxy trả đúng body FastAPI và model hiển thị đúng field",
+      "actual": {
+        "proxy": [
+          {
+            "path": "/analytics/overview",
+            "direct": 200,
+            "proxy": 200,
+            "same": true
+          },
+          {
+            "path": "/movies/top-rated?limit=10",
+            "direct": 200,
+            "proxy": 200,
+            "same": true
+          },
+          {
+            "path": "/movies/most-watched?limit=10",
+            "direct": 200,
+            "proxy": 200,
+            "same": true
+          },
+          {
+            "path": "/movies/trending?window_minutes=15&limit=10",
+            "direct": 200,
+            "proxy": 200,
+            "same": true
+          },
+          {
+            "path": "/serving/status",
+            "direct": 200,
+            "proxy": 200,
+            "same": true
+          }
+        ],
+        "model": {
+          "live": false,
+          "freshness": "stale",
+          "session_count": 0,
+          "database": "it_e2e",
+          "banner": null,
+          "trend_items": 1
+        },
+        "checks": {
+          "live_matches_api": true,
+          "sessions": true,
+          "watch": true,
+          "watched_movies": true,
+          "rated_movies": true,
+          "ratings": true,
+          "mean": true,
+          "engagement_snapshot": true,
+          "ratings_snapshot": true,
+          "freshness": true,
+          "window_end": true,
+          "synced_at": true,
+          "trend_items": true,
+          "trend_heartbeats": true,
+          "not_live_unless_api": true,
+          "status_database": true,
+          "status_consistent": true,
+          "top_ids": true,
+          "top_avg": true,
+          "watched_ids": true,
+          "watched_seconds": true
+        },
+        "samples": {
+          "/analytics/overview": {
+            "status": 200,
+            "session_count": 0,
+            "total_watch_seconds": 0,
+            "freshness": null,
+            "live": null,
+            "items": null
+          },
+          "/movies/top-rated?limit=10": {
+            "status": 200,
+            "session_count": null,
+            "total_watch_seconds": null,
+            "freshness": null,
+            "live": null,
+            "items": 0
+          },
+          "/movies/most-watched?limit=10": {
+            "status": 200,
+            "session_count": null,
+            "total_watch_seconds": null,
+            "freshness": null,
+            "live": null,
+            "items": 0
+          },
+          "/movies/trending?window_minutes=15&limit=10": {
+            "status": 200,
+            "session_count": null,
+            "total_watch_seconds": null,
+            "freshness": "stale",
+            "live": false,
+            "items": 1
+          },
+          "/serving/status": {
+            "status": 200,
+            "session_count": null,
+            "total_watch_seconds": null,
+            "freshness": "stale",
+            "live": false,
+            "items": null
+          }
+        }
+      }
+    },
+    {
+      "name": "serving rỗng",
+      "status": "PASS",
+      "expected": "proxy trả đúng body FastAPI và model hiển thị đúng field",
+      "actual": {
+        "proxy": [
+          {
+            "path": "/analytics/overview",
+            "direct": 200,
+            "proxy": 200,
+            "same": true
+          },
+          {
+            "path": "/movies/top-rated?limit=10",
+            "direct": 200,
+            "proxy": 200,
+            "same": true
+          },
+          {
+            "path": "/movies/most-watched?limit=10",
+            "direct": 200,
+            "proxy": 200,
+            "same": true
+          },
+          {
+            "path": "/movies/trending?window_minutes=15&limit=10",
+            "direct": 200,
+            "proxy": 200,
+            "same": true
+          },
+          {
+            "path": "/serving/status",
+            "direct": 200,
+            "proxy": 200,
+            "same": true
+          }
+        ],
+        "model": {
+          "live": false,
+          "freshness": "empty",
+          "session_count": 0,
+          "database": "cinestream_serving",
+          "banner": null,
+          "trend_items": 0
+        },
+        "checks": {
+          "live_matches_api": true,
+          "sessions": true,
+          "watch": true,
+          "watched_movies": true,
+          "rated_movies": true,
+          "ratings": true,
+          "mean": true,
+          "engagement_snapshot": true,
+          "ratings_snapshot": true,
+          "empty_batch": true,
+          "freshness": true,
+          "window_end": true,
+          "synced_at": true,
+          "trend_items": true,
+          "trend_heartbeats": true,
+          "not_live_unless_api": true,
+          "status_database": true,
+          "status_consistent": true,
+          "top_ids": true,
+          "top_avg": true,
+          "watched_ids": true,
+          "watched_seconds": true
+        },
+        "samples": {
+          "/analytics/overview": {
+            "status": 200,
+            "session_count": 0,
+            "total_watch_seconds": 0,
+            "freshness": null,
+            "live": null,
+            "items": null
+          },
+          "/movies/top-rated?limit=10": {
+            "status": 200,
+            "session_count": null,
+            "total_watch_seconds": null,
+            "freshness": null,
+            "live": null,
+            "items": 0
+          },
+          "/movies/most-watched?limit=10": {
+            "status": 200,
+            "session_count": null,
+            "total_watch_seconds": null,
+            "freshness": null,
+            "live": null,
+            "items": 0
+          },
+          "/movies/trending?window_minutes=15&limit=10": {
+            "status": 200,
+            "session_count": null,
+            "total_watch_seconds": null,
+            "freshness": "empty",
+            "live": false,
+            "items": 0
+          },
+          "/serving/status": {
+            "status": 200,
+            "session_count": null,
+            "total_watch_seconds": null,
+            "freshness": "empty",
+            "live": false,
+            "items": null
+          }
+        }
+      }
+    },
+    {
+      "name": "ClickHouse tắt",
+      "status": "PASS",
+      "expected": "proxy trả đúng body FastAPI và model hiển thị đúng field",
+      "actual": {
+        "proxy": [
+          {
+            "path": "/analytics/overview",
+            "direct": 503,
+            "proxy": 503,
+            "same": true
+          },
+          {
+            "path": "/movies/top-rated?limit=10",
+            "direct": 503,
+            "proxy": 503,
+            "same": true
+          },
+          {
+            "path": "/movies/most-watched?limit=10",
+            "direct": 503,
+            "proxy": 503,
+            "same": true
+          },
+          {
+            "path": "/movies/trending?window_minutes=15&limit=10",
+            "direct": 503,
+            "proxy": 503,
+            "same": true
+          },
+          {
+            "path": "/serving/status",
+            "direct": 503,
+            "proxy": 503,
+            "same": true
+          }
+        ],
+        "model": {
+          "live": false,
+          "freshness": null,
+          "session_count": null,
+          "database": null,
+          "banner": "overview: HTTP 503. ClickHouse không tới được: [Errno 61] Connection refused top-rated: HTTP 503. ClickHouse không tới được: [Errno 61] Connection refused most-watched: HTTP 503. ClickHouse không tới được: [Errno 61] Connection refused trending: HTTP 503. ClickHouse không tới được: [Errno 61] Connection refused status: HTTP 503. ClickHouse không tới được: [Errno 61] Connection refused",
+          "trend_items": 0
+        },
+        "checks": {
+          "live_matches_api": true,
+          "all_503": true,
+          "no_overview": true,
+          "not_live": true
+        },
+        "samples": {
+          "/analytics/overview": {
+            "status": 503,
+            "session_count": null,
+            "total_watch_seconds": null,
+            "freshness": null,
+            "live": null,
+            "items": null
+          },
+          "/movies/top-rated?limit=10": {
+            "status": 503,
+            "session_count": null,
+            "total_watch_seconds": null,
+            "freshness": null,
+            "live": null,
+            "items": null
+          },
+          "/movies/most-watched?limit=10": {
+            "status": 503,
+            "session_count": null,
+            "total_watch_seconds": null,
+            "freshness": null,
+            "live": null,
+            "items": null
+          },
+          "/movies/trending?window_minutes=15&limit=10": {
+            "status": 503,
+            "session_count": null,
+            "total_watch_seconds": null,
+            "freshness": null,
+            "live": null,
+            "items": null
+          },
+          "/serving/status": {
+            "status": 503,
+            "session_count": null,
+            "total_watch_seconds": null,
+            "freshness": null,
+            "live": null,
+            "items": null
+          }
+        }
+      }
+    },
+    {
+      "name": "snapshot lệch 409",
+      "status": "PASS",
+      "expected": "overview 409, status consistent=false, không vẽ metric batch",
+      "actual": {
+        "overview": 409,
+        "status": {
+          "database": "it_dash_conflict",
+          "engagement_snapshot_id": null,
+          "ratings_snapshot_id": null,
+          "engagement_rows": 2,
+          "rating_rows": 1,
+          "batch_id": null,
+          "published_at": null,
+          "log_present": false,
+          "consistent": false,
+          "detail": "reader table đang trộn nhiều snapshot",
+          "trending_snapshot_id": null,
+          "trending_rows": 0,
+          "trending_synced_at": null,
+          "trending_latest_window_end": null,
+          "trending_detail": "chưa có cửa sổ",
+          "trending_freshness": "empty",
+          "trending_live": false,
+          "trending_poll_status": null,
+          "trending_polled_at": null,
+          "trending_event_age_seconds": null,
+          "trending_sync_age_seconds": null,
+          "trending_stale_after_seconds": 180.0,
+          "batch_database": "it_dash_conflict",
+          "trending_database": "it_dash_conflict"
+        },
+        "banner": "overview: snapshot đang đổi (409). reader table đang trộn nhiều snapshot most-watched: snapshot đang đổi (409). movie_engagement đang trộn nhiều snapshot"
+      }
+    },
+    {
+      "name": "compose dashboard",
+      "status": "PASS",
+      "expected": "file compose hợp lệ, cổng 18085",
+      "actual": {
+        "code": 0,
+        "tail": "dashboard/static\n        target: /usr/share/nginx/html\n        read_only: true\n        bind: {}\n      - type: bind\n        source: /Users/nguyenbuihoanglong/Desktop/FSDS/edai_11/coursework1/edai-k11-cw/serving/dashboard/nginx.conf.template\n        target: /etc/nginx/templates/default.conf.template\n        read_only: true\n        bind: {}\nnetworks:\n  default:\n    name: cinestream-dashboard_default\n"
+      }
+    }
+  ]
+}

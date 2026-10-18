@@ -1,0 +1,525 @@
+{
+  "status": "PASS",
+  "failed": [],
+  "head": "c5e4fda37d6abbe8417f995c38a58202a9760d9a",
+  "cases": [
+    {
+      "name": "nguồn Flink và bảng chưa có dữ liệu",
+      "status": "PASS",
+      "expected": "chỉ tumbling-1m, bảng production không được tạo, nguồn thiếu trả source_absent",
+      "actual": {
+        "head": "c5e4fda37d6abbe8417f995c38a58202a9760d9a",
+        "vertices": [
+          "Source: kafka-heartbeats -> json, Extract-Timestamp -> Timestamps/Watermarks -> bounded-out-of-orderness -> _stream_key_by_map_operator",
+          "dedup-heartbeat-id -> (*anonymous_datastream_source$1*[1] -> Calc[2] -> IcebergStreamWriter, _stream_key_by_map_operator)",
+          "IcebergFilesCommitter -> Sink: IcebergSink cinestream.silver.it_p2_trending_heartbeats",
+          "recovery-late-gate -> (Map, _stream_key_by_map_operator)",
+          "tumbling-1m -> (Map, late-json, *anonymous_datastream_source$2*[7] -> Calc[8] -> ConstraintEnforcer[9])",
+          "*anonymous_datastream_source$3*[4] -> Calc[5] -> dlq_sink[6]: Writer -> dlq_sink[6]: Committer",
+          "IcebergStreamWriter",
+          "IcebergFilesCommitter -> Sink: IcebergSink cinestream.silver.it_p2_trending_windows"
+        ],
+        "absent": {
+          "status": "source_absent",
+          "source_table": "cinestream.silver.it_p2_trending_absent"
+        },
+        "before_data": {
+          "status": "source_empty",
+          "source_table": "cinestream.silver.it_p2_trending_windows"
+        },
+        "properties": null
+      }
+    },
+    {
+      "name": "sync cửa sổ đầu",
+      "status": "PASS",
+      "expected": "API khớp đọc logic của snapshot Flink, không lấy current nếu khác",
+      "actual": {
+        "sync": {
+          "status": "published",
+          "source_table": "cinestream.silver.it_p2_trending_windows",
+          "snapshot_id": 966306104943318944,
+          "window_rows": 2,
+          "serving": {
+            "rows": 2,
+            "keys": 2,
+            "snapshots": [
+              966306104943318944
+            ],
+            "log_rows": 1
+          }
+        },
+        "compare": {
+          "iceberg": [
+            [
+              7,
+              0,
+              1,
+              10,
+              1
+            ],
+            [
+              42,
+              0,
+              4,
+              40,
+              4
+            ]
+          ],
+          "serving": [
+            [
+              7,
+              0,
+              1,
+              10,
+              1
+            ],
+            [
+              42,
+              0,
+              4,
+              40,
+              4
+            ]
+          ],
+          "logical": [
+            [
+              7,
+              0,
+              1,
+              10,
+              1
+            ],
+            [
+              42,
+              0,
+              4,
+              40,
+              4
+            ]
+          ],
+          "match": true
+        },
+        "api": {
+          "window_minutes": 15,
+          "iceberg_snapshot_id": 966306104943318944,
+          "latest_window_end": "1970-01-01 00:01:00.000",
+          "synced_at": "2026-10-18 09:57:32.512",
+          "items": [
+            {
+              "movie_id": 42,
+              "recent_heartbeats": 4,
+              "recent_watch_seconds": 40,
+              "peak_minute_unique_viewers": 4
+            },
+            {
+              "movie_id": 7,
+              "recent_heartbeats": 1,
+              "recent_watch_seconds": 10,
+              "peak_minute_unique_viewers": 1
+            }
+          ]
+        },
+        "freshness_s": {
+          "event_to_iceberg_s": 8.484,
+          "iceberg_to_sync_s": 0.381,
+          "sync_to_api_s": 0.102,
+          "event_to_api_s": 8.967
+        }
+      }
+    },
+    {
+      "name": "late firing sửa cửa sổ cũ rồi sync lại cùng snapshot",
+      "status": "PASS",
+      "expected": "một khóa logic, ClickHouse bằng Spark VERSION AS OF, lần sau unchanged",
+      "actual": {
+        "late": {
+          "status": "published",
+          "source_table": "cinestream.silver.it_p2_trending_windows",
+          "snapshot_id": 2568675253272259454,
+          "window_rows": 2,
+          "serving": {
+            "rows": 2,
+            "keys": 2,
+            "snapshots": [
+              2568675253272259454
+            ],
+            "log_rows": 2
+          }
+        },
+        "again": "unchanged",
+        "compare": {
+          "iceberg": [
+            [
+              7,
+              0,
+              1,
+              10,
+              1
+            ],
+            [
+              42,
+              0,
+              5,
+              50,
+              5
+            ]
+          ],
+          "serving": [
+            [
+              7,
+              0,
+              1,
+              10,
+              1
+            ],
+            [
+              42,
+              0,
+              5,
+              50,
+              5
+            ]
+          ],
+          "logical": [
+            [
+              7,
+              0,
+              1,
+              10,
+              1
+            ],
+            [
+              42,
+              0,
+              5,
+              50,
+              5
+            ]
+          ],
+          "match": true
+        },
+        "deletes": {
+          "logical_rows": 2,
+          "equality_records": 8,
+          "data_records": 3,
+          "snapshots": [
+            {
+              "snapshot_id": 966306104943318944,
+              "operation": "overwrite",
+              "summary": {
+                "engine-version": "1.18.1",
+                "added-data-files": "1",
+                "total-equality-deletes": "2",
+                "added-equality-delete-files": "1",
+                "added-records": "2",
+                "flink.job-id": "36f9601f13edf5fe521fdb565d7ccfa8",
+                "added-delete-files": "1",
+                "total-records": "2",
+                "flink.max-committed-checkpoint-id": "1",
+                "changed-partition-count": "1",
+                "flink.operator-id": "b8049db4c5a5f47675301f6aea391be2",
+                "engine-name": "flink",
+                "total-position-deletes": "0",
+                "added-files-size": "2831",
+                "added-equality-deletes": "2",
+                "total-delete-files": "1",
+                "iceberg-version": "Apache Iceberg 1.6.1 (commit 8e9d59d299be42b0bca9461457cd1e95dbaad086)",
+                "total-files-size": "2831",
+                "total-data-files": "1"
+              }
+            },
+            {
+              "snapshot_id": 2568675253272259454,
+              "operation": "overwrite",
+              "summary": {
+                "engine-version": "1.18.1",
+                "added-data-files": "1",
+                "total-equality-deletes": "3",
+                "added-equality-delete-files": "1",
+                "added-records": "1",
+                "flink.job-id": "36f9601f13edf5fe521fdb565d7ccfa8",
+                "added-delete-files": "1",
+                "total-records": "3",
+                "flink.max-committed-checkpoint-id": "2",
+                "changed-partition-count": "1",
+                "flink.operator-id": "b8049db4c5a5f47675301f6aea391be2",
+                "engine-name": "flink",
+                "total-position-deletes": "0",
+                "added-files-size": "2663",
+                "added-equality-deletes": "1",
+                "total-delete-files": "2",
+                "iceberg-version": "Apache Iceberg 1.6.1 (commit 8e9d59d299be42b0bca9461457cd1e95dbaad086)",
+                "total-files-size": "5494",
+                "total-data-files": "2"
+              }
+            }
+          ],
+          "error": null,
+          "delete_files": [
+            {
+              "content": 2,
+              "records": 3
+            }
+          ]
+        },
+        "api": {
+          "window_minutes": 15,
+          "iceberg_snapshot_id": 2568675253272259454,
+          "latest_window_end": "1970-01-01 00:01:00.000",
+          "synced_at": "2026-10-18 09:57:40.673",
+          "items": [
+            {
+              "movie_id": 42,
+              "recent_heartbeats": 5,
+              "recent_watch_seconds": 50,
+              "peak_minute_unique_viewers": 5
+            },
+            {
+              "movie_id": 7,
+              "recent_heartbeats": 1,
+              "recent_watch_seconds": 10,
+              "peak_minute_unique_viewers": 1
+            }
+          ]
+        },
+        "freshness_s": {
+          "event_to_iceberg_s": 6.937,
+          "iceberg_to_sync_s": 0.959,
+          "sync_to_api_s": 0.023,
+          "event_to_api_s": 7.919
+        },
+        "snapshots": {
+          "first": {
+            "snapshot_id": 966306104943318944,
+            "operation": "overwrite",
+            "committed_at": "2026-10-18 09:57:28.718000"
+          },
+          "late": {
+            "snapshot_id": 2568675253272259454,
+            "operation": "overwrite",
+            "committed_at": "2026-10-18 09:57:37.731000"
+          }
+        }
+      }
+    },
+    {
+      "name": "hai cửa sổ cùng phim, sync lỗi rồi retry",
+      "status": "PASS",
+      "expected": "reader giữ snapshot cũ khi stage dở, retry khớp Iceberg, window_minutes=1 chỉ lấy phút mới",
+      "actual": {
+        "error": "dừng giữa bulk load",
+        "stage_rows": 1,
+        "during": {
+          "window_minutes": 15,
+          "iceberg_snapshot_id": 2568675253272259454,
+          "latest_window_end": "1970-01-01 00:01:00.000",
+          "synced_at": "2026-10-18 09:57:40.673",
+          "items": [
+            {
+              "movie_id": 42,
+              "recent_heartbeats": 5,
+              "recent_watch_seconds": 50,
+              "peak_minute_unique_viewers": 5
+            },
+            {
+              "movie_id": 7,
+              "recent_heartbeats": 1,
+              "recent_watch_seconds": 10,
+              "peak_minute_unique_viewers": 1
+            }
+          ]
+        },
+        "retry": {
+          "status": "published",
+          "source_table": "cinestream.silver.it_p2_trending_windows",
+          "snapshot_id": 1269177176000162692,
+          "window_rows": 3,
+          "serving": {
+            "rows": 3,
+            "keys": 3,
+            "snapshots": [
+              1269177176000162692
+            ],
+            "log_rows": 3
+          }
+        },
+        "compare": {
+          "iceberg": [
+            [
+              7,
+              0,
+              1,
+              10,
+              1
+            ],
+            [
+              42,
+              0,
+              5,
+              50,
+              5
+            ],
+            [
+              42,
+              60000,
+              3,
+              30,
+              3
+            ]
+          ],
+          "serving": [
+            [
+              7,
+              0,
+              1,
+              10,
+              1
+            ],
+            [
+              42,
+              0,
+              5,
+              50,
+              5
+            ],
+            [
+              42,
+              60000,
+              3,
+              30,
+              3
+            ]
+          ],
+          "logical": [
+            [
+              7,
+              0,
+              1,
+              10,
+              1
+            ],
+            [
+              42,
+              0,
+              5,
+              50,
+              5
+            ],
+            [
+              42,
+              60000,
+              3,
+              30,
+              3
+            ]
+          ],
+          "match": true
+        },
+        "fifteen": {
+          "window_minutes": 15,
+          "iceberg_snapshot_id": 1269177176000162692,
+          "latest_window_end": "1970-01-01 00:02:00.000",
+          "synced_at": "2026-10-18 09:57:48.662",
+          "items": [
+            {
+              "movie_id": 42,
+              "recent_heartbeats": 8,
+              "recent_watch_seconds": 80,
+              "peak_minute_unique_viewers": 5
+            },
+            {
+              "movie_id": 7,
+              "recent_heartbeats": 1,
+              "recent_watch_seconds": 10,
+              "peak_minute_unique_viewers": 1
+            }
+          ]
+        },
+        "one": {
+          "window_minutes": 1,
+          "iceberg_snapshot_id": 1269177176000162692,
+          "latest_window_end": "1970-01-01 00:02:00.000",
+          "synced_at": "2026-10-18 09:57:48.662",
+          "items": [
+            {
+              "movie_id": 42,
+              "recent_heartbeats": 3,
+              "recent_watch_seconds": 30,
+              "peak_minute_unique_viewers": 3
+            }
+          ]
+        },
+        "bad": 422
+      }
+    },
+    {
+      "name": "thiếu bảng, ClickHouse ngắt và bảng rỗng",
+      "status": "PASS",
+      "expected": "reader it_trend giữ nguyên, poll trả retry, bảng rỗng không có dòng",
+      "actual": {
+        "missing": {
+          "status": "source_absent",
+          "source_table": "cinestream.silver.it_p2_trending_absent"
+        },
+        "poll": {
+          "status": "retry",
+          "error": "ClickHouse không tới được: [Errno 61] Connection refused",
+          "source_table": "cinestream.silver.it_p2_trending_windows"
+        },
+        "recovered": "unchanged",
+        "empty": {
+          "status": "source_empty",
+          "source_table": "cinestream.silver.it_p2_trending_empty",
+          "flink_properties": {
+            "format-version": "2",
+            "write.upsert.enabled": "true"
+          }
+        }
+      }
+    },
+    {
+      "name": "production không đổi",
+      "status": "PASS",
+      "expected": "REST streaming production và offset topic production giữ nguyên",
+      "actual": {
+        "before": {
+          "namespaces/silver/tables/stg_watch_sessions": 1975472564804901513,
+          "namespaces/silver/tables/stg_playback_heartbeats": "http:404",
+          "namespaces/silver/tables/stg_playback_windows": "http:404",
+          "namespaces/bronze/tables/raw_users": 7954921826504091397
+        },
+        "after": {
+          "namespaces/silver/tables/stg_watch_sessions": 1975472564804901513,
+          "namespaces/silver/tables/stg_playback_heartbeats": "http:404",
+          "namespaces/silver/tables/stg_playback_windows": "http:404",
+          "namespaces/bronze/tables/raw_users": 7954921826504091397
+        },
+        "offsets_before": {
+          "movie.playback.heartbeat": {
+            "0": 208,
+            "1": 229,
+            "2": 163
+          },
+          "movie.playback.deadletter": {
+            "0": 0,
+            "1": 0,
+            "2": 0
+          }
+        },
+        "offsets_after": {
+          "movie.playback.heartbeat": {
+            "0": 208,
+            "1": 229,
+            "2": 163
+          },
+          "movie.playback.deadletter": {
+            "0": 0,
+            "1": 0,
+            "2": 0
+          }
+        }
+      }
+    }
+  ]
+}

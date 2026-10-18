@@ -3,9 +3,9 @@
   "failed": [],
   "cases": [
     {
-      "name": "schema string bị chặn",
+      "name": "schema string b\u1ecb ch\u1eb7n",
       "status": "PASS",
-      "expected": "signup_ts string vào quarantine, không có fact",
+      "expected": "signup_ts string v\u00e0o quarantine, kh\u00f4ng c\u00f3 fact",
       "actual": {
         "dag": "failed",
         "tasks": {
@@ -14,7 +14,8 @@
           "validate_bronze": "upstream_failed",
           "spark_bronze_to_gold": "upstream_failed",
           "validate_gold": "upstream_failed",
-          "publish_success": "upstream_failed"
+          "publish_success": "upstream_failed",
+          "sync_clickhouse": "upstream_failed"
         },
         "marker": false,
         "users": 0,
@@ -31,9 +32,9 @@
       }
     },
     {
-      "name": "nguồn thật",
+      "name": "ngu\u1ed3n th\u1eadt",
       "status": "PASS",
-      "expected": "đủ dòng, timestamp UTC, marker published",
+      "expected": "\u0111\u1ee7 d\u00f2ng, timestamp UTC, marker published",
       "actual": {
         "dag": "success",
         "tasks": {
@@ -42,7 +43,8 @@
           "validate_bronze": "success",
           "spark_bronze_to_gold": "success",
           "validate_gold": "success",
-          "publish_success": "success"
+          "publish_success": "success",
+          "sync_clickhouse": "success"
         },
         "marker_published": true,
         "users": 5000,
@@ -57,25 +59,25 @@
         "snapshots": {
           "raw_users": [
             {
-              "snapshot_id": 8411045857037134195,
+              "snapshot_id": 6470792152778661410,
               "operation": "append"
             }
           ],
           "raw_ratings": [
             {
-              "snapshot_id": 8357446765918150946,
+              "snapshot_id": 1982928411932376220,
               "operation": "append"
             }
           ],
           "raw_watch_history": [
             {
-              "snapshot_id": 6281968813630650780,
+              "snapshot_id": 3726374625044730707,
               "operation": "append"
             }
           ],
           "fact_ratings": [
             {
-              "snapshot_id": 4252870239132393313,
+              "snapshot_id": 1073738621869077082,
               "operation": "overwrite"
             }
           ]
@@ -84,25 +86,25 @@
       "snapshots": {
         "raw_users": [
           {
-            "snapshot_id": 8411045857037134195,
+            "snapshot_id": 6470792152778661410,
             "operation": "append"
           }
         ],
         "raw_ratings": [
           {
-            "snapshot_id": 8357446765918150946,
+            "snapshot_id": 1982928411932376220,
             "operation": "append"
           }
         ],
         "raw_watch_history": [
           {
-            "snapshot_id": 6281968813630650780,
+            "snapshot_id": 3726374625044730707,
             "operation": "append"
           }
         ],
         "fact_ratings": [
           {
-            "snapshot_id": 4252870239132393313,
+            "snapshot_id": 1073738621869077082,
             "operation": "overwrite"
           }
         ]
@@ -110,9 +112,9 @@
       "namespace": "it_af_real"
     },
     {
-      "name": "schema evolution và SCD2",
+      "name": "schema evolution v\u00e0 SCD2",
       "status": "PASS",
-      "expected": "44 phim schema cũ null, một current, không overlap",
+      "expected": "44 phim schema c\u0169 null, m\u1ed9t current, kh\u00f4ng overlap",
       "actual": {
         "movies": 100,
         "old_schema": 44,
@@ -133,9 +135,9 @@
       }
     },
     {
-      "name": "rerun nguồn thật",
+      "name": "rerun ngu\u1ed3n th\u1eadt",
       "status": "PASS",
-      "expected": "cùng file, Bronze không thêm snapshot",
+      "expected": "c\u00f9ng file, Bronze kh\u00f4ng th\u00eam snapshot",
       "actual": {
         "dag": "success",
         "users": 5000,
@@ -144,25 +146,25 @@
         "snapshots_before": {
           "raw_users": [
             {
-              "snapshot_id": 8411045857037134195,
+              "snapshot_id": 6470792152778661410,
               "operation": "append"
             }
           ],
           "raw_ratings": [
             {
-              "snapshot_id": 8357446765918150946,
+              "snapshot_id": 1982928411932376220,
               "operation": "append"
             }
           ],
           "raw_watch_history": [
             {
-              "snapshot_id": 6281968813630650780,
+              "snapshot_id": 3726374625044730707,
               "operation": "append"
             }
           ],
           "fact_ratings": [
             {
-              "snapshot_id": 4252870239132393313,
+              "snapshot_id": 1073738621869077082,
               "operation": "overwrite"
             }
           ]
@@ -170,19 +172,19 @@
         "snapshots_after": {
           "raw_users": [
             {
-              "snapshot_id": 8411045857037134195,
+              "snapshot_id": 6470792152778661410,
               "operation": "append"
             }
           ],
           "raw_ratings": [
             {
-              "snapshot_id": 8357446765918150946,
+              "snapshot_id": 1982928411932376220,
               "operation": "append"
             }
           ],
           "raw_watch_history": [
             {
-              "snapshot_id": 6281968813630650780,
+              "snapshot_id": 3726374625044730707,
               "operation": "append"
             }
           ]
@@ -190,59 +192,34 @@
       }
     },
     {
-      "name": "retry nguồn thật",
+      "name": "retry ngu\u1ed3n th\u1eadt",
       "status": "PASS",
-      "expected": "fail sau users, lần hai không nhân đôi",
+      "expected": "fail sau users, l\u1ea7n hai kh\u00f4ng nh\u00e2n \u0111\u00f4i",
       "actual": {
         "dag": "success",
-        "run_id": "manual__2026-10-18T05:21:31.526109+00:00",
         "tasks": {
           "check_source_ready": "success",
           "spark_raw_to_bronze": "success",
           "validate_bronze": "success",
           "spark_bronze_to_gold": "success",
           "validate_gold": "success",
-          "publish_success": "success"
+          "publish_success": "success",
+          "sync_clickhouse": "success"
         },
         "bronze_try": 2,
         "users": 5000,
         "ratings": 256410,
         "facts": 57665,
-        "marker": true,
-        "try1": "SimulatedTaskFailure after users",
-        "try2": {
-          "users": "skipped_duplicate appended=0",
-          "movies": "skipped_duplicate appended=0",
-          "ratings": "skipped_duplicate appended=0",
-          "watch": "accepted appended=820513"
-        },
-        "earlier_attempt": {
-          "run_id": "manual__2026-10-18T05:17:18.785111+00:00",
-          "dag": "failed",
-          "bronze_try": 2,
-          "note": "spark-submit exit -9 on try 2 after users and ratings were already committed; no publish",
-          "users": 5000,
-          "ratings": 256410,
-          "facts": 0
-        }
+        "marker": true
       }
     },
     {
       "name": "production untouched",
       "status": "PASS",
-      "expected": "snapshot production không đổi",
+      "expected": "snapshot production kh\u00f4ng \u0111\u1ed5i",
       "actual": {
         "unchanged": true
       }
     }
-  ],
-  "schedule": {
-    "last_parsed_time": "2026-10-18T05:29:09.425932+00:00",
-    "schedule_interval": null,
-    "timetable": "Never, external triggers only",
-    "intended_schedule": "0 2 * * *",
-    "allow_production": "false",
-    "is_paused": true,
-    "dags_folder": "/opt/cinestream/orchestration/dags"
-  }
+  ]
 }

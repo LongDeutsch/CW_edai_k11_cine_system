@@ -1,0 +1,17 @@
+# Dashboard tĩnh. API FastAPI chạy trên host, mặc định :18083.
+# Project riêng để không đụng stack cinestream và không dùng --remove-orphans.
+
+name: cinestream-dashboard
+
+services:
+  dashboard:
+    image: nginx:1.27-alpine
+    ports:
+      - "18085:80"
+    environment:
+      API_UPSTREAM: ${CINESTREAM_API_UPSTREAM:-http://host.docker.internal:18083/}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ../../serving/dashboard/static:/usr/share/nginx/html:ro
+      - ../../serving/dashboard/nginx.conf.template:/etc/nginx/templates/default.conf.template:ro

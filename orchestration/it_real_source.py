@@ -46,6 +46,7 @@ ORDER = (
     "spark_bronze_to_gold",
     "validate_gold",
     "publish_success",
+    "sync_clickhouse",
 )
 
 

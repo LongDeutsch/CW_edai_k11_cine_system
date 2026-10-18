@@ -175,6 +175,14 @@ def _parse_heartbeat(raw: str, heartbeat_seconds: int = 10):
 
 def run_flink(config: StreamJobConfig) -> None:
     """Tumbling 1 phút. DLQ là ``side_output_late_data``. Cổng recovery bù watermark không checkpoint."""
+    from streaming.flink.runtime_guard import require_streaming_approval
+
+    require_streaming_approval(
+        source_topic=config.source_topic,
+        dlq_topic=config.dlq_topic,
+        heartbeats_table=config.silver_sessions_table,
+        windows_table=config.silver_windows_table,
+    )
     from pyflink.common import Duration, RestartStrategies, Time, Types, WatermarkStrategy
     from pyflink.common.serialization import SimpleStringSchema
     from pyflink.datastream import OutputTag, StreamExecutionEnvironment

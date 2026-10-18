@@ -1,0 +1,308 @@
+{
+  "status": "PASS",
+  "run_id": "audit-20261018T085420Z",
+  "namespace": "it_audit_gold",
+  "database": "it_audit",
+  "failed": [],
+  "cases": [
+    {
+      "name": "endpoint vận hành khi serving rỗng",
+      "status": "PASS",
+      "expected": "health và ready 200, overview rỗng 200, limit sai 422",
+      "actual": {
+        "health": {
+          "status": 200,
+          "body": {
+            "status": "ok"
+          }
+        },
+        "ready": {
+          "status": 200,
+          "body": {
+            "status": "ready",
+            "database": "it_audit"
+          }
+        },
+        "overview": {
+          "engagement_snapshot_id": null,
+          "ratings_snapshot_id": null,
+          "batch_id": null,
+          "published_at": null,
+          "session_count": 0,
+          "total_watch_seconds": 0,
+          "watched_movie_count": 0,
+          "rated_movie_count": 0,
+          "rating_count": 0,
+          "mean_rating": null
+        },
+        "status": {
+          "database": "it_audit",
+          "engagement_snapshot_id": null,
+          "ratings_snapshot_id": null,
+          "engagement_rows": 0,
+          "rating_rows": 0,
+          "batch_id": null,
+          "published_at": null,
+          "log_present": false,
+          "consistent": true,
+          "detail": null
+        },
+        "bad": [
+          422,
+          422,
+          422
+        ]
+      }
+    },
+    {
+      "name": "snapshot marker khớp Iceberg và API",
+      "status": "PASS",
+      "expected": "API trả v1 trong khi current là v3, số dòng bằng VERSION AS OF",
+      "actual": {
+        "run_id": "audit-20261018T085420Z",
+        "sync_ms": 923.915,
+        "requested": {
+          "dim_movies": 5130104033992959018,
+          "fact_ratings": 6268797945491631783,
+          "obt_movie_engagement": 5759097274536174880
+        },
+        "current": {
+          "dim_movies": 7119543871723419623,
+          "fact_ratings": 3560797898763038048,
+          "obt_movie_engagement": 5904593644683742479
+        },
+        "overview": {
+          "engagement_snapshot_id": 5759097274536174880,
+          "ratings_snapshot_id": 6268797945491631783,
+          "batch_id": "it-audit-v1",
+          "published_at": "2026-10-18 08:54:40.304",
+          "session_count": 2,
+          "total_watch_seconds": 90,
+          "watched_movie_count": 2,
+          "rated_movie_count": 2,
+          "rating_count": 2,
+          "mean_rating": 4.5
+        },
+        "iceberg": {
+          "sessions": 2,
+          "ratings": 2
+        },
+        "latency_ms": {
+          "n": 30,
+          "min_ms": 7.999,
+          "p50_ms": 9.096,
+          "mean_ms": 9.238,
+          "max_ms": 11.214
+        }
+      }
+    },
+    {
+      "name": "stage load lỗi giữ reader cũ",
+      "status": "PASS",
+      "expected": "API vẫn v1, stage còn 1 dòng",
+      "actual": {
+        "error": "dừng giữa bulk load",
+        "before_batch": "it-audit-v1",
+        "during": {
+          "engagement_snapshot_id": 5759097274536174880,
+          "ratings_snapshot_id": 6268797945491631783,
+          "batch_id": "it-audit-v1",
+          "published_at": "2026-10-18 08:54:40.304",
+          "session_count": 2,
+          "total_watch_seconds": 90,
+          "watched_movie_count": 2,
+          "rated_movie_count": 2,
+          "rating_count": 2,
+          "mean_rating": 4.5
+        },
+        "stage_rows": 1
+      }
+    },
+    {
+      "name": "reader đã publish nhưng thiếu sync_log",
+      "status": "PASS",
+      "expected": "API thấy v2 với published_at null, retry chỉ ghi log, lần sau unchanged",
+      "actual": {
+        "error": "dừng trước sync_log",
+        "gap": {
+          "engagement_snapshot_id": 3233372111506026314,
+          "ratings_snapshot_id": 2568644487294803961,
+          "batch_id": "it-audit-v2",
+          "published_at": null,
+          "session_count": 2,
+          "total_watch_seconds": 70,
+          "watched_movie_count": 2,
+          "rated_movie_count": 2,
+          "rating_count": 2,
+          "mean_rating": 2.5
+        },
+        "status": {
+          "database": "it_audit",
+          "engagement_snapshot_id": 3233372111506026314,
+          "ratings_snapshot_id": 2568644487294803961,
+          "engagement_rows": 2,
+          "rating_rows": 2,
+          "batch_id": "it-audit-v2",
+          "published_at": null,
+          "log_present": false,
+          "consistent": true,
+          "detail": "reader đã có snapshot nhưng sync_log chưa ghi"
+        },
+        "log_rows_during": 1,
+        "retry": {
+          "status": "logged",
+          "ms": 577.341,
+          "rows": 2
+        },
+        "after": {
+          "engagement_snapshot_id": 3233372111506026314,
+          "ratings_snapshot_id": 2568644487294803961,
+          "batch_id": "it-audit-v2",
+          "published_at": "2026-10-18 08:54:42.515",
+          "session_count": 2,
+          "total_watch_seconds": 70,
+          "watched_movie_count": 2,
+          "rated_movie_count": 2,
+          "rating_count": 2,
+          "mean_rating": 2.5
+        },
+        "iceberg": {
+          "sessions": 2,
+          "ratings": 2
+        },
+        "distinct_sessions": 2,
+        "second": "unchanged",
+        "log_rows_after": 2,
+        "snapshots": {
+          "obt": 3233372111506026314,
+          "fact": 2568644487294803961
+        }
+      }
+    },
+    {
+      "name": "đọc song song lúc đổi v2 sang v3",
+      "status": "PASS",
+      "expected": "mỗi 200 là một cặp đã publish, không có 200 trộn hai snapshot",
+      "actual": {
+        "reads": 289,
+        "codes": {
+          "200": 289
+        },
+        "mixed_200": [],
+        "after": {
+          "engagement_snapshot_id": 5904593644683742479,
+          "ratings_snapshot_id": 3560797898763038048,
+          "batch_id": "it-audit-v3",
+          "published_at": "2026-10-18 08:54:43.782",
+          "session_count": 3,
+          "total_watch_seconds": 75,
+          "watched_movie_count": 3,
+          "rated_movie_count": 3,
+          "rating_count": 3,
+          "mean_rating": 3.1666666666666665
+        },
+        "v2": [
+          3233372111506026314,
+          2568644487294803961,
+          "it-audit-v2"
+        ],
+        "v3": [
+          5904593644683742479,
+          3560797898763038048,
+          "it-audit-v3"
+        ]
+      }
+    },
+    {
+      "name": "hai reader không được trả trộn",
+      "status": "PASS",
+      "expected": "overview và top-rated 409, status 200 consistent false, sync lại thì hết trộn",
+      "actual": {
+        "overview": {
+          "status": 409,
+          "body": {
+            "detail": "reader table đang trộn nhiều snapshot"
+          }
+        },
+        "status": {
+          "database": "it_audit",
+          "engagement_snapshot_id": null,
+          "ratings_snapshot_id": null,
+          "engagement_rows": 3,
+          "rating_rows": 4,
+          "batch_id": null,
+          "published_at": null,
+          "log_present": false,
+          "consistent": false,
+          "detail": "reader table đang trộn nhiều snapshot"
+        },
+        "top": 409,
+        "repair": "published",
+        "after": {
+          "database": "it_audit",
+          "engagement_snapshot_id": 5904593644683742479,
+          "ratings_snapshot_id": 3560797898763038048,
+          "engagement_rows": 3,
+          "rating_rows": 3,
+          "batch_id": "it-audit-v3",
+          "published_at": "2026-10-18 08:54:44.613",
+          "log_present": true,
+          "consistent": true,
+          "detail": null
+        }
+      }
+    },
+    {
+      "name": "ClickHouse không tới được",
+      "status": "PASS",
+      "expected": "health 200, ready và analytics 503",
+      "actual": {
+        "health": 200,
+        "ready": {
+          "status": 503,
+          "body": {
+            "detail": "ClickHouse không tới được: [Errno 61] Connection refused"
+          }
+        },
+        "overview": 503,
+        "status": 503,
+        "watched": 503
+      }
+    },
+    {
+      "name": "Airflow retry của sync_clickhouse",
+      "status": "PASS",
+      "expected": "task id là sync_clickhouse, retry 1, đứng sau publish_success",
+      "actual": {
+        "import_errors": {},
+        "task_id": "sync_clickhouse",
+        "retries": 1,
+        "downstream_of_publish": [
+          "sync_clickhouse"
+        ],
+        "schedule": "None",
+        "clickhouse_http": ""
+      }
+    },
+    {
+      "name": "production untouched",
+      "status": "PASS",
+      "expected": "snapshot production không đổi",
+      "actual": {
+        "before": {
+          "namespaces/silver/tables/stg_watch_sessions": 1975472564804901513,
+          "namespaces/bronze/tables/raw_users": 7954921826504091397,
+          "namespaces/silver/tables/stg_playback_heartbeats": "http:404",
+          "namespaces/silver/tables/stg_playback_windows": "http:404"
+        },
+        "after": {
+          "namespaces/silver/tables/stg_watch_sessions": 1975472564804901513,
+          "namespaces/bronze/tables/raw_users": 7954921826504091397,
+          "namespaces/silver/tables/stg_playback_heartbeats": "http:404",
+          "namespaces/silver/tables/stg_playback_windows": "http:404"
+        },
+        "unchanged": true
+      }
+    }
+  ]
+}

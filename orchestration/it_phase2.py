@@ -51,6 +51,7 @@ ORDER = (
     "spark_bronze_to_gold",
     "validate_gold",
     "publish_success",
+    "sync_clickhouse",
 )
 
 
@@ -123,7 +124,8 @@ def case_structure() -> dict:
         "validate_bronze": ["spark_bronze_to_gold"],
         "spark_bronze_to_gold": ["validate_gold"],
         "validate_gold": ["publish_success"],
-        "publish_success": [],
+        "publish_success": ["sync_clickhouse"],
+        "sync_clickhouse": [],
     }
     actual = {
         "import_errors": raw.get("import_errors"),
@@ -147,11 +149,12 @@ def case_structure() -> dict:
         and raw.get("retries", {}).get("spark_raw_to_bronze") == 1
         and raw.get("retries", {}).get("validate_bronze") == 0
         and raw.get("retries", {}).get("validate_gold") == 0
+        and raw.get("retries", {}).get("sync_clickhouse") == 1
         and str(raw.get("schedule")) == "None"
         and str(raw.get("intended_schedule")) == "0 2 * * *"
         and str(raw.get("allow_production") or "false").lower() not in {"1", "true", "yes"}
     )
-    return _case("1 dag import", "sáu task, một chiều, lịch tắt đến khi cho phép production", actual, ok)
+    return _case("1 dag import", "bảy task, sync sau publish, lịch tắt đến khi cho phép production", actual, ok)
 
 
 def case_missing() -> dict:

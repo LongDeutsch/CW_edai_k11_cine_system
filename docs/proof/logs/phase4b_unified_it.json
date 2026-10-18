@@ -1,0 +1,246 @@
+{
+  "status": "PASS",
+  "failed": [],
+  "cases": [
+    {
+      "name": "cả hai nguồn",
+      "status": "PASS",
+      "expected": "overview batch và trending stale cùng một process",
+      "actual": {
+        "sessions": 662830,
+        "freshness": "stale",
+        "live": false,
+        "top": [
+          [
+            63,
+            82,
+            4.05488
+          ],
+          [
+            71,
+            90,
+            4.05
+          ],
+          [
+            55,
+            86,
+            4.04651
+          ],
+          [
+            85,
+            55,
+            4.01818
+          ],
+          [
+            47,
+            105,
+            3.98571
+          ],
+          [
+            76,
+            66,
+            3.98485
+          ],
+          [
+            46,
+            122,
+            3.98361
+          ],
+          [
+            91,
+            43,
+            3.97674
+          ],
+          [
+            89,
+            55,
+            3.96364
+          ],
+          [
+            88,
+            54,
+            3.96296
+          ]
+        ],
+        "watched": [
+          [
+            42,
+            2628418172,
+            504009
+          ],
+          [
+            1,
+            379543310,
+            47023
+          ],
+          [
+            2,
+            141566516,
+            20227
+          ],
+          [
+            3,
+            85455920,
+            12053
+          ],
+          [
+            4,
+            58951030,
+            8526
+          ],
+          [
+            5,
+            45965959,
+            6365
+          ],
+          [
+            6,
+            30185395,
+            5067
+          ],
+          [
+            8,
+            26606202,
+            3560
+          ],
+          [
+            9,
+            17635747,
+            3101
+          ],
+          [
+            7,
+            17516574,
+            4204
+          ]
+        ],
+        "windows": [
+          [
+            42,
+            7,
+            70,
+            5
+          ]
+        ],
+        "status_databases": {
+          "batch": "it_it_af_real",
+          "trending": "it_e2e"
+        }
+      }
+    },
+    {
+      "name": "trending không có, batch còn",
+      "status": "PASS",
+      "expected": "overview 200, trending 503, status vẫn trả batch",
+      "actual": {
+        "overview": 200,
+        "sessions": 662830,
+        "trending": 503,
+        "status": {
+          "http": 200,
+          "consistent": true,
+          "batch_database": "it_it_af_real",
+          "trending_database": "it_dash_absent_stream",
+          "trending_freshness": "sync_failed",
+          "trending_live": false
+        }
+      }
+    },
+    {
+      "name": "batch không có, trending còn",
+      "status": "PASS",
+      "expected": "overview 503, trending 200 và stale, status không nuốt trending",
+      "actual": {
+        "overview": 503,
+        "trending": [
+          [
+            42,
+            7,
+            70,
+            5
+          ]
+        ],
+        "status": {
+          "http": 200,
+          "consistent": false,
+          "batch_database": "it_dash_absent_batch",
+          "trending_database": "it_e2e",
+          "trending_freshness": "stale",
+          "trending_live": false
+        }
+      }
+    },
+    {
+      "name": "409 batch, trending vẫn đọc được",
+      "status": "PASS",
+      "expected": "overview và hai bảng xếp hạng 409, trending 200, status consistent false",
+      "actual": {
+        "overview": 409,
+        "top": 409,
+        "watched": 409,
+        "trending": 200,
+        "status": {
+          "http": 200,
+          "consistent": false,
+          "batch_database": "it_dash_conflict",
+          "trending_database": "it_e2e",
+          "trending_freshness": "stale",
+          "trending_live": false
+        }
+      }
+    },
+    {
+      "name": "ClickHouse không tới được",
+      "status": "PASS",
+      "expected": "cả năm endpoint 503, kể cả status khi cả hai database cùng mất kết nối",
+      "actual": {
+        "/analytics/overview": 503,
+        "/movies/top-rated?limit=10": 503,
+        "/movies/most-watched?limit=10": 503,
+        "/movies/trending?window_minutes=15&limit=10": 503,
+        "/serving/status": 503
+      }
+    },
+    {
+      "name": "production không đổi",
+      "status": "PASS",
+      "expected": "REST production và số dòng cinestream_serving, it_it_af_real, it_e2e giữ nguyên",
+      "actual": {
+        "before": {
+          "iceberg": {
+            "namespaces/silver/tables/stg_watch_sessions": 1975472564804901513,
+            "namespaces/silver/tables/stg_playback_heartbeats": "http:404",
+            "namespaces/silver/tables/stg_playback_windows": "http:404",
+            "namespaces/bronze/tables/raw_users": 7954921826504091397
+          },
+          "clickhouse": {
+            "it_e2e.movie_windows": 2,
+            "it_e2e.movie_windows_stage": 1,
+            "it_e2e.trending_sync_log": 2,
+            "it_e2e.trending_worker_status": 5,
+            "it_it_af_real.movie_engagement": 662830,
+            "it_it_af_real.movie_ratings": 100,
+            "it_it_af_real.sync_log": 1
+          }
+        },
+        "after": {
+          "iceberg": {
+            "namespaces/silver/tables/stg_watch_sessions": 1975472564804901513,
+            "namespaces/silver/tables/stg_playback_heartbeats": "http:404",
+            "namespaces/silver/tables/stg_playback_windows": "http:404",
+            "namespaces/bronze/tables/raw_users": 7954921826504091397
+          },
+          "clickhouse": {
+            "it_e2e.movie_windows": 2,
+            "it_e2e.movie_windows_stage": 1,
+            "it_e2e.trending_sync_log": 2,
+            "it_e2e.trending_worker_status": 5,
+            "it_it_af_real.movie_engagement": 662830,
+            "it_it_af_real.movie_ratings": 100,
+            "it_it_af_real.sync_log": 1
+          }
+        }
+      }
+    }
+  ]
+}

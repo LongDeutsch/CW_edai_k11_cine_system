@@ -42,6 +42,19 @@ class WatermarkAndLateDataTest(unittest.TestCase):
         self.assertFalse(is_too_late(5_000, -15_001, spec))
         self.assertTrue(is_too_late(0, 314_999, spec))
 
+    def test_late_event_after_restore_stays_inside_cleanup(self) -> None:
+        """Event 5s sau closer 80s vẫn trong allowed lateness. Không đổi cửa sổ."""
+        spec = WindowSpec()
+        watermark = flink_watermark_ms(80_000, 15_000)
+        self.assertEqual(watermark, 64_999)
+        self.assertFalse(is_window_late(60_000, watermark, spec.allowed_lateness_ms))
+        self.assertFalse(is_too_late(5_000, watermark, spec))
+        self.assertEqual(restored_watermark_ahead(-1 << 63, watermark), watermark)
+        rebuilt = flink_watermark_ms(75_000, 15_000)
+        self.assertEqual(rebuilt, 59_999)
+        self.assertFalse(is_too_late(5_000, rebuilt, spec))
+        self.assertTrue(is_window_late(60_000, 74_999, spec.allowed_lateness_ms))
+
     def test_lateness_is_per_window_not_a_single_watermark_cut(self) -> None:
         self.assertFalse(is_window_late(60_000, None, 15_000))
         self.assertFalse(is_window_late(60_000, 74_998, 15_000))

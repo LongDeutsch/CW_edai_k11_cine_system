@@ -21,6 +21,7 @@ x-airflow-env: &airflow-env
   # Đặt true sau khi nguồn thật đã qua namespace cô lập. Scheduler khi đó
   # tự chạy cron mà không cần dán allow_production vào JSON.
   CINESTREAM_ALLOW_PRODUCTION: "${CINESTREAM_ALLOW_PRODUCTION:-false}"
+  CINESTREAM_CLICKHOUSE_HTTP: "${CINESTREAM_CLICKHOUSE_HTTP:-http://clickhouse:8123}"
   CINESTREAM_CODE: /opt/cinestream
   PYTHONPATH: /opt/cinestream
   SPARK_HOME: /opt/spark

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cinestream analytics</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header>
+    <div>
+      <p class="eyebrow">FastAPI serving</p>
+      <h1>Cinestream analytics</h1>
+      <p class="lede">Một màn hình đọc hai database. Batch Gold và cửa sổ Flink không dùng chung bảng.</p>
+    </div>
+    <div class="header-side">
+      <p id="database">đang nối</p>
+      <p id="batch-source">batch —</p>
+      <p id="trend-source">trending —</p>
+      <div class="chips">
+        <span id="live" class="chip live" hidden>live</span>
+        <span id="freshness" class="chip" hidden></span>
+        <span id="batch-consistent" class="chip" hidden></span>
+      </div>
+      <button id="refresh" type="button">Đọc lại</button>
+      <p id="read-state">Đang đọc FastAPI…</p>
+    </div>
+  </header>
+
+  <p id="banner" class="banner" role="alert" hidden></p>
+
+  <main>
+    <section aria-labelledby="overview-title">
+      <div class="section-head">
+        <h2 id="overview-title">Overview batch</h2>
+        <p>Nguồn <code>/analytics/overview</code> trên <span id="overview-source">—</span>. Grain phiên xem và movie đã publish.</p>
+      </div>
+      <p id="overview-empty" class="empty" hidden>Chưa có snapshot batch trên database này.</p>
+      <div class="cards">
+        <article><h3>Phiên xem</h3><p data-metric="session_count">—</p><span>session_count</span></article>
+        <article><h3>Thời lượng xem</h3><p data-metric="total_watch_seconds">—</p><span>total_watch_seconds</span></article>
+        <article><h3>Movie đã xem</h3><p data-metric="watched_movie_count">—</p><span>watched_movie_count</span></article>
+        <article><h3>Movie đã rating</h3><p data-metric="rated_movie_count">—</p><span>rated_movie_count</span></article>
+        <article><h3>Số rating</h3><p data-metric="rating_count">—</p><span>rating_count</span></article>
+        <article><h3>Rating trung bình</h3><p data-metric="mean_rating">—</p><span>có trọng số theo rating_count</span></article>
+      </div>
+      <dl class="meta">
+        <div><dt>batch_id</dt><dd id="overview-batch">—</dd></div>
+        <div><dt>published_at</dt><dd id="overview-published">—</dd></div>
+        <div><dt>engagement snapshot</dt><dd id="overview-engagement-snapshot">—</dd></div>
+        <div><dt>ratings snapshot</dt><dd id="overview-ratings-snapshot">—</dd></div>
+      </dl>
+    </section>
+
+    <section id="top-rated" aria-labelledby="rated-title">
+      <div class="section-head">
+        <h2 id="rated-title">Top rated</h2>
+        <p>Nguồn <code>/movies/top-rated</code>. Thứ tự là thứ tự API. Snapshot <span data-snapshot>—</span></p>
+      </div>
+      <p data-empty class="empty" hidden>API trả items rỗng.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>movie_id</th><th>title</th><th>content_rating</th><th>avg_rating</th><th>rating_count</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="most-watched" aria-labelledby="watched-title">
+      <div class="section-head">
+        <h2 id="watched-title">Most watched</h2>
+        <p>Nguồn <code>/movies/most-watched</code>. Một dòng OBT là một phiên. Snapshot <span data-snapshot>—</span></p>
+      </div>
+      <p data-empty class="empty" hidden>API trả items rỗng.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>movie_id</th><th>title</th><th>watch_seconds</th><th>session_count</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section aria-labelledby="trend-title">
+      <div class="section-head">
+        <h2 id="trend-title">Trending Flink</h2>
+        <p>Nguồn <code>/movies/trending</code> trên <span id="trend-db">—</span>. Cửa sổ 1 phút, lookback <span id="trend-minutes">—</span> phút theo event time. Không có title trên API này.</p>
+      </div>
+      <dl class="meta">
+        <div><dt>latest_window_end</dt><dd id="trend-window-end">—</dd></div>
+        <div><dt>synced_at</dt><dd id="trend-synced">—</dd></div>
+        <div><dt>iceberg_snapshot_id</dt><dd id="trend-snapshot">—</dd></div>
+        <div><dt>poll_status</dt><dd id="trend-poll">—</dd></div>
+        <div><dt>polled_at</dt><dd id="trend-polled">—</dd></div>
+        <div><dt>event_age_seconds</dt><dd id="trend-event-age">—</dd></div>
+        <div><dt>sync_age_seconds</dt><dd id="trend-sync-age">—</dd></div>
+        <div><dt>stale_after_seconds</dt><dd id="trend-stale-after">—</dd></div>
+      </dl>
+      <p id="trending-empty" class="empty" hidden>Chưa có cửa sổ Flink.</p>
+      <div class="table-wrap">
+        <table id="trending">
+          <thead>
+            <tr>
+              <th>movie_id</th>
+              <th>recent_heartbeats</th>
+              <th>recent_watch_seconds</th>
+              <th>peak_minute_unique_viewers</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="note">peak_minute_unique_viewers là max(active_users) của một phút, không phải người xem đồng thời. Nhãn live chỉ khi API trả live=true và freshness=live.</p>
+    </section>
+
+    <section aria-labelledby="status-title">
+      <div class="section-head">
+        <h2 id="status-title">Serving status</h2>
+        <p>Nguồn <code>/serving/status</code>. Lệch snapshot vẫn là HTTP 200 với consistent=false.</p>
+      </div>
+      <dl class="meta">
+        <div><dt>batch_id</dt><dd id="status-batch">—</dd></div>
+        <div><dt>published_at</dt><dd id="status-published">—</dd></div>
+        <div><dt>engagement snapshot</dt><dd id="status-engagement-snapshot">—</dd></div>
+        <div><dt>ratings snapshot</dt><dd id="status-ratings-snapshot">—</dd></div>
+        <div><dt>log_present</dt><dd id="status-log">—</dd></div>
+        <div><dt>consistent</dt><dd id="status-consistent">—</dd></div>
+        <div><dt>detail</dt><dd id="status-detail">—</dd></div>
+        <div><dt>engagement_rows</dt><dd id="status-engagement-rows">—</dd></div>
+        <div><dt>rating_rows</dt><dd id="status-rating-rows">—</dd></div>
+        <div><dt>trending snapshot</dt><dd id="status-trend-snapshot">—</dd></div>
+        <div><dt>trending_rows</dt><dd id="status-trend-rows">—</dd></div>
+        <div><dt>trending_synced_at</dt><dd id="status-trend-synced">—</dd></div>
+        <div><dt>trending_latest_window_end</dt><dd id="status-trend-window">—</dd></div>
+        <div><dt>trending_freshness</dt><dd id="status-trend-fresh">—</dd></div>
+        <div><dt>trending_live</dt><dd id="status-trend-live">—</dd></div>
+        <div><dt>trending_poll_status</dt><dd id="status-trend-poll">—</dd></div>
+        <div><dt>trending_polled_at</dt><dd id="status-trend-polled">—</dd></div>
+      </dl>
+    </section>
+  </main>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

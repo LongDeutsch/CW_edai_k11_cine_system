@@ -1,0 +1,418 @@
+{
+  "status": "PASS",
+  "failed": [],
+  "cases": [
+    {
+      "name": "tham số sync Airflow",
+      "status": "PASS",
+      "expected": "id snapshot chỉ đến từ marker, namespace test không ghi cinestream_serving",
+      "actual": {
+        "production_database": "cinestream_serving",
+        "isolated_database": "it_it_api_gold",
+        "override_database": "it_api",
+        "gold_has_snapshot_flag": false,
+        "marker_namespace": "it_api_marker",
+        "database": "it_api",
+        "clickhouse_http": "http://127.0.0.1:18123"
+      }
+    },
+    {
+      "name": "dataset rỗng và tham số sai",
+      "status": "PASS",
+      "expected": "200 với số 0, limit sai thì 422",
+      "actual": {
+        "empty": {
+          "status": 200,
+          "body": {
+            "engagement_snapshot_id": null,
+            "ratings_snapshot_id": null,
+            "batch_id": null,
+            "published_at": null,
+            "session_count": 0,
+            "total_watch_seconds": 0,
+            "watched_movie_count": 0,
+            "rated_movie_count": 0,
+            "rating_count": 0,
+            "mean_rating": null
+          }
+        },
+        "top": {
+          "status": 200,
+          "body": {
+            "ratings_snapshot_id": null,
+            "items": []
+          }
+        },
+        "watched": {
+          "status": 200,
+          "body": {
+            "engagement_snapshot_id": null,
+            "items": []
+          }
+        },
+        "bad_limit": 422,
+        "bad_type": 422
+      }
+    },
+    {
+      "name": "publish rồi query API",
+      "status": "PASS",
+      "expected": "API khớp snapshot v1 trong marker, không phải current v3",
+      "actual": {
+        "sync": {
+          "status": "published",
+          "batch_id": "it-api-v1",
+          "gold_namespace": "it_api_gold",
+          "requested_snapshots": {
+            "dim_movies": 4409700040202515195,
+            "fact_ratings": 7950205731285171810,
+            "obt_movie_engagement": 2498171074224000699
+          },
+          "current_snapshots": {
+            "dim_movies": 8629147992333052187,
+            "fact_ratings": 6267605782806107594,
+            "obt_movie_engagement": 7769091751642152589
+          },
+          "engagement_rows": 2,
+          "rating_rows": 2,
+          "serving": {
+            "engagement_rows": 2,
+            "rating_rows": 2,
+            "engagement_snapshots": [
+              2498171074224000699
+            ],
+            "rating_snapshots": [
+              7950205731285171810
+            ],
+            "stage_engagement_rows": 0,
+            "log_rows": 1
+          }
+        },
+        "overview": {
+          "engagement_snapshot_id": 2498171074224000699,
+          "ratings_snapshot_id": 7950205731285171810,
+          "batch_id": "it-api-v1",
+          "published_at": "2026-10-18 08:07:06.527",
+          "session_count": 2,
+          "total_watch_seconds": 90,
+          "watched_movie_count": 2,
+          "rated_movie_count": 2,
+          "rating_count": 2,
+          "mean_rating": 4.5
+        },
+        "rated": {
+          "ratings_snapshot_id": 7950205731285171810,
+          "items": [
+            {
+              "movie_id": 20,
+              "title": "B",
+              "content_rating": "R",
+              "rating_count": 1,
+              "avg_rating": 5.0,
+              "iceberg_snapshot_id": 7950205731285171810,
+              "batch_id": "it-api-v1"
+            },
+            {
+              "movie_id": 10,
+              "title": "A",
+              "content_rating": "PG",
+              "rating_count": 1,
+              "avg_rating": 4.0,
+              "iceberg_snapshot_id": 7950205731285171810,
+              "batch_id": "it-api-v1"
+            }
+          ]
+        },
+        "watched": {
+          "engagement_snapshot_id": 2498171074224000699,
+          "items": [
+            {
+              "movie_id": 10,
+              "title": "A",
+              "watch_seconds": 60,
+              "session_count": 1,
+              "iceberg_snapshot_id": 2498171074224000699
+            },
+            {
+              "movie_id": 20,
+              "title": "B",
+              "watch_seconds": 30,
+              "session_count": 1,
+              "iceberg_snapshot_id": 2498171074224000699
+            }
+          ]
+        },
+        "iceberg": {
+          "sessions": 2,
+          "ratings": 2
+        }
+      }
+    },
+    {
+      "name": "độ trễ API",
+      "status": "PASS",
+      "expected": "đo 30 GET /analytics/overview trên localhost",
+      "actual": {
+        "requests": 30,
+        "min_ms": 9.096,
+        "p50_ms": 11.065,
+        "max_ms": 18.679,
+        "mean_ms": 11.079,
+        "published_at": "2026-10-18 08:07:06.527"
+      }
+    },
+    {
+      "name": "sync lại cùng snapshot",
+      "status": "PASS",
+      "expected": "API và sync_log không đổi",
+      "actual": {
+        "sync": {
+          "status": "unchanged",
+          "batch_id": "it-api-v1",
+          "gold_namespace": "it_api_gold",
+          "requested_snapshots": {
+            "dim_movies": 4409700040202515195,
+            "fact_ratings": 7950205731285171810,
+            "obt_movie_engagement": 2498171074224000699
+          },
+          "serving": {
+            "engagement_rows": 2,
+            "rating_rows": 2,
+            "engagement_snapshots": [
+              2498171074224000699
+            ],
+            "rating_snapshots": [
+              7950205731285171810
+            ],
+            "stage_engagement_rows": 0,
+            "log_rows": 1
+          }
+        },
+        "before": {
+          "engagement_snapshot_id": 2498171074224000699,
+          "ratings_snapshot_id": 7950205731285171810,
+          "batch_id": "it-api-v1",
+          "published_at": "2026-10-18 08:07:06.527",
+          "session_count": 2,
+          "total_watch_seconds": 90,
+          "watched_movie_count": 2,
+          "rated_movie_count": 2,
+          "rating_count": 2,
+          "mean_rating": 4.5
+        },
+        "after": {
+          "engagement_snapshot_id": 2498171074224000699,
+          "ratings_snapshot_id": 7950205731285171810,
+          "batch_id": "it-api-v1",
+          "published_at": "2026-10-18 08:07:06.527",
+          "session_count": 2,
+          "total_watch_seconds": 90,
+          "watched_movie_count": 2,
+          "rated_movie_count": 2,
+          "rating_count": 2,
+          "mean_rating": 4.5
+        },
+        "log_rows": 1
+      }
+    },
+    {
+      "name": "đọc API trong lúc publish",
+      "status": "PASS",
+      "expected": "response 200 chỉ thấy một cặp snapshot đã publish; 409 nếu hai bảng lệch",
+      "actual": {
+        "reads": 273,
+        "consistent_200": 273,
+        "conflict_409": 0,
+        "unavailable_503": 0,
+        "other": [],
+        "watched": {
+          "engagement_snapshot_id": 5255351261980842741,
+          "items": [
+            {
+              "movie_id": 10,
+              "title": "A",
+              "watch_seconds": 60,
+              "session_count": 1,
+              "iceberg_snapshot_id": 5255351261980842741
+            },
+            {
+              "movie_id": 30,
+              "title": "C",
+              "watch_seconds": 10,
+              "session_count": 1,
+              "iceberg_snapshot_id": 5255351261980842741
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "sync lỗi rồi retry",
+      "status": "PASS",
+      "expected": "API giữ v2 khi stage dở, retry mới trả v3",
+      "actual": {
+        "failed": "dừng giữa bulk load",
+        "during": {
+          "engagement_snapshot_id": 5255351261980842741,
+          "ratings_snapshot_id": 5800640016169927666,
+          "batch_id": "it-api-v2",
+          "published_at": "2026-10-18 08:07:08.187",
+          "session_count": 2,
+          "total_watch_seconds": 70,
+          "watched_movie_count": 2,
+          "rated_movie_count": 2,
+          "rating_count": 2,
+          "mean_rating": 2.5
+        },
+        "stage_rows": 1,
+        "after": {
+          "engagement_snapshot_id": 7769091751642152589,
+          "ratings_snapshot_id": 6267605782806107594,
+          "batch_id": "it-api-v3",
+          "published_at": "2026-10-18 08:07:09.685",
+          "session_count": 3,
+          "total_watch_seconds": 75,
+          "watched_movie_count": 3,
+          "rated_movie_count": 3,
+          "rating_count": 3,
+          "mean_rating": 3.1666666666666665
+        },
+        "iceberg": {
+          "sessions": 3,
+          "ratings": 3
+        }
+      }
+    },
+    {
+      "name": "marker hỏng",
+      "status": "PASS",
+      "expected": "API vẫn là v3",
+      "actual": {
+        "errors": {
+          "it-api-missing": "không có marker s3://lakehouse/_orchestration/it_api_marker/it-api-missing.json",
+          "it-api-draft": "marker chưa published",
+          "it-api-nosnap": "marker thiếu gold_snapshots",
+          "it-api-badsnap": "cinestream.it_api_gold.obt_movie_engagement không có snapshot 1"
+        },
+        "overview": {
+          "engagement_snapshot_id": 7769091751642152589,
+          "ratings_snapshot_id": 6267605782806107594,
+          "batch_id": "it-api-v3",
+          "published_at": "2026-10-18 08:07:09.685",
+          "session_count": 3,
+          "total_watch_seconds": 75,
+          "watched_movie_count": 3,
+          "rated_movie_count": 3,
+          "rating_count": 3,
+          "mean_rating": 3.1666666666666665
+        }
+      }
+    },
+    {
+      "name": "reader lệch snapshot",
+      "status": "PASS",
+      "expected": "409 khi ratings bị trộn, sync lại v3 thì API khớp marker",
+      "actual": {
+        "torn": {
+          "status": 409,
+          "body": {
+            "detail": "reader table đang trộn nhiều snapshot"
+          }
+        },
+        "repair": {
+          "status": "published",
+          "batch_id": "it-api-v3",
+          "gold_namespace": "it_api_gold",
+          "requested_snapshots": {
+            "dim_movies": 8629147992333052187,
+            "fact_ratings": 6267605782806107594,
+            "obt_movie_engagement": 7769091751642152589
+          },
+          "current_snapshots": {
+            "dim_movies": 8629147992333052187,
+            "fact_ratings": 6267605782806107594,
+            "obt_movie_engagement": 7769091751642152589
+          },
+          "engagement_rows": 3,
+          "rating_rows": 3,
+          "serving": {
+            "engagement_rows": 3,
+            "rating_rows": 3,
+            "engagement_snapshots": [
+              7769091751642152589
+            ],
+            "rating_snapshots": [
+              6267605782806107594
+            ],
+            "stage_engagement_rows": 3,
+            "log_rows": 4
+          }
+        },
+        "after": {
+          "engagement_snapshot_id": 7769091751642152589,
+          "ratings_snapshot_id": 6267605782806107594,
+          "batch_id": "it-api-v3",
+          "published_at": "2026-10-18 08:07:10.728",
+          "session_count": 3,
+          "total_watch_seconds": 75,
+          "watched_movie_count": 3,
+          "rated_movie_count": 3,
+          "rating_count": 3,
+          "mean_rating": 3.1666666666666665
+        }
+      }
+    },
+    {
+      "name": "DAG nối sync sau publish",
+      "status": "PASS",
+      "expected": "publish_success rồi sync_clickhouse, retry 1",
+      "actual": {
+        "import_errors": {},
+        "downstream": {
+          "check_source_ready": [
+            "spark_raw_to_bronze"
+          ],
+          "spark_raw_to_bronze": [
+            "validate_bronze"
+          ],
+          "validate_bronze": [
+            "spark_bronze_to_gold"
+          ],
+          "spark_bronze_to_gold": [
+            "validate_gold"
+          ],
+          "validate_gold": [
+            "publish_success"
+          ],
+          "publish_success": [
+            "sync_clickhouse"
+          ],
+          "sync_clickhouse": []
+        },
+        "retries": 1,
+        "schedule": "None",
+        "clickhouse_http": ""
+      }
+    },
+    {
+      "name": "production untouched",
+      "status": "PASS",
+      "expected": "snapshot production không đổi",
+      "actual": {
+        "before": {
+          "namespaces/silver/tables/stg_watch_sessions": 1975472564804901513,
+          "namespaces/bronze/tables/raw_users": 7954921826504091397,
+          "namespaces/silver/tables/stg_playback_heartbeats": "http:404",
+          "namespaces/silver/tables/stg_playback_windows": "http:404"
+        },
+        "after": {
+          "namespaces/silver/tables/stg_watch_sessions": 1975472564804901513,
+          "namespaces/bronze/tables/raw_users": 7954921826504091397,
+          "namespaces/silver/tables/stg_playback_heartbeats": "http:404",
+          "namespaces/silver/tables/stg_playback_windows": "http:404"
+        },
+        "unchanged": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,364 @@
+{
+  "status": "PASS",
+  "failed": [],
+  "cases": [
+    {
+      "name": "chặn streaming production",
+      "status": "PASS",
+      "expected": "make approve và runtime guard từ chối mục tiêu production khi chưa có cờ",
+      "actual": {
+        "approve": {
+          "stream-job-approve": {
+            "code": 2,
+            "out": "CINESTREAM_ALLOW_STREAMING chưa bật. Không submit job production.\nmake[1]: *** [stream-job-approve] Error 1\n"
+          },
+          "serving-trending-approve": {
+            "code": 2,
+            "out": "CINESTREAM_ALLOW_STREAMING chưa bật. Không poll stg_playback_windows vào cinestream_serving.\nmake[1]: *** [serving-trending-approve] Error 1\n"
+          }
+        },
+        "guard_blocked": true
+      }
+    },
+    {
+      "name": "bảng chưa có snapshot",
+      "status": "PASS",
+      "expected": "source_empty là empty, source_absent là sync_failed, không gọi là live",
+      "actual": {
+        "poll": {
+          "status": "source_empty",
+          "source_table": "cinestream.silver.it_p2_ops_windows",
+          "elapsed_ms": 2768.622
+        },
+        "api": {
+          "window_minutes": 15,
+          "iceberg_snapshot_id": null,
+          "latest_window_end": null,
+          "synced_at": null,
+          "freshness": "empty",
+          "live": false,
+          "poll_status": "source_empty",
+          "polled_at": "2026-10-18 10:37:31.018",
+          "event_age_seconds": null,
+          "sync_age_seconds": null,
+          "stale_after_seconds": 180.0,
+          "items": []
+        }
+      }
+    },
+    {
+      "name": "Flink restart sau checkpoint",
+      "status": "PASS",
+      "expected": "cửa sổ logic không đổi và không trùng khóa",
+      "actual": {
+        "before": [
+          [
+            42,
+            0,
+            4,
+            40,
+            4
+          ]
+        ],
+        "after": [
+          [
+            42,
+            0,
+            4,
+            40,
+            4
+          ]
+        ],
+        "checkpoint": {
+          "counts": {
+            "restored": 0,
+            "total": 1,
+            "in_progress": 0,
+            "completed": 1,
+            "failed": 0
+          },
+          "completed": {
+            "id": 1,
+            "status": "COMPLETED",
+            "state_size": 72473,
+            "end_to_end_duration": 1089,
+            "external_path": "file:/opt/flink/checkpoints/dbeee376f0c7080047df41be959c3f48/chk-1"
+          },
+          "restored": null,
+          "failed": null
+        },
+        "restored": {
+          "counts": {
+            "restored": 1,
+            "total": 2,
+            "in_progress": 0,
+            "completed": 1,
+            "failed": 1
+          },
+          "completed": {
+            "id": 1,
+            "status": "COMPLETED",
+            "state_size": 72473,
+            "end_to_end_duration": 1089,
+            "external_path": "file:/opt/flink/checkpoints/dbeee376f0c7080047df41be959c3f48/chk-1"
+          },
+          "restored": {
+            "id": 1,
+            "status": null,
+            "state_size": null,
+            "end_to_end_duration": null,
+            "external_path": "file:/opt/flink/checkpoints/dbeee376f0c7080047df41be959c3f48/chk-1"
+          },
+          "failed": {
+            "id": 2,
+            "status": "FAILED",
+            "state_size": 0,
+            "end_to_end_duration": 8,
+            "external_path": null
+          }
+        }
+      }
+    },
+    {
+      "name": "poll lặp, freshness và tài nguyên Spark",
+      "status": "PASS",
+      "expected": "idle khi event cũ mà poll mới, stale khi quá ngưỡng, hai khóa, log không nhân theo số poll",
+      "actual": {
+        "synced": {
+          "status": "published",
+          "source_table": "cinestream.silver.it_p2_ops_windows",
+          "snapshot_id": 4170838517602196879,
+          "window_rows": 1,
+          "serving": {
+            "rows": 1,
+            "keys": 1,
+            "snapshots": [
+              4170838517602196879
+            ],
+            "log_rows": 1
+          },
+          "elapsed_ms": 346.784
+        },
+        "replay": "unchanged",
+        "idle": {
+          "window_minutes": 15,
+          "iceberg_snapshot_id": 4170838517602196879,
+          "latest_window_end": "1970-01-01 00:01:00.000",
+          "synced_at": "2026-10-18 10:37:55.074",
+          "freshness": "idle",
+          "live": false,
+          "poll_status": "unchanged",
+          "polled_at": "2026-10-18 10:37:55.459",
+          "event_age_seconds": 1792319815.485,
+          "sync_age_seconds": 0.411,
+          "stale_after_seconds": 180.0,
+          "items": [
+            {
+              "movie_id": 42,
+              "recent_heartbeats": 4,
+              "recent_watch_seconds": 40,
+              "peak_minute_unique_viewers": 4
+            }
+          ]
+        },
+        "status": {
+          "database": "it_ops",
+          "engagement_snapshot_id": null,
+          "ratings_snapshot_id": null,
+          "engagement_rows": 0,
+          "rating_rows": 0,
+          "batch_id": null,
+          "published_at": null,
+          "log_present": false,
+          "consistent": true,
+          "detail": null,
+          "trending_snapshot_id": 4170838517602196879,
+          "trending_rows": 1,
+          "trending_synced_at": "2026-10-18 10:37:55.074",
+          "trending_latest_window_end": "1970-01-01 00:01:00.000",
+          "trending_detail": null,
+          "trending_freshness": "idle",
+          "trending_live": false,
+          "trending_poll_status": "unchanged",
+          "trending_polled_at": "2026-10-18 10:37:55.459",
+          "trending_event_age_seconds": 1792319815.515,
+          "trending_sync_age_seconds": 0.441,
+          "trending_stale_after_seconds": 180.0
+        },
+        "stale": {
+          "window_minutes": 15,
+          "iceberg_snapshot_id": 4170838517602196879,
+          "latest_window_end": "1970-01-01 00:01:00.000",
+          "synced_at": "2026-10-18 10:37:55.074",
+          "freshness": "stale",
+          "live": false,
+          "poll_status": "unchanged",
+          "polled_at": "2026-10-18 10:37:55.459",
+          "event_age_seconds": 1792319815.553,
+          "sync_age_seconds": 0.479,
+          "stale_after_seconds": 0.0,
+          "items": [
+            {
+              "movie_id": 42,
+              "recent_heartbeats": 4,
+              "recent_watch_seconds": 40,
+              "peak_minute_unique_viewers": 4
+            }
+          ]
+        },
+        "late_api": {
+          "window_minutes": 15,
+          "iceberg_snapshot_id": 8285505771515738282,
+          "latest_window_end": "1970-01-01 00:02:00.000",
+          "synced_at": "2026-10-18 10:38:07.095",
+          "freshness": "idle",
+          "live": false,
+          "poll_status": "unchanged",
+          "polled_at": "2026-10-18 10:37:55.459",
+          "event_age_seconds": 1792319767.237,
+          "sync_age_seconds": 0.142,
+          "stale_after_seconds": 180.0,
+          "items": [
+            {
+              "movie_id": 42,
+              "recent_heartbeats": 5,
+              "recent_watch_seconds": 50,
+              "peak_minute_unique_viewers": 4
+            }
+          ]
+        },
+        "lags": {
+          "event_to_api_s": 11.634,
+          "poll_interval_s": 5,
+          "polls": [
+            {
+              "status": "unchanged",
+              "snapshot_id": 4170838517602196879,
+              "elapsed_ms": 225.908,
+              "at_s": 5.347
+            },
+            {
+              "status": "published",
+              "snapshot_id": 8285505771515738282,
+              "elapsed_ms": 1283.047,
+              "at_s": 11.634
+            }
+          ],
+          "sync_elapsed_ms": 346.784,
+          "publish_elapsed_ms": 1283.047,
+          "ru_maxrss_before": 60473344,
+          "ru_maxrss_after": 60473344
+        },
+        "keys": 2,
+        "log_rows": 2
+      }
+    },
+    {
+      "name": "worker restart và lỗi kết nối",
+      "status": "PASS",
+      "expected": "process mới cùng snapshot là unchanged, ClickHouse tắt thì API 503, poll retry thì sync_failed nhưng vẫn trả dòng cũ",
+      "actual": {
+        "first": {
+          "status": "unchanged",
+          "source_table": "cinestream.silver.it_p2_ops_windows",
+          "snapshot_id": 8285505771515738282,
+          "window_rows": 2,
+          "serving": {
+            "rows": 2,
+            "keys": 2,
+            "snapshots": [
+              8285505771515738282
+            ],
+            "log_rows": 2
+          },
+          "elapsed_ms": 5863.389
+        },
+        "second": {
+          "status": "unchanged",
+          "source_table": "cinestream.silver.it_p2_ops_windows",
+          "snapshot_id": 8285505771515738282,
+          "window_rows": 2,
+          "serving": {
+            "rows": 2,
+            "keys": 2,
+            "snapshots": [
+              8285505771515738282
+            ],
+            "log_rows": 2
+          },
+          "elapsed_ms": 5377.457
+        },
+        "refused": {
+          "status": "retry",
+          "error": "ClickHouse không tới được: [Errno 61] Connection refused",
+          "source_table": "cinestream.silver.it_p2_ops_windows"
+        },
+        "down": 503,
+        "failed": {
+          "window_minutes": 15,
+          "iceberg_snapshot_id": 8285505771515738282,
+          "latest_window_end": "1970-01-01 00:02:00.000",
+          "synced_at": "2026-10-18 10:38:07.095",
+          "freshness": "sync_failed",
+          "live": false,
+          "poll_status": "retry",
+          "polled_at": "2026-10-18 10:38:27.527",
+          "event_age_seconds": 1792319787.552,
+          "sync_age_seconds": 20.457,
+          "stale_after_seconds": 180.0,
+          "items": [
+            {
+              "movie_id": 42,
+              "recent_heartbeats": 5,
+              "recent_watch_seconds": 50,
+              "peak_minute_unique_viewers": 4
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "production không đổi",
+      "status": "PASS",
+      "expected": "REST và offset topic production giữ nguyên",
+      "actual": {
+        "before": {
+          "namespaces/silver/tables/stg_watch_sessions": 1975472564804901513,
+          "namespaces/silver/tables/stg_playback_heartbeats": "http:404",
+          "namespaces/silver/tables/stg_playback_windows": "http:404",
+          "namespaces/bronze/tables/raw_users": 7954921826504091397
+        },
+        "after": {
+          "namespaces/silver/tables/stg_watch_sessions": 1975472564804901513,
+          "namespaces/silver/tables/stg_playback_heartbeats": "http:404",
+          "namespaces/silver/tables/stg_playback_windows": "http:404",
+          "namespaces/bronze/tables/raw_users": 7954921826504091397
+        },
+        "offsets_before": {
+          "movie.playback.heartbeat": {
+            "0": 208,
+            "1": 229,
+            "2": 163
+          },
+          "movie.playback.deadletter": {
+            "0": 0,
+            "1": 0,
+            "2": 0
+          }
+        },
+        "offsets_after": {
+          "movie.playback.heartbeat": {
+            "0": 208,
+            "1": 229,
+            "2": 163
+          },
+          "movie.playback.deadletter": {
+            "0": 0,
+            "1": 0,
+            "2": 0
+          }
+        }
+      }
+    }
+  ]
+}

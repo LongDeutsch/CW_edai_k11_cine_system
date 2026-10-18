@@ -18,6 +18,7 @@ from airflow.operators.python import PythonOperator
 from airflow.sensors.base import BaseSensorOperator
 
 from orchestration.batch_identity import assess_listing, parse_s3_uri
+from serving.clickhouse.airflow_sync import sync_arguments
 
 DAG_ID = "cinestream_daily_batch_lakehouse"
 SPARK_MASTER = "spark://spark-master:7077"
@@ -317,6 +318,30 @@ def validate_gold_task(**context) -> dict:
     return result
 
 
+_SERVING_TABLES = ("dim_movies", "fact_ratings", "obt_movie_engagement")
+
+
+def _gold_snapshots(conf: dict, gold: str) -> dict:
+    """Ghim snapshot hiện tại vào marker. Sync không được tự lấy snapshot mới hơn."""
+    import urllib.error
+    import urllib.request
+
+    rest = str(conf.get("iceberg_rest") or "http://iceberg-rest:8181").rstrip("/")
+    found = {}
+    for name in _SERVING_TABLES:
+        url = f"{rest}/v1/namespaces/{gold}/tables/{name}"
+        try:
+            with urllib.request.urlopen(url, timeout=15) as response:
+                meta = json.loads(response.read().decode())["metadata"]
+        except urllib.error.HTTPError as exc:
+            raise AirflowException(f"không đọc snapshot {gold}.{name}: HTTP {exc.code}") from exc
+        snapshot_id = meta.get("current-snapshot-id")
+        if snapshot_id in (None, -1):
+            raise AirflowException(f"{gold}.{name} chưa có snapshot để phát hành")
+        found[name] = int(snapshot_id)
+    return found
+
+
 def publish_success(**context) -> dict:
     batch = _batch(context)
     conf = _conf(context)
@@ -335,10 +360,61 @@ def publish_success(**context) -> dict:
         "namespaces": {"bronze": bronze, "silver": silver, "gold": gold},
         "bronze_quality": context["ti"].xcom_pull(task_ids="validate_bronze"),
         "gold_quality": context["ti"].xcom_pull(task_ids="validate_gold"),
+        "gold_snapshots": _gold_snapshots(conf, gold),
     }
     _put_marker(conf, bronze, batch["batch_id"], payload)
-    print("RESULT_JSON=" + json.dumps({"published": True, "batch_id": batch["batch_id"]}))
+    print("RESULT_JSON=" + json.dumps({"published": True, "batch_id": batch["batch_id"], "gold_snapshots": payload["gold_snapshots"]}))
     return payload
+
+
+def sync_clickhouse(**context) -> dict:
+    """Nạp snapshot trong marker. Không đọc snapshot hiện tại của Iceberg."""
+    batch = _batch(context)
+    conf = _conf(context)
+    bronze, _, gold = _namespaces(conf)
+    args = sync_arguments(
+        batch_id=batch["batch_id"],
+        marker_namespace=bronze,
+        gold_namespace=gold,
+        warehouse=str(conf.get("warehouse") or "s3a://lakehouse"),
+        iceberg_rest=str(conf.get("iceberg_rest") or "http://iceberg-rest:8181"),
+        s3_endpoint=str(conf.get("s3_endpoint") or "http://minio:9000"),
+        s3_access_key=os.environ.get("AWS_ACCESS_KEY_ID", "minioadmin"),
+        s3_secret_key=os.environ.get("AWS_SECRET_ACCESS_KEY", "minioadmin"),
+        clickhouse_http=str(conf.get("clickhouse_http") or os.environ.get("CINESTREAM_CLICKHOUSE_HTTP", "http://clickhouse:8123")),
+        clickhouse_database=conf.get("clickhouse_database"),
+    )
+    cmd = [
+        "spark-submit",
+        "--master",
+        "local[1]",
+        "--deploy-mode",
+        "client",
+        "--driver-memory",
+        "1g",
+        "/opt/cinestream/serving/clickhouse/sync_gold.py",
+        *args,
+    ]
+    print("spark-submit " + " ".join(cmd[1:]))
+    env = os.environ.copy()
+    env["PYTHONPATH"] = "/opt/cinestream"
+    env["SPARK_USE_IMAGE_JARS"] = "1"
+    env.pop("SPARK_DRIVER_HOST", None)
+    env.pop("SPARK_DRIVER_PORT", None)
+    completed = subprocess.run(cmd, text=True, capture_output=True, env=env)
+    if completed.stdout:
+        print(completed.stdout)
+    if completed.stderr:
+        print(completed.stderr)
+    if completed.returncode != 0:
+        raise AirflowException(f"sync ClickHouse thoát {completed.returncode}")
+    found = {}
+    for line in (completed.stdout + "\n" + completed.stderr).splitlines():
+        if line.startswith("SERVING_JSON="):
+            found = json.loads(line.split("=", 1)[1])
+    if not found:
+        raise AirflowException("sync ClickHouse không trả SERVING_JSON")
+    return found
 
 
 def _put_marker(conf: dict, namespace: str, batch_id: str, payload: dict) -> None:
@@ -432,4 +508,10 @@ with DAG(
         retries=1,
         execution_timeout=timedelta(minutes=5),
     )
-    check_source_ready >> raw_to_bronze >> bronze_gate >> to_gold >> gold_gate >> published
+    serving = PythonOperator(
+        task_id="sync_clickhouse",
+        python_callable=sync_clickhouse,
+        retries=1,
+        execution_timeout=timedelta(minutes=20),
+    )
+    check_source_ready >> raw_to_bronze >> bronze_gate >> to_gold >> gold_gate >> published >> serving

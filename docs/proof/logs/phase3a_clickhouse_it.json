@@ -1,0 +1,414 @@
+{
+  "status": "PASS",
+  "failed": [],
+  "cases": [
+    {
+      "name": "đọc đúng snapshot cũ",
+      "status": "PASS",
+      "expected": "current là v3 nhưng VERSION AS OF v1 ra session 1 và 2",
+      "actual": {
+        "current_snapshot": 1459502348599313135,
+        "requested_snapshot": 652964320605388397,
+        "v3_snapshot": 1459502348599313135,
+        "rows": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "name": "nạp snapshot đầu",
+      "status": "PASS",
+      "expected": "serving là v1 dù current Iceberg là v3",
+      "actual": {
+        "sync": {
+          "status": "published",
+          "batch_id": "it-ch-v1",
+          "gold_namespace": "it_ch_gold",
+          "requested_snapshots": {
+            "dim_movies": 5296904003772463296,
+            "fact_ratings": 659573280070420171,
+            "obt_movie_engagement": 652964320605388397
+          },
+          "current_snapshots": {
+            "dim_movies": 7888989563421118529,
+            "fact_ratings": 6078864566578051031,
+            "obt_movie_engagement": 1459502348599313135
+          },
+          "engagement_rows": 2,
+          "rating_rows": 2,
+          "serving": {
+            "engagement_rows": 2,
+            "rating_rows": 2,
+            "engagement_snapshots": [
+              652964320605388397
+            ],
+            "rating_snapshots": [
+              659573280070420171
+            ],
+            "stage_engagement_rows": 0,
+            "log_rows": 1
+          }
+        },
+        "engagement": [
+          {
+            "session_sk": 1,
+            "movie_id": 10,
+            "completion_rate": 0.5
+          },
+          {
+            "session_sk": 2,
+            "movie_id": 20,
+            "completion_rate": 1.0
+          }
+        ],
+        "ratings": [
+          {
+            "movie_id": 10,
+            "rating_count": 1,
+            "avg_rating": 4.0
+          },
+          {
+            "movie_id": 20,
+            "rating_count": 1,
+            "avg_rating": 5.0
+          }
+        ]
+      }
+    },
+    {
+      "name": "sync lại cùng snapshot",
+      "status": "PASS",
+      "expected": "dòng và sync_log không đổi",
+      "actual": {
+        "before": {
+          "engagement": [
+            {
+              "session_sk": 1,
+              "movie_id": 10,
+              "completion_rate": 0.5
+            },
+            {
+              "session_sk": 2,
+              "movie_id": 20,
+              "completion_rate": 1.0
+            }
+          ],
+          "ratings": [
+            {
+              "movie_id": 10,
+              "rating_count": 1,
+              "avg_rating": 4.0
+            },
+            {
+              "movie_id": 20,
+              "rating_count": 1,
+              "avg_rating": 5.0
+            }
+          ],
+          "log": 1
+        },
+        "after": {
+          "engagement": [
+            {
+              "session_sk": 1,
+              "movie_id": 10,
+              "completion_rate": 0.5
+            },
+            {
+              "session_sk": 2,
+              "movie_id": 20,
+              "completion_rate": 1.0
+            }
+          ],
+          "ratings": [
+            {
+              "movie_id": 10,
+              "rating_count": 1,
+              "avg_rating": 4.0
+            },
+            {
+              "movie_id": 20,
+              "rating_count": 1,
+              "avg_rating": 5.0
+            }
+          ],
+          "log": 1
+        },
+        "sync": {
+          "status": "unchanged",
+          "batch_id": "it-ch-v1",
+          "gold_namespace": "it_ch_gold",
+          "requested_snapshots": {
+            "dim_movies": 5296904003772463296,
+            "fact_ratings": 659573280070420171,
+            "obt_movie_engagement": 652964320605388397
+          },
+          "serving": {
+            "engagement_rows": 2,
+            "rating_rows": 2,
+            "engagement_snapshots": [
+              652964320605388397
+            ],
+            "rating_snapshots": [
+              659573280070420171
+            ],
+            "stage_engagement_rows": 0,
+            "log_rows": 1
+          }
+        }
+      }
+    },
+    {
+      "name": "snapshot mới có thêm, sửa, xóa",
+      "status": "PASS",
+      "expected": "session 2 và movie 20 biến mất, session 1 đổi completion, session 3 và movie 30 xuất hiện",
+      "actual": {
+        "sync": {
+          "status": "published",
+          "batch_id": "it-ch-v2",
+          "gold_namespace": "it_ch_gold",
+          "requested_snapshots": {
+            "dim_movies": 1553274870249905868,
+            "fact_ratings": 1785751602824973087,
+            "obt_movie_engagement": 9093496930361517656
+          },
+          "current_snapshots": {
+            "dim_movies": 7888989563421118529,
+            "fact_ratings": 6078864566578051031,
+            "obt_movie_engagement": 1459502348599313135
+          },
+          "engagement_rows": 2,
+          "rating_rows": 2,
+          "serving": {
+            "engagement_rows": 2,
+            "rating_rows": 2,
+            "engagement_snapshots": [
+              9093496930361517656
+            ],
+            "rating_snapshots": [
+              1785751602824973087
+            ],
+            "stage_engagement_rows": 2,
+            "log_rows": 2
+          }
+        },
+        "engagement": [
+          {
+            "session_sk": 1,
+            "movie_id": 10,
+            "completion_rate": 0.9
+          },
+          {
+            "session_sk": 3,
+            "movie_id": 30,
+            "completion_rate": 0.2
+          }
+        ],
+        "ratings": [
+          {
+            "movie_id": 10,
+            "rating_count": 1,
+            "avg_rating": 3.0
+          },
+          {
+            "movie_id": 30,
+            "rating_count": 1,
+            "avg_rating": 2.0
+          }
+        ]
+      }
+    },
+    {
+      "name": "bulk load lỗi rồi retry",
+      "status": "PASS",
+      "expected": "serving giữ v2 khi stage dở, retry xong mới thấy session 4",
+      "actual": {
+        "failed": {
+          "error": "dừng giữa bulk load"
+        },
+        "during": {
+          "engagement": [
+            {
+              "session_sk": 1,
+              "movie_id": 10,
+              "completion_rate": 0.9
+            },
+            {
+              "session_sk": 3,
+              "movie_id": 30,
+              "completion_rate": 0.2
+            }
+          ],
+          "ratings": [
+            {
+              "movie_id": 10,
+              "rating_count": 1,
+              "avg_rating": 3.0
+            },
+            {
+              "movie_id": 30,
+              "rating_count": 1,
+              "avg_rating": 2.0
+            }
+          ],
+          "log": 2,
+          "stage_rows": 1
+        },
+        "retry": {
+          "status": "published",
+          "batch_id": "it-ch-v3",
+          "gold_namespace": "it_ch_gold",
+          "requested_snapshots": {
+            "dim_movies": 7888989563421118529,
+            "fact_ratings": 6078864566578051031,
+            "obt_movie_engagement": 1459502348599313135
+          },
+          "current_snapshots": {
+            "dim_movies": 7888989563421118529,
+            "fact_ratings": 6078864566578051031,
+            "obt_movie_engagement": 1459502348599313135
+          },
+          "engagement_rows": 3,
+          "rating_rows": 3,
+          "serving": {
+            "engagement_rows": 3,
+            "rating_rows": 3,
+            "engagement_snapshots": [
+              1459502348599313135
+            ],
+            "rating_snapshots": [
+              6078864566578051031
+            ],
+            "stage_engagement_rows": 2,
+            "log_rows": 3
+          }
+        },
+        "engagement": [
+          {
+            "session_sk": 1,
+            "movie_id": 10,
+            "completion_rate": 0.9
+          },
+          {
+            "session_sk": 3,
+            "movie_id": 30,
+            "completion_rate": 0.2
+          },
+          {
+            "session_sk": 4,
+            "movie_id": 40,
+            "completion_rate": 0.1
+          }
+        ]
+      }
+    },
+    {
+      "name": "marker hỏng hoặc thiếu",
+      "status": "PASS",
+      "expected": "bốn trường hợp bị từ chối, serving vẫn là v3",
+      "actual": {
+        "errors": {
+          "it-ch-missing": "không có marker s3://lakehouse/_orchestration/it_ch_marker/it-ch-missing.json",
+          "it-ch-draft": "marker chưa published",
+          "it-ch-nosnap": "marker thiếu gold_snapshots",
+          "it-ch-badsnap": "cinestream.it_ch_gold.obt_movie_engagement không có snapshot 1"
+        },
+        "before": {
+          "engagement": [
+            {
+              "session_sk": 1,
+              "movie_id": 10,
+              "completion_rate": 0.9
+            },
+            {
+              "session_sk": 3,
+              "movie_id": 30,
+              "completion_rate": 0.2
+            },
+            {
+              "session_sk": 4,
+              "movie_id": 40,
+              "completion_rate": 0.1
+            }
+          ],
+          "ratings": [
+            {
+              "movie_id": 10,
+              "rating_count": 1,
+              "avg_rating": 3.0
+            },
+            {
+              "movie_id": 30,
+              "rating_count": 1,
+              "avg_rating": 2.0
+            },
+            {
+              "movie_id": 40,
+              "rating_count": 1,
+              "avg_rating": 4.5
+            }
+          ],
+          "log": 3
+        },
+        "after": {
+          "engagement": [
+            {
+              "session_sk": 1,
+              "movie_id": 10,
+              "completion_rate": 0.9
+            },
+            {
+              "session_sk": 3,
+              "movie_id": 30,
+              "completion_rate": 0.2
+            },
+            {
+              "session_sk": 4,
+              "movie_id": 40,
+              "completion_rate": 0.1
+            }
+          ],
+          "ratings": [
+            {
+              "movie_id": 10,
+              "rating_count": 1,
+              "avg_rating": 3.0
+            },
+            {
+              "movie_id": 30,
+              "rating_count": 1,
+              "avg_rating": 2.0
+            },
+            {
+              "movie_id": 40,
+              "rating_count": 1,
+              "avg_rating": 4.5
+            }
+          ],
+          "log": 3
+        }
+      }
+    },
+    {
+      "name": "production untouched",
+      "status": "PASS",
+      "expected": "snapshot production không đổi",
+      "actual": {
+        "before": {
+          "namespaces/silver/tables/stg_watch_sessions": 1975472564804901513,
+          "namespaces/bronze/tables/raw_users": 7954921826504091397,
+          "namespaces/silver/tables/stg_playback_heartbeats": "http:404",
+          "namespaces/silver/tables/stg_playback_windows": "http:404"
+        },
+        "after": {
+          "namespaces/silver/tables/stg_watch_sessions": 1975472564804901513,
+          "namespaces/bronze/tables/raw_users": 7954921826504091397,
+          "namespaces/silver/tables/stg_playback_heartbeats": "http:404",
+          "namespaces/silver/tables/stg_playback_windows": "http:404"
+        },
+        "unchanged": true
+      }
+    }
+  ]
+}
