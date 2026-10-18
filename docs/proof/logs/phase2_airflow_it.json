@@ -1,0 +1,311 @@
+{
+  "status": "PASS",
+  "failed": [],
+  "cases": [
+    {
+      "name": "1 dag import",
+      "status": "PASS",
+      "expected": "s\u00e1u task, m\u1ed9t chi\u1ec1u, catchup t\u1eaft, m\u1ed9t run",
+      "actual": {
+        "import_errors": {},
+        "tasks": [
+          "check_source_ready",
+          "spark_raw_to_bronze",
+          "validate_bronze",
+          "spark_bronze_to_gold",
+          "validate_gold",
+          "publish_success"
+        ],
+        "downstream": {
+          "check_source_ready": [
+            "spark_raw_to_bronze"
+          ],
+          "spark_raw_to_bronze": [
+            "validate_bronze"
+          ],
+          "validate_bronze": [
+            "spark_bronze_to_gold"
+          ],
+          "spark_bronze_to_gold": [
+            "validate_gold"
+          ],
+          "validate_gold": [
+            "publish_success"
+          ],
+          "publish_success": []
+        },
+        "retries": {
+          "check_source_ready": 0,
+          "spark_raw_to_bronze": 1,
+          "validate_bronze": 0,
+          "spark_bronze_to_gold": 1,
+          "validate_gold": 0,
+          "publish_success": 1
+        },
+        "catchup": false,
+        "max_active_runs": 1,
+        "schedule": "0 2 * * *",
+        "timetable": "0 2 * * *"
+      }
+    },
+    {
+      "name": "2 successful run",
+      "status": "PASS",
+      "expected": "\u0111\u1ee7 fact v\u00e0 marker published",
+      "actual": {
+        "dag": "success",
+        "tasks": {
+          "check_source_ready": "success",
+          "spark_raw_to_bronze": "success",
+          "validate_bronze": "success",
+          "spark_bronze_to_gold": "success",
+          "validate_gold": "success",
+          "publish_success": "success"
+        },
+        "batch_id": "batch-7119a7dc16f075d9d93cca3f992f974b",
+        "marker_published": true,
+        "marker_batch": "batch-7119a7dc16f075d9d93cca3f992f974b",
+        "effective_ts": "2026-10-17T02:00:00+00:00",
+        "data_interval_start": "2026-10-17T02:00:00+00:00",
+        "users": 2,
+        "ratings": 1,
+        "facts": 1,
+        "watches": 1,
+        "obt": 1,
+        "snapshots": {
+          "raw_users": [
+            {
+              "snapshot_id": 4268632903054355453,
+              "operation": "append"
+            }
+          ],
+          "raw_ratings": [
+            {
+              "snapshot_id": 3641464245913655972,
+              "operation": "append"
+            }
+          ],
+          "fact_ratings": [
+            {
+              "snapshot_id": 7025035437215473591,
+              "operation": "overwrite"
+            }
+          ]
+        }
+      },
+      "namespace": "it_af_ok",
+      "batch_id": "batch-7119a7dc16f075d9d93cca3f992f974b",
+      "snapshots": {
+        "raw_users": [
+          {
+            "snapshot_id": 4268632903054355453,
+            "operation": "append"
+          }
+        ],
+        "raw_ratings": [
+          {
+            "snapshot_id": 3641464245913655972,
+            "operation": "append"
+          }
+        ],
+        "fact_ratings": [
+          {
+            "snapshot_id": 7025035437215473591,
+            "operation": "overwrite"
+          }
+        ]
+      }
+    },
+    {
+      "name": "3 missing source",
+      "status": "PASS",
+      "expected": "sensor h\u1ebft h\u1ea1n, kh\u00f4ng c\u00f3 marker",
+      "actual": {
+        "dag": "failed",
+        "tasks": {
+          "check_source_ready": "failed",
+          "spark_raw_to_bronze": "upstream_failed",
+          "validate_bronze": "upstream_failed",
+          "spark_bronze_to_gold": "upstream_failed",
+          "validate_gold": "upstream_failed",
+          "publish_success": "upstream_failed"
+        },
+        "marker": false
+      }
+    },
+    {
+      "name": "4 contract blocks gold",
+      "status": "PASS",
+      "expected": "ng\u01b0\u1ee1ng l\u1ed7i ch\u1eb7n publish, fact tr\u1ed1ng",
+      "actual": {
+        "dag": "failed",
+        "tasks": {
+          "check_source_ready": "success",
+          "spark_raw_to_bronze": "failed",
+          "validate_bronze": "upstream_failed",
+          "spark_bronze_to_gold": "upstream_failed",
+          "validate_gold": "upstream_failed",
+          "publish_success": "upstream_failed"
+        },
+        "bronze_try": 2,
+        "ratings": 0,
+        "facts": 0,
+        "quarantine": 2,
+        "quality": [
+          [
+            "movies",
+            "skipped_duplicate",
+            0,
+            0
+          ],
+          [
+            "ratings",
+            "threshold_rejected",
+            2,
+            10
+          ],
+          [
+            "users",
+            "skipped_duplicate",
+            0,
+            0
+          ]
+        ],
+        "marker": false
+      }
+    },
+    {
+      "name": "5 spark retry",
+      "status": "PASS",
+      "expected": "l\u1ea7n hai kh\u00f4ng nh\u00e2n \u0111\u00f4i users",
+      "actual": {
+        "dag": "success",
+        "tasks": {
+          "check_source_ready": "success",
+          "spark_raw_to_bronze": "success",
+          "validate_bronze": "success",
+          "spark_bronze_to_gold": "success",
+          "validate_gold": "success",
+          "publish_success": "success"
+        },
+        "bronze_try": 2,
+        "users": 2,
+        "ratings": 1,
+        "facts": 1,
+        "marker": true
+      }
+    },
+    {
+      "name": "6 rerun",
+      "status": "PASS",
+      "expected": "c\u00f9ng fingerprint, Bronze kh\u00f4ng th\u00eam snapshot",
+      "actual": {
+        "dag": "success",
+        "users": 2,
+        "ratings": 1,
+        "facts": 1,
+        "snapshots_before": {
+          "raw_users": [
+            {
+              "snapshot_id": 4268632903054355453,
+              "operation": "append"
+            }
+          ],
+          "raw_ratings": [
+            {
+              "snapshot_id": 3641464245913655972,
+              "operation": "append"
+            }
+          ],
+          "fact_ratings": [
+            {
+              "snapshot_id": 7025035437215473591,
+              "operation": "overwrite"
+            }
+          ]
+        },
+        "snapshots_after": {
+          "raw_users": [
+            {
+              "snapshot_id": 4268632903054355453,
+              "operation": "append"
+            }
+          ],
+          "raw_ratings": [
+            {
+              "snapshot_id": 3641464245913655972,
+              "operation": "append"
+            }
+          ],
+          "fact_ratings": [
+            {
+              "snapshot_id": 7025035437215473591,
+              "operation": "overwrite"
+            }
+          ],
+          "dim_users": [
+            {
+              "snapshot_id": 4527957677968592575,
+              "operation": "overwrite"
+            }
+          ]
+        },
+        "bronze_unchanged": true
+      }
+    },
+    {
+      "name": "7 backfill",
+      "status": "PASS",
+      "expected": "logical date 2026-01-17T04:00:00+00:00, effective_ts l\u1ea5y data_interval_start 2026-01-16T02:00:00Z",
+      "actual": {
+        "dag": "success",
+        "logical_date": "2026-01-17T04:00:00+00:00",
+        "data_interval_start": "2026-01-16T02:00:00+00:00",
+        "marker_interval": "2026-01-16T02:00:00+00:00",
+        "marker_effective": "2026-01-16T02:00:00+00:00",
+        "facts": 1,
+        "users": 2
+      }
+    },
+    {
+      "name": "8 gold integrity",
+      "status": "PASS",
+      "expected": "m\u1ed9t current, kh\u00f4ng overlap, fact kh\u1edbp silver",
+      "actual": {
+        "stg_ratings": 1,
+        "fact_ratings": 1,
+        "stg_watch": 1,
+        "fact_watch": 1,
+        "obt": 1,
+        "users_without_one_current": 0,
+        "movies_without_one_current": 0,
+        "user_overlaps": 0,
+        "movie_overlaps": 0,
+        "duplicate_rating_sk": 0,
+        "duplicate_session_sk": 0,
+        "orphan_user_sk": 0,
+        "orphan_movie_sk": 0
+      }
+    },
+    {
+      "name": "9 flink tables untouched",
+      "status": "PASS",
+      "expected": "snapshot production v\u00e0 b\u1ea3ng streaming kh\u00f4ng \u0111\u1ed5i",
+      "actual": {
+        "unchanged": true,
+        "before": {
+          "namespaces/silver/tables/stg_watch_sessions": "{\"metadata-location\":\"s3a://lakehouse/silver/stg_watch_sessions/metadata/00000-ad65eef5-a24f-4f02-852f-0a230eba782c.metadata.json\",\"metadata\":{\"format-version\":2,\"table-uuid\":\"26cca98f-370c-43f6-a3a2-17435da0cfa4\",\"location\":\"s3a://lakehouse/silver/stg_watch_sessions\",\"last-sequence-number\":1,\"last-updated-ms\":1792165520671,\"last-column-id\":11,\"current-schema-id\":0,\"schemas\":[{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"session_id\",\"required\":false,\"type\":\"long\"},{\"id\":2,\"name\":\"user_id\",\"required\":false,\"type\":\"long\"},{\"id\":3,\"name\":\"movie_id\",\"required\":false,\"type\":\"long\"},{\"id\":4,\"name\":\"start_ts\",\"required\":false,\"type\":\"timestamp\"},{\"id\":5,\"name\":\"end_ts\",\"required\":false,\"type\":\"timestamp\"},{\"id\":6,\"name\":\"watch_duration_seconds\",\"required\":false,\"type\":\"int\"},{\"id\":7,\"name\":\"completion_rate\",\"required\":false,\"type\":\"double\"},{\"id\":8,\"name\":\"device_type\",\"required\":false,\"type\":\"string\"},{\"id\":9,\"name\":\"resolution\",\"required\":false,\"type\":\"string\"},{\"id\":10,\"name\":\"event_date\",\"required\":false,\"type\":\"date\"},{\"id\":11,\"name\":\"dt\",\"required\":false,\"type\":\"date\"}]}],\"default-spec-id\":0,\"partition-specs\":[{\"spec-id\":0,\"fields\":[]}],\"last-partition-id\":999,\"default-sort-order-id\":0,\"sort-orders\":[{\"order-id\":0,\"fields\":[]}],\"properties\":{\"owner\":\"nguyenbuihoanglong\",\"created-at\":\"2026-10-16T15:45:18.205227722Z\",\"write.parquet.compression-codec\":\"zstd\"},\"current-snapshot-id\":1975472564804901513,\"refs\":{\"main\":{\"snapshot-id\":1975472564804901513,\"type\":\"branch\"}},\"snapshots\":[{\"sequence-number\":1,\"snapshot-id\":1975472564804901513,\"timestamp-ms\":1792165520671,\"summary\":{\"operation\":\"append\",\"spark.app.id\":\"local-1792165509489\",\"added-data-files\":\"16\",\"added-records\":\"662830\",\"added-files-size\":\"16741814\",\"changed-partition-count\":\"1\",\"total-records\":\"662830\",\"total-files-size\":\"16741814\",\"total-data-files\":\"16\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"engine-version\":\"3.5.5\",\"app-id\":\"local-1792165509489\",\"engine-name\":\"spark\",\"iceberg-version\":\"Apache Iceberg 1.6.1 (commit 8e9d59d299be42b0bca9461457cd1e95dbaad086)\"},\"manifest-list\":\"s3a://lakehouse/silver/stg_watch_sessions/metadata/snap-1975472564804901513-1-23f9cd74-b71c-439a-a88b-b1a949a40e3f.avro\",\"schema-id\":0}],\"statistics\":[],\"partition-statistics\":[],\"snapshot-log\":[{\"timestamp-ms\":1792165520671,\"snapshot-id\":1975472564804901513}],\"metadata-log\":[]},\"config\":{}}",
+          "namespaces/bronze/tables/raw_users": "unavailable:HTTPError",
+          "namespaces/silver/tables/stg_playback_heartbeats": "unavailable:HTTPError",
+          "namespaces/silver/tables/stg_playback_windows": "unavailable:HTTPError"
+        },
+        "after": {
+          "namespaces/silver/tables/stg_watch_sessions": "{\"metadata-location\":\"s3a://lakehouse/silver/stg_watch_sessions/metadata/00000-ad65eef5-a24f-4f02-852f-0a230eba782c.metadata.json\",\"metadata\":{\"format-version\":2,\"table-uuid\":\"26cca98f-370c-43f6-a3a2-17435da0cfa4\",\"location\":\"s3a://lakehouse/silver/stg_watch_sessions\",\"last-sequence-number\":1,\"last-updated-ms\":1792165520671,\"last-column-id\":11,\"current-schema-id\":0,\"schemas\":[{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"session_id\",\"required\":false,\"type\":\"long\"},{\"id\":2,\"name\":\"user_id\",\"required\":false,\"type\":\"long\"},{\"id\":3,\"name\":\"movie_id\",\"required\":false,\"type\":\"long\"},{\"id\":4,\"name\":\"start_ts\",\"required\":false,\"type\":\"timestamp\"},{\"id\":5,\"name\":\"end_ts\",\"required\":false,\"type\":\"timestamp\"},{\"id\":6,\"name\":\"watch_duration_seconds\",\"required\":false,\"type\":\"int\"},{\"id\":7,\"name\":\"completion_rate\",\"required\":false,\"type\":\"double\"},{\"id\":8,\"name\":\"device_type\",\"required\":false,\"type\":\"string\"},{\"id\":9,\"name\":\"resolution\",\"required\":false,\"type\":\"string\"},{\"id\":10,\"name\":\"event_date\",\"required\":false,\"type\":\"date\"},{\"id\":11,\"name\":\"dt\",\"required\":false,\"type\":\"date\"}]}],\"default-spec-id\":0,\"partition-specs\":[{\"spec-id\":0,\"fields\":[]}],\"last-partition-id\":999,\"default-sort-order-id\":0,\"sort-orders\":[{\"order-id\":0,\"fields\":[]}],\"properties\":{\"owner\":\"nguyenbuihoanglong\",\"created-at\":\"2026-10-16T15:45:18.205227722Z\",\"write.parquet.compression-codec\":\"zstd\"},\"current-snapshot-id\":1975472564804901513,\"refs\":{\"main\":{\"snapshot-id\":1975472564804901513,\"type\":\"branch\"}},\"snapshots\":[{\"sequence-number\":1,\"snapshot-id\":1975472564804901513,\"timestamp-ms\":1792165520671,\"summary\":{\"operation\":\"append\",\"spark.app.id\":\"local-1792165509489\",\"added-data-files\":\"16\",\"added-records\":\"662830\",\"added-files-size\":\"16741814\",\"changed-partition-count\":\"1\",\"total-records\":\"662830\",\"total-files-size\":\"16741814\",\"total-data-files\":\"16\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"engine-version\":\"3.5.5\",\"app-id\":\"local-1792165509489\",\"engine-name\":\"spark\",\"iceberg-version\":\"Apache Iceberg 1.6.1 (commit 8e9d59d299be42b0bca9461457cd1e95dbaad086)\"},\"manifest-list\":\"s3a://lakehouse/silver/stg_watch_sessions/metadata/snap-1975472564804901513-1-23f9cd74-b71c-439a-a88b-b1a949a40e3f.avro\",\"schema-id\":0}],\"statistics\":[],\"partition-statistics\":[],\"snapshot-log\":[{\"timestamp-ms\":1792165520671,\"snapshot-id\":1975472564804901513}],\"metadata-log\":[]},\"config\":{}}",
+          "namespaces/bronze/tables/raw_users": "unavailable:HTTPError",
+          "namespaces/silver/tables/stg_playback_heartbeats": "unavailable:HTTPError",
+          "namespaces/silver/tables/stg_playback_windows": "unavailable:HTTPError"
+        }
+      }
+    }
+  ]
+}

@@ -43,11 +43,22 @@ class TierChange:
     change_ts: datetime
 
 
-def apply_scd2(current_rows: list[DimUser], changes: list[TierChange]) -> list[DimUser]:
+def apply_scd2(
+    current_rows: list[DimUser],
+    changes: list[TierChange],
+    next_surrogate=None,
+) -> list[DimUser]:
     """Trả về bảng chiều mới. Không sửa list đầu vào.
 
     Nhiều thay đổi của cùng một user được áp theo thứ tự thời gian.
     Nếu gói mới trùng gói đang mở, dòng đó được giữ nguyên.
+    Hàm tính hết kế hoạch rồi mới trả về. Caller ghi một commit sau khi
+    hàm thành công, nên một ``ValueError`` không đóng một phần lịch sử.
+
+    ``next_surrogate(user_id, rows)`` cấp ``user_sk`` ổn định theo từng user.
+    Mặc định ``max(user_sk) + 1`` chỉ dành cho demo một tiến trình. Hai writer
+    song song cùng đọc max đó sẽ cấp trùng khóa. Job lakehouse truyền
+    ``user_id * 1_000_000 + version`` và chỉ chạy một writer.
     """
     rows = list(current_rows)
     next_sk = max((row.user_sk for row in rows), default=0) + 1
@@ -60,9 +71,10 @@ def apply_scd2(current_rows: list[DimUser], changes: list[TierChange]) -> list[D
             raise ValueError(
                 f"user_id={change.user_id}: change_ts {change.change_ts} sớm hơn valid_from_ts"
             )
+        user_sk = next_surrogate(change.user_id, rows) if next_surrogate is not None else next_sk
         closed = replace(active, is_current=False, valid_to_ts=change.change_ts)
         opened = DimUser(
-            user_sk=next_sk,
+            user_sk=user_sk,
             user_id=active.user_id,
             subscription_tier=change.subscription_tier,
             valid_from_ts=change.change_ts,
@@ -70,10 +82,17 @@ def apply_scd2(current_rows: list[DimUser], changes: list[TierChange]) -> list[D
             is_current=True,
             country=active.country,
         )
-        next_sk += 1
+        if next_surrogate is None:
+            next_sk += 1
         rows = [closed if row.user_sk == active.user_sk else row for row in rows]
         rows.append(opened)
     return rows
+
+
+def stable_surrogate(user_id: int, rows: list[DimUser]) -> int:
+    """Khóa thay thế theo user và số phiên bản đã có, không lấy max của cả bảng."""
+    version = sum(1 for row in rows if row.user_id == user_id) + 1
+    return int(user_id) * 1_000_000 + version
 
 
 def demo_snapshot() -> list[DimUser]:

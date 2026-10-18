@@ -10,12 +10,14 @@ SPARK_SRC ?= data_generator/output/scale_0_1
 # Parquet local: data_generator/output/lakehouse
 SPARK_WAREHOUSE ?= s3a://lakehouse
 SPARK_HOLD ?= 0
+SPARK_RUN_ID ?= manual
+SPARK_EFFECTIVE_TS ?= 2026-03-01T00:00:00+00:00
 SPARK_PYTHON ?= 3.12
 SPARK_PY = SPARK_LOCAL_IP=127.0.0.1 PYTHONUNBUFFERED=1 PYTHONPATH=. $(UV) run --no-project --python $(SPARK_PYTHON) --with pyspark==3.5.5 python
 
 ##@ 4. Xử lý Dữ liệu Phân tán (Spark & Flink)
 
-.PHONY: spark-baseline spark-optimized spark-aqe spark-build-gold demo-layer3 flink-job
+.PHONY: spark-baseline spark-optimized spark-aqe spark-build-gold spark-ingest-bronze spark-publish spark-batch-it demo-layer3 flink-job
 
 spark-baseline: ## Join lệch khóa, không mergeSchema. SPARK_HOLD=120 để xem UI :4040
 	@echo -e "$(BOLD)$(BLUE)Khởi chạy Spark Baseline Job...$(RESET)"
@@ -35,12 +37,32 @@ spark-aqe: ## Tự động chia nhỏ skewed partition bằng Spark Adaptive Que
 		--source-dir $(SPARK_SRC) \
 		--hold-seconds $(SPARK_HOLD)
 
-spark-build-gold: ## Ghi Silver, dim_users SCD2, fact_ratings, fact_watch_sessions, OBT
+spark-build-gold: ## Ghi Silver, dim_users SCD2, fact_ratings, fact_watch_sessions, OBT từ landing
 	@echo -e "$(BOLD)$(BLUE)Dựng Silver và Gold từ $(SPARK_SRC)...$(RESET)"
 	$(SPARK_PY) -m transformation.batch.jobs.build_gold_layer \
 		--source-dir $(SPARK_SRC) \
 		--warehouse $(SPARK_WAREHOUSE) \
 		--hold-seconds $(SPARK_HOLD)
+
+spark-ingest-bronze: ## Parquet nguồn → Bronze Iceberg. SPARK_RUN_ID không tham gia khóa chống trùng
+	@echo -e "$(BOLD)$(BLUE)Ingest $(SPARK_SRC) vào namespace bronze...$(RESET)"
+	$(SPARK_PY) -m transformation.batch.jobs.ingest_to_bronze \
+		--source-dir $(SPARK_SRC) \
+		--warehouse $(SPARK_WAREHOUSE) \
+		--namespace bronze \
+		--run-id $(SPARK_RUN_ID)
+
+spark-publish: ## Bronze → Silver → Gold. SPARK_EFFECTIVE_TS là mốc đổi gói SCD2
+	@echo -e "$(BOLD)$(BLUE)Publish Bronze sang Silver và Gold...$(RESET)"
+	$(SPARK_PY) -m transformation.batch.jobs.publish_silver_gold \
+		--warehouse $(SPARK_WAREHOUSE) \
+		--effective-ts $(SPARK_EFFECTIVE_TS) \
+		--enable-aqe \
+		--no-ui
+
+spark-batch-it: ## Integration test batch trên warehouse file:// cách ly
+	@echo -e "$(BOLD)$(BLUE)Chạy integration test batch lakehouse...$(RESET)"
+	$(SPARK_PY) -m transformation.batch.it_phase1
 
 demo-layer3: ## So sánh 3 phương pháp: Baseline vs Salting vs AQE trên local[*]
 	@echo -e "$(BOLD)$(BLUE)So sánh Baseline vs Salting vs AQE trên local[*]...$(RESET)"

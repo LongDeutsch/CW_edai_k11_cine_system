@@ -75,10 +75,45 @@ def run(spark, source, warehouse: str) -> dict[str, int]:
     ratings.createOrReplaceTempView("stg_ratings")
     watch.createOrReplaceTempView("stg_watch_sessions")
 
+    fact_ratings_out, fact_watch_out, obt = assemble_facts(spark, ratings, watch, dim_users, dim_movies)
+    _store(spark, fact_ratings_out, warehouse, "gold", "fact_ratings")
+    _store(spark, fact_watch_out, warehouse, "gold", "fact_watch_sessions")
+    _store(spark, obt, warehouse, "gold", "obt_movie_engagement")
+
+    current_users = dim_users.where("is_current").count()
+    distinct_current = dim_users.where("is_current").select("user_id").distinct().count()
+    counts = {
+        "stg_ratings": ratings.count(),
+        "stg_movies": movies.count(),
+        "stg_watch_sessions": watch.count(),
+        "dim_users": dim_users.count(),
+        "dim_users_current": current_users,
+        "fact_ratings": fact_ratings_out.count(),
+        "fact_watch_sessions": fact_watch_out.count(),
+        "obt_movie_engagement": obt.count(),
+    }
+    print(f"warehouse          : {warehouse}")
+    for name, count in counts.items():
+        print(f"  {name:<22} {count:,}")
+    if current_users != distinct_current:
+        raise SystemExit("is_current không còn đúng một dòng cho mỗi user_id")
+    if counts["fact_ratings"] != counts["stg_ratings"]:
+        raise SystemExit("fact_ratings lệch số dòng so với stg_ratings")
+    if counts["obt_movie_engagement"] != counts["fact_watch_sessions"]:
+        raise SystemExit("obt_movie_engagement lệch số dòng so với fact_watch_sessions")
+    return counts
+
+
+def assemble_facts(spark, ratings, watch, dim_users, dim_movies):
+    """Fact và OBT. User lấy phiên bản đúng thời điểm. Movie lấy bản hiện tại."""
+    dim_users.createOrReplaceTempView("dim_users")
+    dim_movies.createOrReplaceTempView("dim_movies")
+    ratings.createOrReplaceTempView("stg_ratings")
+    watch.createOrReplaceTempView("stg_watch_sessions")
     fact_ratings = spark.sql(
         """
         SELECT
-            CAST(row_number() OVER (ORDER BY r.rating_id) AS BIGINT) AS rating_sk,
+            CAST(r.rating_id AS BIGINT) AS rating_sk,
             u.user_sk,
             m.movie_sk,
             CAST(r.rating_val AS DECIMAL(2, 1)) AS rating_val,
@@ -97,7 +132,7 @@ def run(spark, source, warehouse: str) -> dict[str, int]:
     fact_watch = spark.sql(
         """
         SELECT
-            CAST(row_number() OVER (ORDER BY w.session_id) AS BIGINT) AS session_sk,
+            CAST(w.session_id AS BIGINT) AS session_sk,
             u.user_sk,
             m.movie_sk,
             w.watch_duration_seconds,
@@ -148,32 +183,7 @@ def run(spark, source, warehouse: str) -> dict[str, int]:
         "device_type",
         "session_date_key",
     )
-    _store(spark, fact_ratings_out, warehouse, "gold", "fact_ratings")
-    _store(spark, fact_watch_out, warehouse, "gold", "fact_watch_sessions")
-    _store(spark, obt, warehouse, "gold", "obt_movie_engagement")
-
-    current_users = dim_users.where("is_current").count()
-    distinct_current = dim_users.where("is_current").select("user_id").distinct().count()
-    counts = {
-        "stg_ratings": ratings.count(),
-        "stg_movies": movies.count(),
-        "stg_watch_sessions": watch.count(),
-        "dim_users": dim_users.count(),
-        "dim_users_current": current_users,
-        "fact_ratings": fact_ratings_out.count(),
-        "fact_watch_sessions": fact_watch_out.count(),
-        "obt_movie_engagement": obt.count(),
-    }
-    print(f"warehouse          : {warehouse}")
-    for name, count in counts.items():
-        print(f"  {name:<22} {count:,}")
-    if current_users != distinct_current:
-        raise SystemExit("is_current không còn đúng một dòng cho mỗi user_id")
-    if counts["fact_ratings"] != counts["stg_ratings"]:
-        raise SystemExit("fact_ratings lệch số dòng so với stg_ratings")
-    if counts["obt_movie_engagement"] != counts["fact_watch_sessions"]:
-        raise SystemExit("obt_movie_engagement lệch số dòng so với fact_watch_sessions")
-    return counts
+    return fact_ratings_out, fact_watch_out, obt
 
 
 def _dedup_watch(watch):
@@ -266,14 +276,11 @@ def _dim_records(rows) -> list[tuple]:
 
 
 def _store(spark, frame, warehouse: str, namespace: str, table: str) -> None:
-    if str(warehouse).startswith(("s3a://", "s3://")):
+    if str(warehouse).startswith(("s3a://", "s3://", "file:")):
+        from transformation.batch.jobs.table_updates import create_or_overwrite
+
         spark.sql(f"CREATE NAMESPACE IF NOT EXISTS {ICEBERG_CATALOG}.{namespace}")
-        (
-            frame.writeTo(f"{ICEBERG_CATALOG}.{namespace}.{table}")
-            .using("iceberg")
-            .tableProperty("format-version", "2")
-            .createOrReplace()
-        )
+        create_or_overwrite(spark, frame, f"{ICEBERG_CATALOG}.{namespace}.{table}")
         return
     path = Path(warehouse) / namespace / table
     frame.write.mode("overwrite").parquet(str(path))
@@ -285,7 +292,7 @@ def main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
     source = require_source(args.source_dir)
     warehouse = str(args.warehouse)
-    if not warehouse.startswith(("s3a://", "s3://")):
+    if not warehouse.startswith(("s3a://", "s3://", "file:")):
         path = Path(warehouse).resolve()
         path.mkdir(parents=True, exist_ok=True)
         warehouse = str(path)

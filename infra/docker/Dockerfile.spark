@@ -19,6 +19,25 @@ RUN apt-get update \
         https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/${AWS_SDK_VERSION}/aws-java-sdk-bundle-${AWS_SDK_VERSION}.jar \
     && rm -rf /var/lib/apt/lists/*
 
+# Executor PySpark cần cùng dòng Python 3.12 với driver Airflow.
+# Image Spark là Ubuntu 20.04 arm64, không có gói python3.12.
+ARG PYTHON_BUILD=20241016
+ARG PYTHON_VERSION=3.12.7
+RUN arch="$(dpkg --print-architecture)" \
+    && case "$arch" in \
+         arm64) target=aarch64-unknown-linux-gnu ;; \
+         amd64) target=x86_64-unknown-linux-gnu ;; \
+         *) echo "không có Python standalone cho $arch" && exit 1 ;; \
+       esac \
+    && curl -fsSL -o /tmp/python.tgz \
+         "https://github.com/astral-sh/python-build-standalone/releases/download/${PYTHON_BUILD}/cpython-${PYTHON_VERSION}%2B${PYTHON_BUILD}-${target}-install_only.tar.gz" \
+    && mkdir -p /opt/python \
+    && tar -xzf /tmp/python.tgz -C /opt/python --strip-components=1 \
+    && ln -sf /opt/python/bin/python3.12 /usr/bin/python3 \
+    && ln -sf /opt/python/bin/python3.12 /usr/bin/python \
+    && python3 --version \
+    && rm /tmp/python.tgz
+
 COPY transformation /opt/cinestream/transformation
 COPY storage /opt/cinestream/storage
 ENV PYTHONPATH=/opt/cinestream

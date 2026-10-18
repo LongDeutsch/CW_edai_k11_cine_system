@@ -1,0 +1,128 @@
+# Airflow bám mạng của cụm cinestream (MinIO, Iceberg REST, Spark).
+# Gộp với docker-compose.yml. UI: http://localhost:18082  airflow / airflow
+# LocalExecutor chạy task trong scheduler, driver Spark cũng ở container đó.
+
+name: cinestream
+
+x-airflow-env: &airflow-env
+  AIRFLOW__CORE__EXECUTOR: LocalExecutor
+  AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow
+  AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow
+  AIRFLOW__CORE__FERNET_KEY: 46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+  AIRFLOW__WEBSERVER__SECRET_KEY: cinestream-local-airflow-secret
+  AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
+  AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+  AIRFLOW__CORE__DAGS_FOLDER: /opt/cinestream/orchestration/dags
+  AIRFLOW__API__AUTH_BACKENDS: airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session
+  AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL: "15"
+  AIRFLOW_UID: "0"
+  CINESTREAM_BATCH_SCHEDULE: "${CINESTREAM_BATCH_SCHEDULE:-0 2 * * *}"
+  # false: DAG không có lịch, run tay vào bronze/silver/gold vẫn bị chặn.
+  # Đặt true sau khi nguồn thật đã qua namespace cô lập. Scheduler khi đó
+  # tự chạy cron mà không cần dán allow_production vào JSON.
+  CINESTREAM_ALLOW_PRODUCTION: "${CINESTREAM_ALLOW_PRODUCTION:-false}"
+  CINESTREAM_CODE: /opt/cinestream
+  PYTHONPATH: /opt/cinestream
+  SPARK_HOME: /opt/spark
+  SPARK_DRIVER_HOST: airflow-scheduler
+  SPARK_DRIVER_PORT: "17001"
+  SPARK_BLOCKMANAGER_PORT: "17101"
+  SPARK_LOCAL_DIR: /tmp/cinestream-spark
+  SPARK_USE_IMAGE_JARS: "1"
+  AWS_ACCESS_KEY_ID: minioadmin
+  AWS_SECRET_ACCESS_KEY: minioadmin
+  TZ: UTC
+
+x-airflow-image: &airflow-image
+  image: cinestream-airflow:2.10.5
+  build:
+    context: ../..
+    dockerfile: infra/docker/Dockerfile.airflow
+  user: "0:0"
+  environment: *airflow-env
+  volumes:
+    - ../..:/opt/cinestream
+    - airflow_logs:/opt/airflow/logs
+
+services:
+  spark-master:
+    volumes:
+      - ../..:/opt/cinestream
+    environment:
+      PYTHONPATH: /opt/cinestream
+      PYSPARK_PYTHON: python3
+
+  spark-worker:
+    volumes:
+      - ../..:/opt/cinestream
+    environment:
+      PYTHONPATH: /opt/cinestream
+      PYSPARK_PYTHON: python3
+
+  airflow-postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - airflow_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U airflow -d airflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  airflow-init:
+    <<: *airflow-image
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        airflow db migrate
+        airflow users create \
+          --username airflow \
+          --password airflow \
+          --firstname Cine \
+          --lastname Stream \
+          --role Admin \
+          --email airflow@cinestream.local \
+          || true
+    restart: "no"
+    depends_on:
+      airflow-postgres:
+        condition: service_healthy
+
+  airflow-webserver:
+    <<: *airflow-image
+    command: webserver
+    ports:
+      - "18082:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 40s
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+
+  airflow-scheduler:
+    <<: *airflow-image
+    command: scheduler
+    hostname: airflow-scheduler
+    healthcheck:
+      test: ["CMD-SHELL", "airflow jobs check --job-type SchedulerJob --hostname airflow-scheduler"]
+      interval: 15s
+      timeout: 20s
+      retries: 20
+      start_period: 40s
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+      spark-master:
+        condition: service_healthy
+
+volumes:
+  airflow_pg:
+  airflow_logs:

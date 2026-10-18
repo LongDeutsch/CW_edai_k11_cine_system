@@ -21,6 +21,7 @@ from storage.lakehouse.scd.apply_scd2 import (  # noqa: E402
     demo_changes,
     demo_snapshot,
     format_table,
+    stable_surrogate,
 )
 
 CHANGE_TS = datetime(2026, 6, 1, tzinfo=timezone.utc)
@@ -72,6 +73,14 @@ def test_second_change_chains_a_third_version() -> None:
     assert versions[2].valid_to_ts is None
 
 
+def test_surrogate_is_stable_per_user() -> None:
+    """Không dùng max toàn bảng: user 101 nhận version 2, không phụ thuộc user_sk=5."""
+    after = apply_scd2(demo_snapshot(), [TierChange(101, "VIP", CHANGE_TS)], next_surrogate=stable_surrogate)
+    opened = next(row for row in after if row.user_id == 101 and row.is_current)
+    assert opened.user_sk == 101_000_002
+    assert next(row for row in after if row.user_id == 102).user_sk == 2
+
+
 def test_unknown_user_is_rejected() -> None:
     try:
         apply_scd2(demo_snapshot(), [TierChange(999, "VIP", CHANGE_TS)])
@@ -105,6 +114,7 @@ def main() -> None:
         test_five_changes_keep_history_and_one_current_row,
         test_same_tier_does_not_open_a_new_version,
         test_second_change_chains_a_third_version,
+        test_surrogate_is_stable_per_user,
         test_unknown_user_is_rejected,
         test_input_list_is_not_mutated,
     ]

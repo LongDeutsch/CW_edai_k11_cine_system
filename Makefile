@@ -15,6 +15,7 @@ include make/storage.mk
 include make/infra.mk
 include make/spark.mk
 include make/streaming.mk
+include make/airflow.mk
 include make/test.mk
 
 ##@ 0. Luồng công việc tổng hợp (Quickstart Workflows)

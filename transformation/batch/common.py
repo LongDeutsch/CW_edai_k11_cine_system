@@ -124,7 +124,7 @@ def require_source(source: str | Path) -> DataSource:
 
 def uses_iceberg(args: argparse.Namespace) -> bool:
     warehouse = str(getattr(args, "warehouse", ""))
-    return warehouse.startswith(("s3a://", "s3://"))
+    return warehouse.startswith(("s3a://", "s3://", "file:"))
 
 
 def _classpath(include_iceberg: bool) -> str:
@@ -144,16 +144,19 @@ def _classpath(include_iceberg: bool) -> str:
     return ",".join(str(path) for path in paths)
 
 
-def _apply_s3a(builder, args: argparse.Namespace, jars: str):
+def _apply_s3a(builder, args: argparse.Namespace, jars: str | None):
     import os
 
-    os.environ["PYSPARK_SUBMIT_ARGS"] = f"--jars {jars} pyspark-shell"
     endpoint = getattr(args, "s3_endpoint", DEFAULT_S3_ENDPOINT)
+    if jars:
+        os.environ["PYSPARK_SUBMIT_ARGS"] = f"--jars {jars} pyspark-shell"
+        builder = (
+            builder.config("spark.jars", jars)
+            .config("spark.driver.extraClassPath", jars.replace(",", ":"))
+            .config("spark.executor.extraClassPath", jars.replace(",", ":"))
+        )
     return (
-        builder.config("spark.jars", jars)
-        .config("spark.driver.extraClassPath", jars.replace(",", ":"))
-        .config("spark.executor.extraClassPath", jars.replace(",", ":"))
-        .config("spark.hadoop.fs.s3a.endpoint", endpoint)
+        builder.config("spark.hadoop.fs.s3a.endpoint", endpoint)
         .config("spark.hadoop.fs.s3a.path.style.access", "true")
         .config("spark.hadoop.fs.s3a.connection.ssl.enabled", "false")
         .config("spark.hadoop.fs.s3a.access.key", args.s3_access_key)
@@ -172,15 +175,19 @@ def _apply_s3a(builder, args: argparse.Namespace, jars: str):
 def _apply_iceberg(builder, args: argparse.Namespace):
     catalog = ICEBERG_CATALOG
     warehouse = str(args.warehouse).rstrip("/") + "/"
-    rest = getattr(args, "iceberg_rest", DEFAULT_ICEBERG_REST)
-    return (
+    builder = (
         builder.config("spark.sql.extensions", "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions")
         .config(f"spark.sql.catalog.{catalog}", "org.apache.iceberg.spark.SparkCatalog")
-        .config(f"spark.sql.catalog.{catalog}.type", "rest")
-        .config(f"spark.sql.catalog.{catalog}.uri", rest)
         .config(f"spark.sql.catalog.{catalog}.warehouse", warehouse)
-        .config(f"spark.sql.catalog.{catalog}.io-impl", "org.apache.iceberg.hadoop.HadoopFileIO")
         .config("spark.sql.defaultCatalog", catalog)
+    )
+    if warehouse.startswith("file:"):
+        return builder.config(f"spark.sql.catalog.{catalog}.type", "hadoop")
+    rest = getattr(args, "iceberg_rest", DEFAULT_ICEBERG_REST)
+    return (
+        builder.config(f"spark.sql.catalog.{catalog}.type", "rest")
+        .config(f"spark.sql.catalog.{catalog}.uri", rest)
+        .config(f"spark.sql.catalog.{catalog}.io-impl", "org.apache.iceberg.hadoop.HadoopFileIO")
     )
 
 
@@ -192,11 +199,21 @@ def start_spark(app_name: str, args: argparse.Namespace, enable_aqe: bool | None
     if args.hold_seconds < 0:
         raise SystemExit("--hold-seconds phải >= 0")
 
+    # PySpark đổi datetime naive sang instant theo timezone máy. Khóa UTC
+    # trước khi tạo JVM để signup_ts và effective_ts không lệch 7 giờ.
+    import os
+    import time
+
+    os.environ["TZ"] = "UTC"
+    if hasattr(time, "tzset"):
+        time.tzset()
+
     use_aqe = enable_aqe if enable_aqe is not None else getattr(args, "enable_aqe", False)
 
     from pyspark.sql import SparkSession
 
-    local_scratch = _REPO_ROOT / "data_generator" / "output" / "lakehouse"
+    scratch_env = os.environ.get("SPARK_LOCAL_DIR", "").strip()
+    local_scratch = Path(scratch_env) if scratch_env else _REPO_ROOT / "data_generator" / "output" / "lakehouse"
     local_scratch.mkdir(parents=True, exist_ok=True)
     builder = (
         SparkSession.builder.master(args.master)
@@ -204,17 +221,39 @@ def start_spark(app_name: str, args: argparse.Namespace, enable_aqe: bool | None
         .config("spark.sql.shuffle.partitions", str(args.shuffle_partitions))
         .config("spark.sql.parquet.mergeSchema", "false")
         .config("spark.sql.session.timeZone", "UTC")
+        .config("spark.driver.extraJavaOptions", "-Duser.timezone=UTC")
+        .config("spark.executor.extraJavaOptions", "-Duser.timezone=UTC")
         .config("spark.ui.enabled", "false" if args.no_ui else "true")
         .config("spark.ui.port", str(args.ui_port))
         .config("spark.ui.showConsoleProgress", "false")
-        .config("spark.driver.bindAddress", "127.0.0.1")
-        .config("spark.driver.host", "127.0.0.1")
         .config("spark.sql.warehouse.dir", str(local_scratch / "_spark"))
     )
+    # local[*] giữ driver trên loopback. spark:// phải advertise hostname
+    # để worker trong Docker nối lại được driver.
+    if str(args.master).startswith("local"):
+        builder = builder.config("spark.driver.bindAddress", "127.0.0.1").config("spark.driver.host", "127.0.0.1")
+    else:
+        driver_host = os.environ.get("SPARK_DRIVER_HOST", "")
+        builder = builder.config("spark.driver.bindAddress", "0.0.0.0")
+        if driver_host:
+            builder = builder.config("spark.driver.host", driver_host)
+        if os.environ.get("SPARK_DRIVER_PORT"):
+            builder = builder.config("spark.driver.port", os.environ["SPARK_DRIVER_PORT"])
+        if os.environ.get("SPARK_BLOCKMANAGER_PORT"):
+            builder = builder.config("spark.blockManager.port", os.environ["SPARK_BLOCKMANAGER_PORT"])
+        builder = builder.config("spark.port.maxRetries", os.environ.get("SPARK_PORT_MAX_RETRIES", "16"))
+        builder = builder.config("spark.pyspark.python", "python3")
+        code_path = os.environ.get("CINESTREAM_CODE", "/opt/cinestream")
+        builder = (
+            builder.config("spark.executorEnv.PYTHONPATH", code_path)
+            .config("spark.executorEnv.PYSPARK_PYTHON", "python3")
+        )
     remote_source = DataSource(str(getattr(args, "source_dir", ""))).remote
     iceberg = uses_iceberg(args)
     if remote_source or iceberg:
-        builder = _apply_s3a(builder, args, _classpath(include_iceberg=iceberg))
+        use_image_jars = os.environ.get("SPARK_USE_IMAGE_JARS") == "1"
+        jars = None if use_image_jars else _classpath(include_iceberg=iceberg)
+        builder = _apply_s3a(builder, args, jars)
     if iceberg:
         builder = _apply_iceberg(builder, args)
 

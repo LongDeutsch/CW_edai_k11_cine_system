@@ -1,0 +1,435 @@
+"""Một DAG batch hằng ngày cho lakehouse Cinestream.
+
+Airflow chỉ lập lịch, chờ nguồn, gửi spark-submit và ghi dấu publish.
+Phép biến đổi Bronze, Silver, Gold nằm trong job Spark Phase 1 và chạy
+trên cụm spark-master, không chạy trong worker Airflow.
+"""
+
+from __future__ import annotations
+
+import json
+import os
+import subprocess
+from datetime import datetime, timedelta, timezone
+
+from airflow.exceptions import AirflowException, AirflowSensorTimeout
+from airflow.models import DAG
+from airflow.operators.python import PythonOperator
+from airflow.sensors.base import BaseSensorOperator
+
+from orchestration.batch_identity import assess_listing, parse_s3_uri
+
+DAG_ID = "cinestream_daily_batch_lakehouse"
+SPARK_MASTER = "spark://spark-master:7077"
+ENTRY = "/opt/cinestream/orchestration/spark_entry.py"
+INTENDED_SCHEDULE = os.environ.get("CINESTREAM_BATCH_SCHEDULE", "0 2 * * *").strip()
+
+
+def _env_allows_production() -> bool:
+    return os.environ.get("CINESTREAM_ALLOW_PRODUCTION", "").strip().lower() in {"1", "true", "yes"}
+
+
+def _schedule():
+    """Lịch chỉ gắn khi production được phép.
+
+    Cron vẫn nằm ở ``CINESTREAM_BATCH_SCHEDULE``. Khi ``CINESTREAM_ALLOW_PRODUCTION``
+    chưa bật, schedule là None nên scheduler không tạo run để rồi fail vì guard.
+    Bật biến môi trường là cách ủy quyền cho mọi run lịch, không sửa JSON từng lần.
+    """
+    raw = INTENDED_SCHEDULE
+    if raw.lower() in {"", "none", "manual"}:
+        return None
+    if not _env_allows_production():
+        return None
+    return raw
+
+
+def _on_failure(context) -> None:
+    task_id = context["task_instance"].task_id
+    print(
+        f"task {task_id} thất bại, run_id={context.get('run_id')}, "
+        f"logical_date={context.get('logical_date')}. "
+        "publish_success không chạy nên batch chưa được đánh dấu đã phát hành."
+    )
+
+
+def _conf(context) -> dict:
+    dag_run = context.get("dag_run")
+    params = dict(context.get("params") or {})
+    incoming = dict(getattr(dag_run, "conf", None) or {})
+    params.update({key: value for key, value in incoming.items() if value is not None})
+    return params
+
+
+def _namespaces(conf: dict) -> tuple[str, str, str]:
+    bronze = str(conf.get("bronze_namespace") or "bronze")
+    silver = str(conf.get("silver_namespace") or "silver")
+    gold = str(conf.get("gold_namespace") or "gold")
+    names = (bronze, silver, gold)
+    protected = {"bronze", "silver", "gold"}
+    conf_allows = conf.get("allow_production") in (True, "true", "True", "1", 1)
+    if any(name in protected for name in names) and not (conf_allows or _env_allows_production()):
+        raise AirflowException(
+            "bảng bronze/silver/gold chỉ chạy khi CINESTREAM_ALLOW_PRODUCTION=true "
+            "hoặc conf có allow_production=true"
+        )
+    return bronze, silver, gold
+
+
+def _effective_ts(context) -> str:
+    conf = _conf(context)
+    override = conf.get("effective_ts")
+    if override:
+        return str(override)
+    start = context["data_interval_start"]
+    if hasattr(start, "in_timezone"):
+        start = start.in_timezone("UTC")
+    return start.strftime("%Y-%m-%dT%H:%M:%S+00:00")
+
+
+def _source_assessment(context) -> dict:
+    conf = _conf(context)
+    bucket, prefix = parse_s3_uri(str(conf.get("source_dir") or "s3a://external-source-lake"))
+    objects = _list_objects(bucket, prefix, str(conf.get("s3_endpoint") or "http://minio:9000"))
+    found = assess_listing(objects, prefix)
+    found["source_dir"] = str(conf.get("source_dir"))
+    found["bucket"] = bucket
+    found["prefix"] = prefix
+    return found
+
+
+def _list_objects(bucket: str, prefix: str, endpoint: str) -> list[dict]:
+    import boto3
+
+    client = boto3.client(
+        "s3",
+        endpoint_url=endpoint,
+        aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID", "minioadmin"),
+        aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY", "minioadmin"),
+        region_name="us-east-1",
+    )
+    kwargs = {"Bucket": bucket}
+    if prefix:
+        kwargs["Prefix"] = prefix.rstrip("/") + "/"
+    found = []
+    for page in client.get_paginator("list_objects_v2").paginate(**kwargs):
+        for item in page.get("Contents") or []:
+            found.append({"key": item["Key"], "size": item["Size"], "etag": item["ETag"]})
+    return found
+
+
+class SourceReadySensor(BaseSensorOperator):
+    """Chờ đủ bốn folder parquet. Timeout lấy từ conf của từng lần chạy."""
+
+    def __init__(self, **kwargs):
+        super().__init__(poke_interval=5, timeout=180, mode="poke", **kwargs)
+        self._result: dict = {}
+
+    def execute(self, context):
+        conf = _conf(context)
+        self.timeout = int(conf.get("source_timeout_seconds", 180))
+        self.poke_interval = int(conf.get("source_poke_seconds", 5))
+        try:
+            super().execute(context)
+        except AirflowSensorTimeout as exc:
+            reason = self._result.get("reason") or "hết thời gian chờ"
+            raise AirflowSensorTimeout(f"nguồn chưa sẵn sàng: {reason}") from exc
+        return self._result
+
+    def poke(self, context) -> bool:
+        _namespaces(_conf(context))
+        self._result = _source_assessment(context)
+        if self._result["ready"]:
+            self.log.info("batch nguồn %s, %s file", self._result["batch_id"], self._result["files"])
+            return True
+        self.log.info("chưa đủ nguồn: %s", self._result["reason"])
+        return False
+
+
+def _batch(context) -> dict:
+    pulled = context["ti"].xcom_pull(task_ids="check_source_ready")
+    if not pulled or not pulled.get("batch_id"):
+        raise AirflowException("check_source_ready chưa trả batch_id")
+    return pulled
+
+
+def _submit(context, command: str, extra: list[str]) -> dict:
+    conf = _conf(context)
+    bronze, silver, gold = _namespaces(conf)
+    cmd = [
+        "spark-submit",
+        "--master",
+        SPARK_MASTER,
+        "--deploy-mode",
+        "client",
+        "--driver-memory",
+        "1g",
+        "--executor-memory",
+        "1g",
+        "--executor-cores",
+        "1",
+        "--conf",
+        "spark.executor.instances=1",
+        "--conf",
+        "spark.dynamicAllocation.enabled=false",
+        "--conf",
+        "spark.cores.max=1",
+        ENTRY,
+        command,
+        "--warehouse",
+        str(conf.get("warehouse") or "s3a://lakehouse"),
+        "--master",
+        SPARK_MASTER,
+        "--iceberg-rest",
+        str(conf.get("iceberg_rest") or "http://iceberg-rest:8181"),
+        "--s3-endpoint",
+        str(conf.get("s3_endpoint") or "http://minio:9000"),
+        "--s3-access-key",
+        os.environ.get("AWS_ACCESS_KEY_ID", "minioadmin"),
+        "--s3-secret-key",
+        os.environ.get("AWS_SECRET_ACCESS_KEY", "minioadmin"),
+        "--source-dir",
+        str(conf.get("source_dir") or "s3a://external-source-lake"),
+        "--no-ui",
+        "--shuffle-partitions",
+        "4",
+        *extra,
+    ]
+    if command == "publish":
+        cmd.append("--enable-aqe")
+    print("spark-submit " + " ".join(cmd[1:]))
+    env = os.environ.copy()
+    env["PYTHONPATH"] = "/opt/cinestream"
+    env.setdefault("SPARK_DRIVER_HOST", "airflow-scheduler")
+    completed = subprocess.run(cmd, text=True, capture_output=True, env=env)
+    if completed.stdout:
+        print(completed.stdout)
+    if completed.stderr:
+        print(completed.stderr)
+    if completed.returncode != 0:
+        raise AirflowException(f"spark-submit {command} thoát {completed.returncode}")
+    return _result_json(completed.stdout + "\n" + completed.stderr) | {
+        "bronze_namespace": bronze,
+        "silver_namespace": silver,
+        "gold_namespace": gold,
+    }
+
+
+def _result_json(text: str) -> dict:
+    found = {}
+    for line in text.splitlines():
+        if line.startswith("RESULT_JSON="):
+            found = json.loads(line.split("=", 1)[1])
+    return found
+
+
+def spark_raw_to_bronze(**context) -> dict:
+    batch = _batch(context)
+    conf = _conf(context)
+    bronze, _, _ = _namespaces(conf)
+    extra = [
+        "--namespace",
+        bronze,
+        "--batch-id",
+        batch["batch_id"],
+        "--run-id",
+        str(context["run_id"]),
+        "--error-threshold",
+        str(conf.get("error_threshold", 0.05)),
+    ]
+    if _fail_once(conf):
+        marker = _fail_marker(context)
+        if not marker.exists():
+            try:
+                _submit(context, "ingest", [*extra, "--fail-after", "users"])
+            except Exception:
+                marker.parent.mkdir(parents=True, exist_ok=True)
+                marker.write_text("failed-after-users")
+                raise
+            marker.write_text("unexpected")
+            raise AirflowException("fail_once phải dừng sau khi commit users")
+    result = _submit(context, "ingest", extra)
+    result["batch_id"] = batch["batch_id"]
+    return result
+
+
+def validate_bronze_task(**context) -> dict:
+    batch = _batch(context)
+    conf = _conf(context)
+    bronze, _, _ = _namespaces(conf)
+    result = _submit(
+        context,
+        "validate-bronze",
+        [
+            "--namespace",
+            bronze,
+            "--batch-id",
+            batch["batch_id"],
+            "--error-threshold",
+            str(conf.get("error_threshold", 0.05)),
+        ],
+    )
+    if result.get("ready") is False:
+        raise AirflowException(result.get("reason") or "bronze không đạt")
+    return result
+
+
+def spark_bronze_to_gold(**context) -> dict:
+    batch = _batch(context)
+    conf = _conf(context)
+    bronze, silver, gold = _namespaces(conf)
+    effective = _effective_ts(context)
+    result = _submit(
+        context,
+        "publish",
+        [
+            "--bronze-namespace",
+            bronze,
+            "--silver-namespace",
+            silver,
+            "--gold-namespace",
+            gold,
+            "--effective-ts",
+            effective,
+            "--batch-id",
+            f"{batch['batch_id']}-publish",
+            "--run-id",
+            str(context["run_id"]),
+            "--error-threshold",
+            str(conf.get("error_threshold", 0.05)),
+        ],
+    )
+    result["effective_ts"] = effective
+    result["batch_id"] = batch["batch_id"]
+    return result
+
+
+def validate_gold_task(**context) -> dict:
+    conf = _conf(context)
+    _, silver, gold = _namespaces(conf)
+    result = _submit(
+        context,
+        "validate-gold",
+        ["--silver-namespace", silver, "--gold-namespace", gold],
+    )
+    if result.get("ready") is False:
+        raise AirflowException(result.get("reason") or "gold không đạt")
+    return result
+
+
+def publish_success(**context) -> dict:
+    batch = _batch(context)
+    conf = _conf(context)
+    bronze, silver, gold = _namespaces(conf)
+    payload = {
+        "published": True,
+        "dag_id": DAG_ID,
+        "run_id": str(context["run_id"]),
+        "logical_date": str(context["logical_date"]),
+        "data_interval_start": context["data_interval_start"].isoformat(),
+        "data_interval_end": context["data_interval_end"].isoformat(),
+        "effective_ts": _effective_ts(context),
+        "batch_id": batch["batch_id"],
+        "source_dir": batch.get("source_dir"),
+        "files": batch.get("files"),
+        "namespaces": {"bronze": bronze, "silver": silver, "gold": gold},
+        "bronze_quality": context["ti"].xcom_pull(task_ids="validate_bronze"),
+        "gold_quality": context["ti"].xcom_pull(task_ids="validate_gold"),
+    }
+    _put_marker(conf, bronze, batch["batch_id"], payload)
+    print("RESULT_JSON=" + json.dumps({"published": True, "batch_id": batch["batch_id"]}))
+    return payload
+
+
+def _put_marker(conf: dict, namespace: str, batch_id: str, payload: dict) -> None:
+    import boto3
+
+    bucket, _ = parse_s3_uri(str(conf.get("warehouse") or "s3a://lakehouse"))
+    key = f"_orchestration/{namespace}/{batch_id}.json"
+    client = boto3.client(
+        "s3",
+        endpoint_url=str(conf.get("s3_endpoint") or "http://minio:9000"),
+        aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID", "minioadmin"),
+        aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY", "minioadmin"),
+        region_name="us-east-1",
+    )
+    body = json.dumps(payload, default=str).encode()
+    client.put_object(Bucket=bucket, Key=key, Body=body, ContentType="application/json")
+    print(f"đã ghi s3://{bucket}/{key}")
+
+
+def _fail_once(conf: dict) -> bool:
+    return conf.get("fail_once") in (True, "true", "True", "1", 1)
+
+
+def _fail_marker(context):
+    from pathlib import Path
+
+    return Path("/opt/airflow/logs/fail-once") / f"{context['run_id']}.txt"
+
+
+default_args = {
+    "owner": "cinestream",
+    "retries": 1,
+    "retry_delay": timedelta(seconds=20),
+    "execution_timeout": timedelta(minutes=20),
+    "on_failure_callback": _on_failure,
+    "email_on_failure": False,
+    "email_on_retry": False,
+}
+
+with DAG(
+    dag_id=DAG_ID,
+    description="Raw MinIO → Bronze → Silver → Gold. Lịch 02:00 UTC chỉ bật khi CINESTREAM_ALLOW_PRODUCTION=true.",
+    schedule=_schedule(),
+    start_date=datetime(2026, 1, 1, tzinfo=timezone.utc),
+    catchup=False,
+    max_active_runs=1,
+    default_args=default_args,
+    tags=["cinestream", "batch", "lakehouse"],
+    params={
+        "source_dir": "s3a://external-source-lake",
+        "warehouse": "s3a://lakehouse",
+        "bronze_namespace": "bronze",
+        "silver_namespace": "silver",
+        "gold_namespace": "gold",
+        "iceberg_rest": "http://iceberg-rest:8181",
+        "s3_endpoint": "http://minio:9000",
+        "error_threshold": 0.05,
+        "source_timeout_seconds": 180,
+        "source_poke_seconds": 5,
+        "fail_once": False,
+    },
+) as dag:
+    check_source_ready = SourceReadySensor(
+        task_id="check_source_ready",
+        retries=0,
+        execution_timeout=timedelta(minutes=15),
+    )
+    raw_to_bronze = PythonOperator(
+        task_id="spark_raw_to_bronze",
+        python_callable=spark_raw_to_bronze,
+        retries=1,
+    )
+    bronze_gate = PythonOperator(
+        task_id="validate_bronze",
+        python_callable=validate_bronze_task,
+        retries=0,
+    )
+    to_gold = PythonOperator(
+        task_id="spark_bronze_to_gold",
+        python_callable=spark_bronze_to_gold,
+        retries=1,
+    )
+    gold_gate = PythonOperator(
+        task_id="validate_gold",
+        python_callable=validate_gold_task,
+        retries=0,
+    )
+    published = PythonOperator(
+        task_id="publish_success",
+        python_callable=publish_success,
+        retries=1,
+        execution_timeout=timedelta(minutes=5),
+    )
+    check_source_ready >> raw_to_bronze >> bronze_gate >> to_gold >> gold_gate >> published

@@ -1,0 +1,248 @@
+{
+  "status": "PASS",
+  "failed": [],
+  "cases": [
+    {
+      "name": "schema string bị chặn",
+      "status": "PASS",
+      "expected": "signup_ts string vào quarantine, không có fact",
+      "actual": {
+        "dag": "failed",
+        "tasks": {
+          "check_source_ready": "success",
+          "spark_raw_to_bronze": "failed",
+          "validate_bronze": "upstream_failed",
+          "spark_bronze_to_gold": "upstream_failed",
+          "validate_gold": "upstream_failed",
+          "publish_success": "upstream_failed"
+        },
+        "marker": false,
+        "users": 0,
+        "facts": 0,
+        "quarantine": 1,
+        "quality": [
+          [
+            "users",
+            "schema_rejected",
+            1,
+            0
+          ]
+        ]
+      }
+    },
+    {
+      "name": "nguồn thật",
+      "status": "PASS",
+      "expected": "đủ dòng, timestamp UTC, marker published",
+      "actual": {
+        "dag": "success",
+        "tasks": {
+          "check_source_ready": "success",
+          "spark_raw_to_bronze": "success",
+          "validate_bronze": "success",
+          "spark_bronze_to_gold": "success",
+          "validate_gold": "success",
+          "publish_success": "success"
+        },
+        "marker_published": true,
+        "users": 5000,
+        "movies": 100,
+        "ratings": 256410,
+        "watches": 820513,
+        "facts": 57665,
+        "fact_watch": 662830,
+        "signup_type": "timestamp",
+        "created_type": "timestamp",
+        "rating_type": "timestamp",
+        "snapshots": {
+          "raw_users": [
+            {
+              "snapshot_id": 8411045857037134195,
+              "operation": "append"
+            }
+          ],
+          "raw_ratings": [
+            {
+              "snapshot_id": 8357446765918150946,
+              "operation": "append"
+            }
+          ],
+          "raw_watch_history": [
+            {
+              "snapshot_id": 6281968813630650780,
+              "operation": "append"
+            }
+          ],
+          "fact_ratings": [
+            {
+              "snapshot_id": 4252870239132393313,
+              "operation": "overwrite"
+            }
+          ]
+        }
+      },
+      "snapshots": {
+        "raw_users": [
+          {
+            "snapshot_id": 8411045857037134195,
+            "operation": "append"
+          }
+        ],
+        "raw_ratings": [
+          {
+            "snapshot_id": 8357446765918150946,
+            "operation": "append"
+          }
+        ],
+        "raw_watch_history": [
+          {
+            "snapshot_id": 6281968813630650780,
+            "operation": "append"
+          }
+        ],
+        "fact_ratings": [
+          {
+            "snapshot_id": 4252870239132393313,
+            "operation": "overwrite"
+          }
+        ]
+      },
+      "namespace": "it_af_real"
+    },
+    {
+      "name": "schema evolution và SCD2",
+      "status": "PASS",
+      "expected": "44 phim schema cũ null, một current, không overlap",
+      "actual": {
+        "movies": 100,
+        "old_schema": 44,
+        "evolved": 56,
+        "stg_ratings": 57665,
+        "fact_ratings": 57665,
+        "stg_watch": 662830,
+        "fact_watch": 662830,
+        "obt": 662830,
+        "users_without_one_current": 0,
+        "movies_without_one_current": 0,
+        "user_overlaps": 0,
+        "movie_overlaps": 0,
+        "duplicate_rating_sk": 0,
+        "duplicate_session_sk": 0,
+        "orphan_user_sk": 0,
+        "orphan_movie_sk": 0
+      }
+    },
+    {
+      "name": "rerun nguồn thật",
+      "status": "PASS",
+      "expected": "cùng file, Bronze không thêm snapshot",
+      "actual": {
+        "dag": "success",
+        "users": 5000,
+        "ratings": 256410,
+        "watches": 820513,
+        "snapshots_before": {
+          "raw_users": [
+            {
+              "snapshot_id": 8411045857037134195,
+              "operation": "append"
+            }
+          ],
+          "raw_ratings": [
+            {
+              "snapshot_id": 8357446765918150946,
+              "operation": "append"
+            }
+          ],
+          "raw_watch_history": [
+            {
+              "snapshot_id": 6281968813630650780,
+              "operation": "append"
+            }
+          ],
+          "fact_ratings": [
+            {
+              "snapshot_id": 4252870239132393313,
+              "operation": "overwrite"
+            }
+          ]
+        },
+        "snapshots_after": {
+          "raw_users": [
+            {
+              "snapshot_id": 8411045857037134195,
+              "operation": "append"
+            }
+          ],
+          "raw_ratings": [
+            {
+              "snapshot_id": 8357446765918150946,
+              "operation": "append"
+            }
+          ],
+          "raw_watch_history": [
+            {
+              "snapshot_id": 6281968813630650780,
+              "operation": "append"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "retry nguồn thật",
+      "status": "PASS",
+      "expected": "fail sau users, lần hai không nhân đôi",
+      "actual": {
+        "dag": "success",
+        "run_id": "manual__2026-10-18T05:21:31.526109+00:00",
+        "tasks": {
+          "check_source_ready": "success",
+          "spark_raw_to_bronze": "success",
+          "validate_bronze": "success",
+          "spark_bronze_to_gold": "success",
+          "validate_gold": "success",
+          "publish_success": "success"
+        },
+        "bronze_try": 2,
+        "users": 5000,
+        "ratings": 256410,
+        "facts": 57665,
+        "marker": true,
+        "try1": "SimulatedTaskFailure after users",
+        "try2": {
+          "users": "skipped_duplicate appended=0",
+          "movies": "skipped_duplicate appended=0",
+          "ratings": "skipped_duplicate appended=0",
+          "watch": "accepted appended=820513"
+        },
+        "earlier_attempt": {
+          "run_id": "manual__2026-10-18T05:17:18.785111+00:00",
+          "dag": "failed",
+          "bronze_try": 2,
+          "note": "spark-submit exit -9 on try 2 after users and ratings were already committed; no publish",
+          "users": 5000,
+          "ratings": 256410,
+          "facts": 0
+        }
+      }
+    },
+    {
+      "name": "production untouched",
+      "status": "PASS",
+      "expected": "snapshot production không đổi",
+      "actual": {
+        "unchanged": true
+      }
+    }
+  ],
+  "schedule": {
+    "last_parsed_time": "2026-10-18T05:29:09.425932+00:00",
+    "schedule_interval": null,
+    "timetable": "Never, external triggers only",
+    "intended_schedule": "0 2 * * *",
+    "allow_production": "false",
+    "is_paused": true,
+    "dags_folder": "/opt/cinestream/orchestration/dags"
+  }
+}
