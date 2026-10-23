@@ -13,7 +13,7 @@ from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parent / "static"
-ALLOWED = ("analytics/", "movies/", "serving/", "health", "ready")
+ALLOWED = ("analytics/", "movies/", "serving/", "health", "ready", "governance/")
 
 
 def main() -> None:

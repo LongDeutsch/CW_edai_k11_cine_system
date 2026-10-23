@@ -4,6 +4,8 @@ Chỉ truy vấn ``movie_engagement``, ``movie_ratings`` và ``sync_log``.
 Không đọc bảng ``_stage`` và không mở Iceberg. Hai subquery trong overview
 không phải một transaction: nếu snapshot hai bảng lệch, API trả 409 thay vì
 trộn hai phiên bản.
+
+Route ``/governance`` đọc inventory và metadata. Không ALTER và không ghi marker.
 """
 
 from __future__ import annotations
@@ -15,10 +17,12 @@ from typing import Any
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel, Field
 
+from serving.api.governance_routes import router as governance_router
 from serving.clickhouse.sync_gold import ServingSyncError, clickhouse, clickhouse_json
 from transformation.batch.contracts.validators import check_identifier
 
 app = FastAPI(title="Cinestream serving", version="3c")
+app.include_router(governance_router)
 
 
 class Overview(BaseModel):

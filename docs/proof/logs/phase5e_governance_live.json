@@ -1,0 +1,159 @@
+{
+  "git_head": "f089b7c9d5de0808396d0597d7e3fb9851415eb2",
+  "generated_at": "2026-10-23T05:31:07.074517+00:00",
+  "historical_proof_used_as_current_health": false,
+  "streaming_enabled": false,
+  "sources": {
+    "inventory": {
+      "status": "read",
+      "error": null
+    },
+    "iceberg": {
+      "status": "unavailable",
+      "error": "URLError: <urlopen error [Errno 61] Connection refused>"
+    },
+    "airflow": {
+      "status": "unavailable",
+      "error": "unread:URLError"
+    },
+    "clickhouse": {
+      "status": "unavailable",
+      "error": "<urlopen error [Errno 61] Connection refused>"
+    },
+    "flink": {
+      "status": "unavailable",
+      "error": "unread:URLError"
+    },
+    "marker": {
+      "status": "unavailable",
+      "error": "boto3 không có"
+    }
+  },
+  "health": {
+    "status": "unavailable",
+    "success_inferred_from_snapshot": false,
+    "historical_proof_used_as_current_health": false,
+    "batch_pipeline": "unknown",
+    "airflow_paused": null,
+    "airflow": null,
+    "serving": {
+      "status": "unavailable",
+      "reason": "<urlopen error [Errno 61] Connection refused>"
+    },
+    "flink": {
+      "status": "unavailable",
+      "error": "unread:URLError"
+    },
+    "marker": {
+      "status": "unavailable",
+      "error": "boto3 không có",
+      "payload": null
+    },
+    "freshness": {
+      "batch": "unavailable",
+      "streaming": "disabled"
+    }
+  },
+  "drift_status": "unavailable",
+  "drift_findings": null,
+  "integration": {
+    "status": "unavailable",
+    "error": "URLError: <urlopen error [Errno 61] Connection refused>",
+    "count": null,
+    "cleanup_candidate": null,
+    "keep_referenced": null
+  },
+  "dataset_count": 46,
+  "status_counts": {
+    "declared": 18,
+    "unknown": 28
+  },
+  "fact_ratings": {
+    "id": "iceberg.gold.fact_ratings",
+    "name": "fact_ratings",
+    "location": "cinestream.gold.fact_ratings",
+    "zone": "gold",
+    "layer": "gold",
+    "environment": "production",
+    "lineage_status": "verified",
+    "declared_in_code": true,
+    "pipeline": "not_applicable",
+    "owner": "transformation.batch.jobs.publish_silver_gold",
+    "freshness_contract": "Thay cả snapshot khi dữ liệu khác.",
+    "update_mode": "snapshot_replacement",
+    "schema_source": "storage/lakehouse/gold/gold_tables.sql",
+    "status": "unknown",
+    "presence": "unknown",
+    "failure": false,
+    "snapshot_id": null,
+    "total_records": null,
+    "committed_at": null,
+    "actual_partitions": null,
+    "drift_classification": "unavailable",
+    "live_note": "iceberg chưa đọc được",
+    "impact": {
+      "effect": "unknown",
+      "reason": "chưa đọc được catalog nên không kết luận tác động",
+      "downstream": [
+        "minio.orchestration_marker",
+        "clickhouse.movie_ratings_stage",
+        "clickhouse.movie_engagement_stage",
+        "clickhouse.movie_ratings",
+        "clickhouse.movie_engagement",
+        "clickhouse.sync_log",
+        "api.analytics.overview",
+        "api.movies.top_rated",
+        "api.serving.status",
+        "api.ready",
+        "api.movies.most_watched",
+        "dashboard.analytics"
+      ]
+    },
+    "downstream_ids": [
+      "minio.orchestration_marker",
+      "clickhouse.movie_ratings_stage"
+    ]
+  },
+  "playback": {
+    "id": "iceberg.silver.stg_playback_windows",
+    "name": "stg_playback_windows",
+    "location": "cinestream.silver.stg_playback_windows",
+    "zone": "silver",
+    "layer": "silver",
+    "environment": "production",
+    "lineage_status": "writer_gated",
+    "declared_in_code": true,
+    "pipeline": "disabled",
+    "owner": "streaming.flink.jobs.heartbeat_window_job",
+    "freshness_contract": "Upsert theo cửa sổ. Bảng production chưa được job tạo khi streaming tắt.",
+    "update_mode": "upsert",
+    "schema_source": "streaming/flink/sinks/iceberg_sink.py",
+    "status": "unknown",
+    "presence": "unknown",
+    "failure": false,
+    "snapshot_id": null,
+    "total_records": null,
+    "committed_at": null,
+    "actual_partitions": null,
+    "drift_classification": "unavailable",
+    "live_note": "iceberg chưa đọc được",
+    "impact": {
+      "effect": "unknown",
+      "reason": "chưa đọc được catalog nên không kết luận tác động",
+      "downstream": [
+        "clickhouse.movie_windows_stage",
+        "clickhouse.trending_worker_status",
+        "clickhouse.movie_windows",
+        "api.movies.trending",
+        "clickhouse.trending_sync_log",
+        "api.serving.status",
+        "dashboard.analytics"
+      ]
+    },
+    "downstream_ids": [
+      "clickhouse.movie_windows_stage",
+      "clickhouse.trending_worker_status"
+    ]
+  },
+  "edge_count": 64
+}

@@ -17,6 +17,7 @@ from governance.extract import (
     flink_tables,
     spark_tables,
 )
+from governance.lineage_kind import classify_lineage
 
 
 @dataclass(frozen=True)
@@ -42,6 +43,7 @@ class Edge:
     upstream: str
     downstream: str
     evidence: tuple[str, str]
+    kind: str
 
 
 def datasets() -> tuple[Dataset, ...]:
@@ -737,7 +739,7 @@ _DATASETS: tuple[Dataset, ...] = (
 
 
 def _edge(upstream: str, downstream: str, path: str, token: str) -> Edge:
-    return Edge(upstream, downstream, (path, token))
+    return Edge(upstream, downstream, (path, token), classify_lineage(upstream, downstream, path, token))
 
 
 _EDGES: tuple[Edge, ...] = (

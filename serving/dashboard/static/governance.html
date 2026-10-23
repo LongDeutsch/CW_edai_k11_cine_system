@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cinestream governance</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header>
+    <div>
+      <p class="eyebrow"><a href="/">Analytics</a> · Governance</p>
+      <h1>Governance và lineage</h1>
+      <p class="lede">Inventory lấy từ code. Trạng thái vật lý chỉ hiện khi catalog vừa đọc được. Log phase trước không phải sức khỏe hiện tại.</p>
+    </div>
+    <div class="header-side">
+      <div class="chips" id="source-chips"></div>
+      <button id="refresh" type="button">Đọc lại</button>
+      <p id="read-state">Đang đọc FastAPI…</p>
+    </div>
+  </header>
+
+  <p id="gov-banner" class="banner" role="alert" hidden></p>
+
+  <main>
+    <section aria-labelledby="health-title">
+      <div class="section-head">
+        <h2 id="health-title">Pipeline và freshness</h2>
+        <p id="gov-health">—</p>
+      </div>
+      <p id="integration-note" class="note"></p>
+    </section>
+
+    <section aria-labelledby="catalog-title">
+      <div class="section-head">
+        <h2 id="catalog-title">Catalog</h2>
+        <p id="gov-count">—</p>
+      </div>
+      <form class="filters" id="filters">
+        <input id="q" type="search" placeholder="tên hoặc id" aria-label="Tìm dataset">
+        <select id="environment" aria-label="Môi trường">
+          <option value="">mọi môi trường</option>
+          <option value="production">production</option>
+          <option value="integration">integration</option>
+        </select>
+        <select id="zone" aria-label="Vùng">
+          <option value="">mọi vùng</option>
+        </select>
+        <select id="status" aria-label="Trạng thái">
+          <option value="">mọi trạng thái</option>
+        </select>
+      </form>
+      <p id="selection-note" class="note"></p>
+      <div class="table-wrap catalog-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Dataset</th>
+              <th>Môi trường</th>
+              <th>Hiện diện</th>
+              <th>Trạng thái</th>
+              <th>Pipeline</th>
+            </tr>
+          </thead>
+          <tbody id="gov-catalog"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="gov-grid">
+      <section aria-labelledby="lineage-title">
+        <div class="section-head">
+          <h2 id="lineage-title">Lineage</h2>
+          <p>Chỉ vẽ dataset đang chọn và các cạnh đã có evidence. Mũi tên đi từ upstream sang downstream. Cạnh control và health không phải dòng dữ liệu.</p>
+        </div>
+        <div class="lineage-toolbar">
+          <div class="mode-group" role="group" aria-label="Phạm vi lineage">
+            <button type="button" class="tool" data-mode="upstream" id="mode-upstream">Upstream</button>
+            <button type="button" class="tool" data-mode="downstream" id="mode-downstream">Downstream</button>
+            <button type="button" class="tool" data-mode="full" id="mode-full" aria-pressed="true">Full path</button>
+          </div>
+          <div class="mode-group" role="group" aria-label="Phóng to">
+            <button type="button" class="tool" id="zoom-out" aria-label="Thu nhỏ">−</button>
+            <button type="button" class="tool" id="zoom-in" aria-label="Phóng to">+</button>
+            <button type="button" class="tool" id="zoom-reset">Vừa khung</button>
+          </div>
+        </div>
+        <p id="lineage-note" class="note"></p>
+        <div id="lineage-viewport">
+          <svg id="gov-lineage" role="img" aria-label="Đồ thị lineage"></svg>
+        </div>
+        <ul id="lineage-legend" class="legend">
+          <li><span class="swatch production"></span> production</li>
+          <li><span class="swatch integration"></span> integration</li>
+          <li><span class="swatch disabled"></span> pipeline disabled</li>
+          <li><span class="swatch selected"></span> đang chọn</li>
+          <li><span class="swatch edge data"></span> data flow</li>
+          <li><span class="swatch edge control"></span> control</li>
+          <li><span class="swatch edge observe"></span> observability</li>
+          <li><span class="swatch edge api"></span> api</li>
+        </ul>
+        <ul id="lineage-evidence" class="evidence"></ul>
+      </section>
+      <section aria-labelledby="detail-title">
+        <div class="section-head">
+          <h2 id="detail-title">Chi tiết</h2>
+          <p id="gov-detail">Chọn một dataset trong catalog.</p>
+        </div>
+        <h3>Schema kỳ vọng và schema vật lý</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Cột</th><th>Kỳ vọng</th><th>Vật lý</th></tr>
+            </thead>
+            <tbody id="gov-schema"></tbody>
+          </table>
+        </div>
+        <h3>Tác động phía dưới</h3>
+        <p id="gov-impact">—</p>
+      </section>
+    </div>
+  </main>
+  <script type="module" src="/governance.js"></script>
+</body>
+</html>

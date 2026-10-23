@@ -17,8 +17,8 @@ serving-up: ## Bật ClickHouse :18123 và tạo cinestream_serving
 serving-down: ## Dừng ClickHouse, giữ MinIO và Iceberg
 	$(DOCKER_COMPOSE) $(SERVING_COMPOSE) stop clickhouse
 
-serving-api: ## API :18083. Batch là CINESTREAM_CLICKHOUSE_DATABASE, trending là CINESTREAM_TRENDING_DATABASE hoặc cùng batch
-	PYTHONPATH=. $(UV) run --no-project --python 3.12 --with fastapi --with 'uvicorn[standard]' uvicorn serving.api.app:app --host 127.0.0.1 --port 18083
+serving-api: ## API :18083, gồm /governance chỉ đọc. Batch là CINESTREAM_CLICKHOUSE_DATABASE
+	PYTHONPATH=. $(UV) run --no-project --python 3.12 --with fastapi --with 'uvicorn[standard]' --with boto3 uvicorn serving.api.app:app --host 127.0.0.1 --port 18083
 
 serving-dashboard: ## Dashboard :18084, proxy tới CINESTREAM_API_URL hoặc :18083
 	PYTHONPATH=. $(UV) run --no-project --python 3.12 python -m serving.dashboard.server
