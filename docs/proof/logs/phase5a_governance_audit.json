@@ -1,0 +1,576 @@
+{
+  "iceberg": {
+    "status": "read",
+    "integration_namespaces": [
+      "it_af_backfill",
+      "it_af_badts",
+      "it_af_contract",
+      "it_af_ok",
+      "it_af_real",
+      "it_af_real_retry",
+      "it_af_retry",
+      "it_api_gold",
+      "it_audit_gold",
+      "it_ch_gold"
+    ],
+    "silver_it_tables": [
+      "it_p05_sessions",
+      "it_p05_windows",
+      "it_p05b_sessions",
+      "it_p05b_windows",
+      "it_p05c_sessions",
+      "it_p05c_windows",
+      "it_p05d_sessions",
+      "it_p05d_windows",
+      "it_p1_heartbeats",
+      "it_p1_windows",
+      "it_p1b_heartbeats",
+      "it_p1b_windows",
+      "it_p1c_heartbeats",
+      "it_p1c_windows",
+      "it_p25_heartbeats",
+      "it_p25_windows",
+      "it_p25b_heartbeats",
+      "it_p25b_windows",
+      "it_p25c_heartbeats",
+      "it_p25c_windows",
+      "it_p25d_heartbeats",
+      "it_p25d_windows",
+      "it_p25e_heartbeats",
+      "it_p25e_windows",
+      "it_p2_conflict",
+      "it_p2_e2e_heartbeats",
+      "it_p2_e2e_windows",
+      "it_p2_heartbeats",
+      "it_p2_ops_heartbeats",
+      "it_p2_ops_windows",
+      "it_p2_recbench1_heartbeats",
+      "it_p2_recbench1_windows",
+      "it_p2_recbench2_heartbeats",
+      "it_p2_recbench2_windows",
+      "it_p2_recgap_heartbeats",
+      "it_p2_recgap_windows",
+      "it_p2_recidle_heartbeats",
+      "it_p2_recidle_windows",
+      "it_p2_recnorm_heartbeats",
+      "it_p2_recnorm_windows",
+      "it_p2_recp1_heartbeats",
+      "it_p2_recp1_windows",
+      "it_p2_recslow_heartbeats",
+      "it_p2_recslow_windows",
+      "it_p2_replace",
+      "it_p2_trending_empty",
+      "it_p2_trending_heartbeats",
+      "it_p2_trending_windows",
+      "it_p2_tumbling_heartbeats",
+      "it_p2_tumbling_windows",
+      "it_p2_valhold_heartbeats",
+      "it_p2_valhold_windows",
+      "it_p2_validle_heartbeats",
+      "it_p2_validle_windows",
+      "it_p2_valp1_heartbeats",
+      "it_p2_valp1_windows",
+      "it_p2_windows",
+      "it_p2_wm1_heartbeats",
+      "it_p2_wm1_windows",
+      "it_p2_wm2_heartbeats",
+      "it_p2_wm2_windows",
+      "it_p2b_heartbeats",
+      "it_p2b_windows",
+      "it_playback_windows",
+      "it_watch_sessions"
+    ],
+    "tables": [
+      {
+        "namespace": "bronze",
+        "name": "raw_users",
+        "status": "present",
+        "snapshot_id": 7954921826504091397,
+        "columns": [
+          "user_id",
+          "signup_ts",
+          "country",
+          "subscription_tier",
+          "preferred_language",
+          "age_group",
+          "gender",
+          "_ingest_ts",
+          "_source_file",
+          "_batch_id",
+          "_file_id"
+        ]
+      },
+      {
+        "namespace": "bronze",
+        "name": "raw_movies",
+        "status": "present",
+        "snapshot_id": 5393514282830386405,
+        "columns": [
+          "movie_id",
+          "title",
+          "release_year",
+          "runtime_minutes",
+          "original_language",
+          "budget",
+          "director_id",
+          "created_ts",
+          "content_rating",
+          "hdr_format",
+          "audio_spatial",
+          "_ingest_ts",
+          "_source_file",
+          "_batch_id",
+          "_file_id"
+        ]
+      },
+      {
+        "namespace": "bronze",
+        "name": "raw_ratings",
+        "status": "present",
+        "snapshot_id": 5741429269183032913,
+        "columns": [
+          "rating_id",
+          "user_id",
+          "movie_id",
+          "rating_val",
+          "rating_ts",
+          "review_text",
+          "event_date",
+          "_ingest_ts",
+          "_source_file",
+          "_batch_id",
+          "_file_id"
+        ]
+      },
+      {
+        "namespace": "bronze",
+        "name": "raw_watch_history",
+        "status": "present",
+        "snapshot_id": 3906642207194326372,
+        "columns": [
+          "session_id",
+          "user_id",
+          "movie_id",
+          "start_ts",
+          "end_ts",
+          "watch_duration_seconds",
+          "completion_rate",
+          "device_type",
+          "resolution",
+          "event_date",
+          "_ingest_ts",
+          "_source_file",
+          "_batch_id",
+          "_file_id"
+        ]
+      },
+      {
+        "namespace": "bronze",
+        "name": "quarantine_records",
+        "status": "present",
+        "snapshot_id": 8494360816768729791,
+        "columns": [
+          "dataset",
+          "batch_id",
+          "source_file",
+          "business_key",
+          "error_code",
+          "error_description",
+          "raw_payload",
+          "quarantined_ts"
+        ]
+      },
+      {
+        "namespace": "bronze",
+        "name": "quality_results",
+        "status": "present",
+        "snapshot_id": 4647764305794695491,
+        "columns": [
+          "dataset",
+          "batch_id",
+          "run_id",
+          "total_rows",
+          "invalid_rows",
+          "error_rate",
+          "status",
+          "checked_ts"
+        ]
+      },
+      {
+        "namespace": "silver",
+        "name": "stg_users",
+        "status": "present",
+        "snapshot_id": 5696626651778242204,
+        "columns": [
+          "user_id",
+          "signup_ts",
+          "country",
+          "subscription_tier",
+          "preferred_language",
+          "age_group",
+          "gender"
+        ]
+      },
+      {
+        "namespace": "silver",
+        "name": "stg_movies",
+        "status": "present",
+        "snapshot_id": 8380250790601157578,
+        "columns": [
+          "movie_id",
+          "title",
+          "release_year",
+          "runtime_minutes",
+          "original_language",
+          "budget",
+          "director_id",
+          "created_ts",
+          "content_rating",
+          "hdr_format",
+          "audio_spatial"
+        ]
+      },
+      {
+        "namespace": "silver",
+        "name": "stg_ratings",
+        "status": "present",
+        "snapshot_id": 8795824390230744395,
+        "columns": [
+          "rating_id",
+          "user_id",
+          "movie_id",
+          "rating_val",
+          "rating_ts",
+          "review_text",
+          "event_date",
+          "dt"
+        ]
+      },
+      {
+        "namespace": "silver",
+        "name": "stg_watch_sessions",
+        "status": "present",
+        "snapshot_id": 1975472564804901513,
+        "columns": [
+          "session_id",
+          "user_id",
+          "movie_id",
+          "start_ts",
+          "end_ts",
+          "watch_duration_seconds",
+          "completion_rate",
+          "device_type",
+          "resolution",
+          "event_date",
+          "dt"
+        ]
+      },
+      {
+        "namespace": "silver",
+        "name": "stg_playback_heartbeats",
+        "status": "absent"
+      },
+      {
+        "namespace": "silver",
+        "name": "stg_playback_windows",
+        "status": "absent"
+      },
+      {
+        "namespace": "gold",
+        "name": "dim_users",
+        "status": "present",
+        "snapshot_id": 4373803545286674709,
+        "columns": [
+          "user_sk",
+          "user_id",
+          "country",
+          "subscription_tier",
+          "valid_from_ts",
+          "valid_to_ts",
+          "is_current"
+        ]
+      },
+      {
+        "namespace": "gold",
+        "name": "dim_movies",
+        "status": "present",
+        "snapshot_id": 1217011260721305647,
+        "columns": [
+          "movie_sk",
+          "movie_id",
+          "title",
+          "release_year",
+          "content_rating",
+          "hdr_format",
+          "valid_from_ts",
+          "valid_to_ts",
+          "is_current"
+        ]
+      },
+      {
+        "namespace": "gold",
+        "name": "fact_ratings",
+        "status": "present",
+        "snapshot_id": 1324146680817977793,
+        "columns": [
+          "rating_sk",
+          "user_sk",
+          "movie_sk",
+          "rating_val",
+          "rating_date_key",
+          "created_ts"
+        ]
+      },
+      {
+        "namespace": "gold",
+        "name": "fact_watch_sessions",
+        "status": "present",
+        "snapshot_id": 4699535929651689042,
+        "columns": [
+          "session_sk",
+          "user_sk",
+          "movie_sk",
+          "watch_duration_seconds",
+          "completion_rate",
+          "device_type",
+          "session_date_key"
+        ]
+      },
+      {
+        "namespace": "gold",
+        "name": "obt_movie_engagement",
+        "status": "present",
+        "snapshot_id": 6121133416268278903,
+        "columns": [
+          "session_sk",
+          "session_date_key",
+          "user_id",
+          "subscription_tier",
+          "movie_id",
+          "title",
+          "content_rating",
+          "watch_duration_seconds",
+          "completion_rate",
+          "device_type"
+        ]
+      },
+      {
+        "namespace": "gold",
+        "name": "feat_user_movie_stats_daily",
+        "status": "present",
+        "snapshot_id": -1,
+        "columns": [
+          "user_id",
+          "event_timestamp",
+          "created_timestamp",
+          "user_total_ratings_90d",
+          "user_avg_rating_90d",
+          "user_favorite_genre",
+          "user_total_watch_hours_30d"
+        ]
+      },
+      {
+        "namespace": "gold",
+        "name": "feat_movie_engagement_stats_daily",
+        "status": "present",
+        "snapshot_id": -1,
+        "columns": [
+          "movie_id",
+          "event_timestamp",
+          "created_timestamp",
+          "movie_rating_count_30d",
+          "movie_avg_rating_30d",
+          "movie_completion_rate_30d",
+          "movie_trending_score_7d"
+        ]
+      }
+    ]
+  },
+  "clickhouse": {
+    "status": "read",
+    "parts": [
+      {
+        "database": "it_api",
+        "table_name": "movie_engagement",
+        "rows": "3"
+      },
+      {
+        "database": "it_api",
+        "table_name": "movie_engagement_stage",
+        "rows": "3"
+      },
+      {
+        "database": "it_api",
+        "table_name": "movie_ratings",
+        "rows": "3"
+      },
+      {
+        "database": "it_api",
+        "table_name": "movie_ratings_stage",
+        "rows": "4"
+      },
+      {
+        "database": "it_api",
+        "table_name": "sync_log",
+        "rows": "4"
+      },
+      {
+        "database": "it_audit",
+        "table_name": "movie_engagement",
+        "rows": "3"
+      },
+      {
+        "database": "it_audit",
+        "table_name": "movie_engagement_stage",
+        "rows": "3"
+      },
+      {
+        "database": "it_audit",
+        "table_name": "movie_ratings",
+        "rows": "3"
+      },
+      {
+        "database": "it_audit",
+        "table_name": "movie_ratings_stage",
+        "rows": "4"
+      },
+      {
+        "database": "it_audit",
+        "table_name": "sync_log",
+        "rows": "4"
+      },
+      {
+        "database": "it_ch",
+        "table_name": "movie_engagement",
+        "rows": "3"
+      },
+      {
+        "database": "it_ch",
+        "table_name": "movie_engagement_stage",
+        "rows": "2"
+      },
+      {
+        "database": "it_ch",
+        "table_name": "movie_ratings",
+        "rows": "3"
+      },
+      {
+        "database": "it_ch",
+        "table_name": "movie_ratings_stage",
+        "rows": "2"
+      },
+      {
+        "database": "it_ch",
+        "table_name": "sync_log",
+        "rows": "3"
+      },
+      {
+        "database": "it_e2e",
+        "table_name": "movie_windows",
+        "rows": "2"
+      },
+      {
+        "database": "it_e2e",
+        "table_name": "movie_windows_stage",
+        "rows": "1"
+      },
+      {
+        "database": "it_e2e",
+        "table_name": "trending_sync_log",
+        "rows": "2"
+      },
+      {
+        "database": "it_e2e",
+        "table_name": "trending_worker_status",
+        "rows": "5"
+      },
+      {
+        "database": "it_it_af_real",
+        "table_name": "movie_engagement",
+        "rows": "662830"
+      },
+      {
+        "database": "it_it_af_real",
+        "table_name": "movie_ratings",
+        "rows": "100"
+      },
+      {
+        "database": "it_it_af_real",
+        "table_name": "sync_log",
+        "rows": "1"
+      },
+      {
+        "database": "it_it_af_real_retry",
+        "table_name": "movie_engagement",
+        "rows": "662830"
+      },
+      {
+        "database": "it_it_af_real_retry",
+        "table_name": "movie_ratings",
+        "rows": "100"
+      },
+      {
+        "database": "it_it_af_real_retry",
+        "table_name": "sync_log",
+        "rows": "1"
+      },
+      {
+        "database": "it_ops",
+        "table_name": "movie_windows",
+        "rows": "2"
+      },
+      {
+        "database": "it_ops",
+        "table_name": "movie_windows_stage",
+        "rows": "1"
+      },
+      {
+        "database": "it_ops",
+        "table_name": "trending_sync_log",
+        "rows": "2"
+      },
+      {
+        "database": "it_ops",
+        "table_name": "trending_worker_status",
+        "rows": "5"
+      },
+      {
+        "database": "it_trend",
+        "table_name": "movie_windows",
+        "rows": "3"
+      },
+      {
+        "database": "it_trend",
+        "table_name": "movie_windows_stage",
+        "rows": "2"
+      },
+      {
+        "database": "it_trend",
+        "table_name": "trending_sync_log",
+        "rows": "3"
+      }
+    ]
+  },
+  "schema_drift": [
+    {
+      "table": "silver.stg_ratings",
+      "extra": [
+        "dt"
+      ],
+      "missing": [],
+      "snapshot_id": 8795824390230744395
+    },
+    {
+      "table": "silver.stg_watch_sessions",
+      "extra": [
+        "dt"
+      ],
+      "missing": [],
+      "snapshot_id": 1975472564804901513
+    }
+  ],
+  "writer_gated_absent": [
+    "stg_playback_heartbeats",
+    "stg_playback_windows"
+  ]
+}

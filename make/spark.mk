@@ -17,7 +17,7 @@ SPARK_PY = SPARK_LOCAL_IP=127.0.0.1 PYTHONUNBUFFERED=1 PYTHONPATH=. $(UV) run --
 
 ##@ 4. Xử lý Dữ liệu Phân tán (Spark & Flink)
 
-.PHONY: spark-baseline spark-optimized spark-aqe spark-build-gold spark-ingest-bronze spark-publish spark-batch-it demo-layer3 flink-job
+.PHONY: spark-baseline spark-optimized spark-aqe spark-build-gold spark-ingest-bronze spark-publish spark-batch-it spark-schema-it demo-layer3 flink-job
 
 spark-baseline: ## Join lệch khóa, không mergeSchema. SPARK_HOLD=120 để xem UI :4040
 	@echo -e "$(BOLD)$(BLUE)Khởi chạy Spark Baseline Job...$(RESET)"
@@ -63,6 +63,10 @@ spark-publish: ## Bronze → Silver → Gold. SPARK_EFFECTIVE_TS là mốc đổ
 spark-batch-it: ## Integration test batch trên warehouse file:// cách ly
 	@echo -e "$(BOLD)$(BLUE)Chạy integration test batch lakehouse...$(RESET)"
 	$(SPARK_PY) -m transformation.batch.it_phase1
+
+spark-schema-it: ## So schema và partition trên warehouse file://, không ghi production
+	@echo -e "$(BOLD)$(BLUE)Chạy kiểm tra hợp đồng schema...$(RESET)"
+	$(SPARK_PY) -m transformation.batch.it_schema_contract
 
 demo-layer3: ## So sánh 3 phương pháp: Baseline vs Salting vs AQE trên local[*]
 	@echo -e "$(BOLD)$(BLUE)So sánh Baseline vs Salting vs AQE trên local[*]...$(RESET)"

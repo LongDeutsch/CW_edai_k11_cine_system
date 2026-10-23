@@ -43,7 +43,7 @@ from transformation.batch.jobs.build_gold_layer import (
     assemble_facts,
 )
 from transformation.batch.jobs.lakehouse_ddl import execute_zone
-from transformation.batch.jobs.table_updates import create_or_overwrite, snapshots, table_exists
+from transformation.batch.jobs.table_updates import create_or_overwrite, snapshots, table_exists, take_schema_reports
 from storage.lakehouse.scd.apply_scd2 import DimUser, TierChange, apply_scd2, stable_surrogate
 
 _SILVER = {
@@ -52,6 +52,23 @@ _SILVER = {
     "ratings": "stg_ratings",
     "watch": "stg_watch_sessions",
 }
+_DDL = {
+    "stg_users": "storage/lakehouse/silver/stg_tables.sql",
+    "stg_movies": "storage/lakehouse/silver/stg_tables.sql",
+    "stg_ratings": "storage/lakehouse/silver/stg_tables.sql",
+    "stg_watch_sessions": "storage/lakehouse/silver/stg_tables.sql",
+    "dim_users": "storage/lakehouse/gold/gold_tables.sql",
+    "dim_movies": "storage/lakehouse/gold/gold_tables.sql",
+    "fact_ratings": "storage/lakehouse/gold/gold_tables.sql",
+    "fact_watch_sessions": "storage/lakehouse/gold/gold_tables.sql",
+    "obt_movie_engagement": "storage/lakehouse/gold/gold_tables.sql",
+}
+
+
+def _not_null(table: str) -> list[str]:
+    from governance.extract import spark_tables
+
+    return [name for name, kind in spark_tables(_DDL[table])[table] if "NOT NULL" in kind.upper()]
 
 
 @dataclass(frozen=True)
@@ -99,18 +116,27 @@ def publish(
     silver_watch = _project_watch(watch)
     facts, fact_watch, obt = assemble_facts(spark, silver_ratings, silver_watch, dim_users, dim_movies)
     _assert_counts(silver_ratings, silver_watch, facts, fact_watch, obt)
+    take_schema_reports()
     writes = {
-        "stg_users": create_or_overwrite(spark, silver_users, _table(silver_namespace, "stg_users")),
-        "stg_movies": create_or_overwrite(spark, silver_movies, _table(silver_namespace, "stg_movies")),
-        "stg_ratings": create_or_overwrite(spark, silver_ratings, _table(silver_namespace, "stg_ratings")),
-        "stg_watch_sessions": create_or_overwrite(spark, silver_watch, _table(silver_namespace, "stg_watch_sessions")),
-        "dim_users": create_or_overwrite(spark, dim_users, _table(gold_namespace, "dim_users")),
-        "dim_movies": create_or_overwrite(spark, dim_movies, _table(gold_namespace, "dim_movies")),
-        "fact_ratings": create_or_overwrite(spark, facts, _table(gold_namespace, "fact_ratings")),
-        "fact_watch_sessions": create_or_overwrite(spark, fact_watch, _table(gold_namespace, "fact_watch_sessions")),
-        "obt_movie_engagement": create_or_overwrite(spark, obt, _table(gold_namespace, "obt_movie_engagement")),
+        name: create_or_overwrite(spark, frame, _table(namespace, name), required=_not_null(name))
+        for namespace, name, frame in (
+            (silver_namespace, "stg_users", silver_users),
+            (silver_namespace, "stg_movies", silver_movies),
+            (silver_namespace, "stg_ratings", silver_ratings),
+            (silver_namespace, "stg_watch_sessions", silver_watch),
+            (gold_namespace, "dim_users", dim_users),
+            (gold_namespace, "dim_movies", dim_movies),
+            (gold_namespace, "fact_ratings", facts),
+            (gold_namespace, "fact_watch_sessions", fact_watch),
+            (gold_namespace, "obt_movie_engagement", obt),
+        )
     }
-    return {"effective_ts": effective.isoformat(), "writes": writes, "snapshots": _snapshot_map(spark, silver_namespace, gold_namespace)}
+    return {
+        "effective_ts": effective.isoformat(),
+        "writes": writes,
+        "schema_reports": take_schema_reports(),
+        "snapshots": _snapshot_map(spark, silver_namespace, gold_namespace),
+    }
 
 
 def plan_users(current: list[DimUser], incoming, effective: datetime) -> list[DimUser]:

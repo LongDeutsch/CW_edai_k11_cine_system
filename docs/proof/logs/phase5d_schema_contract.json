@@ -1,0 +1,196 @@
+{
+  "warehouse": "/var/folders/df/p7lmy0917s36_bmbrvhq4tn00000gp/T/cinestream-schema-it-7enzslog/warehouse",
+  "namespace": "it_schema5d",
+  "production_unchanged": true,
+  "production_before": {
+    "namespaces/silver/tables/stg_ratings": {
+      "snapshot": 8795824390230744395,
+      "schema": 0
+    },
+    "namespaces/silver/tables/stg_watch_sessions": {
+      "snapshot": 1975472564804901513,
+      "schema": 0
+    },
+    "namespaces/gold/tables/fact_ratings": {
+      "snapshot": 1324146680817977793,
+      "schema": 0
+    },
+    "namespaces/gold/tables/dim_movies": {
+      "snapshot": 1217011260721305647,
+      "schema": 0
+    }
+  },
+  "production_after": {
+    "namespaces/silver/tables/stg_ratings": {
+      "snapshot": 8795824390230744395,
+      "schema": 0
+    },
+    "namespaces/silver/tables/stg_watch_sessions": {
+      "snapshot": 1975472564804901513,
+      "schema": 0
+    },
+    "namespaces/gold/tables/fact_ratings": {
+      "snapshot": 1324146680817977793,
+      "schema": 0
+    },
+    "namespaces/gold/tables/dim_movies": {
+      "snapshot": 1217011260721305647,
+      "schema": 0
+    }
+  },
+  "cases": [
+    {
+      "input": "b\u1ea3ng double + timestamp_ntz + dt, frame decimal + timestamp kh\u00f4ng c\u00f3 dt",
+      "expected": "d\u00f2ng b\u1eb1ng nhau, snapshot gi\u1eef nguy\u00ean, b\u00e1o type v\u00e0 dt ngu\u1ed3n",
+      "actual": {
+        "created": "created",
+        "status": "unchanged",
+        "snapshot_unchanged": true,
+        "overwrite": false,
+        "schema_equal": false,
+        "rows_equal": true,
+        "kinds": [
+          [
+            "extra_on_table",
+            "dt"
+          ],
+          [
+            "nullability",
+            "rating_id"
+          ],
+          [
+            "nullability",
+            "rating_ts"
+          ],
+          [
+            "nullability",
+            "rating_val"
+          ],
+          [
+            "type",
+            "rating_ts"
+          ],
+          [
+            "type",
+            "rating_val"
+          ]
+        ],
+        "dt_origin": "source_folder",
+        "dt_is_partition": false,
+        "partition_fields": [],
+        "repartition": false
+      },
+      "name": "extra dt and decimal",
+      "status": "PASS"
+    },
+    {
+      "input": "frame thi\u1ebfu review_text, r\u1ed3i frame th\u00eam note",
+      "expected": "b\u00e1o extra v\u00e0 missing, kh\u00f4ng overwrite",
+      "actual": {
+        "status": "unchanged",
+        "snapshot_unchanged": true,
+        "overwrite": false,
+        "kinds": [
+          [
+            "extra_on_table",
+            "review_text"
+          ]
+        ],
+        "added_status": "unchanged",
+        "added_kinds": [
+          [
+            "missing_on_table",
+            "note"
+          ]
+        ],
+        "added_overwrite": false
+      },
+      "name": "missing column",
+      "status": "PASS"
+    },
+    {
+      "input": "c\u00f9ng schema, rating_val 4.0 r\u1ed3i 4.5",
+      "expected": "overwrite v\u00ec d\u00f2ng \u0111\u1ed5i",
+      "actual": {
+        "status": "overwritten",
+        "snapshot_changed": true,
+        "schema_equal": true
+      },
+      "name": "row change overwrites",
+      "status": "PASS"
+    },
+    {
+      "input": "2026-01-15 12:00:00 ghi timestamp_ntz v\u00e0 timestamp, session UTC",
+      "expected": "c\u1ea3 ba l\u1ea7n \u0111\u1ecdc tr\u1ea3 c\u00f9ng gi\u1edd tr\u00ean \u0111\u1ed3ng h\u1ed3",
+      "actual": {
+        "ntz": "2026-01-15 12:00:00",
+        "ltz": "2026-01-15 12:00:00",
+        "casted": "2026-01-15 12:00:00"
+      },
+      "name": "utc instants",
+      "status": "PASS"
+    },
+    {
+      "input": "Iceberg \u0111ang ch\u1ee9a rating_id NULL, h\u1ee3p \u0111\u1ed3ng y\u00eau c\u1ea7u not_null",
+      "expected": "b\u00e1o null_value t\u1eeb gi\u00e1 tr\u1ecb th\u1eadt, kh\u00f4ng overwrite",
+      "actual": {
+        "status": "unchanged",
+        "snapshot_unchanged": true,
+        "nulls": [
+          {
+            "column": "rating_id",
+            "kind": "null_value",
+            "nulls": 1,
+            "constraint": "not_null"
+          }
+        ],
+        "overwrite": false,
+        "table_nulls": 1
+      },
+      "name": "null values",
+      "status": "PASS"
+    },
+    {
+      "input": "CREATE TABLE DDL v\u00e0 writeTo().create() c\u00f9ng m\u1ed9t frame c\u00f3 c\u1ed9t dt",
+      "expected": "DDL c\u00f3 partition event_date v\u00e0 decimal. DataFrame create kh\u00f4ng partition v\u00e0 gi\u1eef double",
+      "actual": {
+        "ddl_type": "decimal(2,1)",
+        "dataframe_type": "double",
+        "ddl_partition": {
+          "expected_iceberg_fields": [
+            "event_date"
+          ],
+          "actual_iceberg_fields": [
+            "event_date"
+          ],
+          "missing_partition_fields": [],
+          "unexpected_partition_fields": [],
+          "source_folder_columns": [
+            "dt"
+          ],
+          "source_folder_is_iceberg_partition": [],
+          "repartition": false
+        },
+        "dataframe_partition": {
+          "expected_iceberg_fields": [
+            "event_date"
+          ],
+          "actual_iceberg_fields": [],
+          "missing_partition_fields": [
+            "event_date"
+          ],
+          "unexpected_partition_fields": [],
+          "source_folder_columns": [
+            "dt"
+          ],
+          "source_folder_is_iceberg_partition": [],
+          "repartition": false
+        }
+      },
+      "name": "ddl partition versus dataframe create",
+      "status": "PASS"
+    }
+  ],
+  "status": "PASS",
+  "failed": []
+}

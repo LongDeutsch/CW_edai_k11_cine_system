@@ -4,11 +4,17 @@
 
 ##@ 3. Kiểm thử & Chất lượng mã nguồn (Quality & Clean)
 
-.PHONY: test lint clean-cache clean-data clean
+.PHONY: test lint governance-check clean-cache clean-data clean
 
 test: ## Chạy toàn bộ Unit Tests với báo cáo kiểm tra lỗi
 	@echo -e "$(BOLD)$(BLUE)Đang chạy kiểm thử Unit Tests...$(RESET)"
 	$(PYTHON) -m pytest tests/unit/ -v || echo -e "$(YELLOW)[Thông báo] Thư mục tests/unit đang được chuẩn bị.$(RESET)"
+
+governance-check: ## Đối chiếu lineage, drift và trạng thái, không ghi cụm
+	PYTHONPATH=. $(PYTHON) -m unittest tests.governance.test_lineage tests.governance.test_observe tests.governance.test_triage tests.governance.test_schema_contract
+
+governance-observe: ## Đọc REST, Airflow, ClickHouse, MinIO và ghi báo cáo 5B
+	PYTHONPATH=. $(UV) run --extra minio python -m governance.collect
 
 lint: ## Kiểm tra định dạng code bằng Ruff hoặc Flake8
 	@echo -e "$(BOLD)$(BLUE)Đang kiểm tra chất lượng mã nguồn (Linter)...$(RESET)"

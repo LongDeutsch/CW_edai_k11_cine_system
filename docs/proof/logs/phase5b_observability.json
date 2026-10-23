@@ -1,0 +1,1777 @@
+{
+  "head": "4e90eda009a4498c198fa399f9c75c47919eee86",
+  "sources": {
+    "inventory": "static code in governance/inventory.py",
+    "schema": "DDL and writer columns parsed from pipeline source",
+    "iceberg": "read",
+    "airflow": "read",
+    "clickhouse": "read",
+    "flink": "read",
+    "marker": "read",
+    "historical_logs": "not used as the current verdict"
+  },
+  "drift": [
+    {
+      "table": "iceberg.silver.stg_movies",
+      "classification": "manual_review",
+      "partition_fields": [],
+      "findings": [
+        {
+          "column": "movie_id",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        },
+        {
+          "column": "created_ts",
+          "kind": "type",
+          "classification": "manual_review",
+          "expected": "TIMESTAMP",
+          "physical": "timestamp"
+        }
+      ]
+    },
+    {
+      "table": "iceberg.silver.stg_ratings",
+      "classification": "manual_review",
+      "partition_fields": [],
+      "findings": [
+        {
+          "column": "rating_id",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        },
+        {
+          "column": "user_id",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        },
+        {
+          "column": "movie_id",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        },
+        {
+          "column": "rating_val",
+          "kind": "type",
+          "classification": "manual_review",
+          "expected": "DECIMAL(2, 1) NOT NULL",
+          "physical": "double"
+        },
+        {
+          "column": "rating_val",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        },
+        {
+          "column": "rating_ts",
+          "kind": "type",
+          "classification": "manual_review",
+          "expected": "TIMESTAMP NOT NULL",
+          "physical": "timestamp"
+        },
+        {
+          "column": "rating_ts",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        },
+        {
+          "column": "event_date",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        },
+        {
+          "column": "dt",
+          "kind": "extra",
+          "classification": "manual_review",
+          "expected": null,
+          "physical": {
+            "type": "date",
+            "required": false
+          }
+        }
+      ]
+    },
+    {
+      "table": "iceberg.silver.stg_watch_sessions",
+      "classification": "manual_review",
+      "partition_fields": [],
+      "findings": [
+        {
+          "column": "session_id",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        },
+        {
+          "column": "user_id",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        },
+        {
+          "column": "movie_id",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        },
+        {
+          "column": "start_ts",
+          "kind": "type",
+          "classification": "manual_review",
+          "expected": "TIMESTAMP NOT NULL",
+          "physical": "timestamp"
+        },
+        {
+          "column": "start_ts",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        },
+        {
+          "column": "end_ts",
+          "kind": "type",
+          "classification": "manual_review",
+          "expected": "TIMESTAMP",
+          "physical": "timestamp"
+        },
+        {
+          "column": "watch_duration_seconds",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        },
+        {
+          "column": "completion_rate",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        },
+        {
+          "column": "event_date",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        },
+        {
+          "column": "dt",
+          "kind": "extra",
+          "classification": "manual_review",
+          "expected": null,
+          "physical": {
+            "type": "date",
+            "required": false
+          }
+        }
+      ]
+    },
+    {
+      "table": "iceberg.gold.dim_users",
+      "classification": "manual_review",
+      "partition_fields": [],
+      "findings": [
+        {
+          "column": "user_sk",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        },
+        {
+          "column": "user_id",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        },
+        {
+          "column": "subscription_tier",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        },
+        {
+          "column": "valid_from_ts",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        },
+        {
+          "column": "is_current",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        }
+      ]
+    },
+    {
+      "table": "iceberg.gold.dim_movies",
+      "classification": "manual_review",
+      "partition_fields": [],
+      "findings": [
+        {
+          "column": "movie_sk",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        },
+        {
+          "column": "movie_id",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        },
+        {
+          "column": "valid_from_ts",
+          "kind": "type",
+          "classification": "manual_review",
+          "expected": "TIMESTAMP NOT NULL",
+          "physical": "timestamp"
+        },
+        {
+          "column": "valid_from_ts",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        },
+        {
+          "column": "is_current",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        }
+      ]
+    },
+    {
+      "table": "iceberg.gold.fact_ratings",
+      "classification": "manual_review",
+      "partition_fields": [],
+      "findings": [
+        {
+          "column": "rating_sk",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        },
+        {
+          "column": "user_sk",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        },
+        {
+          "column": "movie_sk",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        },
+        {
+          "column": "rating_val",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        },
+        {
+          "column": "rating_date_key",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        },
+        {
+          "column": "created_ts",
+          "kind": "type",
+          "classification": "manual_review",
+          "expected": "TIMESTAMP NOT NULL",
+          "physical": "timestamp"
+        },
+        {
+          "column": "created_ts",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        }
+      ]
+    },
+    {
+      "table": "iceberg.gold.fact_watch_sessions",
+      "classification": "manual_review",
+      "partition_fields": [],
+      "findings": [
+        {
+          "column": "session_sk",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        },
+        {
+          "column": "user_sk",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        },
+        {
+          "column": "movie_sk",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        },
+        {
+          "column": "watch_duration_seconds",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        },
+        {
+          "column": "completion_rate",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        },
+        {
+          "column": "session_date_key",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        }
+      ]
+    },
+    {
+      "table": "iceberg.gold.obt_movie_engagement",
+      "classification": "manual_review",
+      "partition_fields": [],
+      "findings": [
+        {
+          "column": "session_sk",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        },
+        {
+          "column": "session_date_key",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        },
+        {
+          "column": "user_id",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        },
+        {
+          "column": "movie_id",
+          "kind": "nullability",
+          "classification": "manual_review",
+          "expected": "required",
+          "physical": "optional"
+        }
+      ]
+    }
+  ],
+  "datasets": [
+    {
+      "id": "minio.users",
+      "status": "declared",
+      "lineage_status": "verified",
+      "snapshot_id": null,
+      "total_records": null,
+      "committed_at": null,
+      "failure": false
+    },
+    {
+      "id": "minio.movies",
+      "status": "declared",
+      "lineage_status": "verified",
+      "snapshot_id": null,
+      "total_records": null,
+      "committed_at": null,
+      "failure": false
+    },
+    {
+      "id": "minio.ratings",
+      "status": "declared",
+      "lineage_status": "verified",
+      "snapshot_id": null,
+      "total_records": null,
+      "committed_at": null,
+      "failure": false
+    },
+    {
+      "id": "minio.watch_history",
+      "status": "declared",
+      "lineage_status": "verified",
+      "snapshot_id": null,
+      "total_records": null,
+      "committed_at": null,
+      "failure": false
+    },
+    {
+      "id": "minio.orchestration_marker",
+      "status": "declared",
+      "lineage_status": "verified",
+      "snapshot_id": null,
+      "total_records": null,
+      "committed_at": null,
+      "failure": false
+    },
+    {
+      "id": "kafka.movie.playback.heartbeat",
+      "status": "declared",
+      "lineage_status": "verified",
+      "snapshot_id": null,
+      "total_records": null,
+      "committed_at": null,
+      "failure": false
+    },
+    {
+      "id": "kafka.movie.playback.deadletter",
+      "status": "declared",
+      "lineage_status": "verified",
+      "snapshot_id": null,
+      "total_records": null,
+      "committed_at": null,
+      "failure": false
+    },
+    {
+      "id": "iceberg.bronze.raw_users",
+      "status": "populated",
+      "lineage_status": "verified",
+      "snapshot_id": 7954921826504091397,
+      "total_records": 5000,
+      "committed_at": "2026-10-18T06:33:51.291000+00:00",
+      "failure": false
+    },
+    {
+      "id": "iceberg.bronze.raw_movies",
+      "status": "populated",
+      "lineage_status": "verified",
+      "snapshot_id": 5393514282830386405,
+      "total_records": 100,
+      "committed_at": "2026-10-18T06:34:12.896000+00:00",
+      "failure": false
+    },
+    {
+      "id": "iceberg.bronze.raw_ratings",
+      "status": "populated",
+      "lineage_status": "verified",
+      "snapshot_id": 5741429269183032913,
+      "total_records": 256410,
+      "committed_at": "2026-10-18T06:34:20.219000+00:00",
+      "failure": false
+    },
+    {
+      "id": "iceberg.bronze.raw_watch_history",
+      "status": "populated",
+      "lineage_status": "verified",
+      "snapshot_id": 3906642207194326372,
+      "total_records": 820513,
+      "committed_at": "2026-10-18T06:34:34.294000+00:00",
+      "failure": false
+    },
+    {
+      "id": "iceberg.bronze.quarantine_records",
+      "status": "empty_committed",
+      "lineage_status": "verified",
+      "snapshot_id": 8494360816768729791,
+      "total_records": 0,
+      "committed_at": "2026-10-18T06:35:11.871000+00:00",
+      "failure": false
+    },
+    {
+      "id": "iceberg.bronze.quality_results",
+      "status": "populated",
+      "lineage_status": "verified",
+      "snapshot_id": 4647764305794695491,
+      "total_records": 8,
+      "committed_at": "2026-10-18T06:35:12.299000+00:00",
+      "failure": false
+    },
+    {
+      "id": "iceberg.silver.stg_users",
+      "status": "populated",
+      "lineage_status": "verified",
+      "snapshot_id": 5696626651778242204,
+      "total_records": 5000,
+      "committed_at": "2026-10-18T06:35:22.889000+00:00",
+      "failure": false
+    },
+    {
+      "id": "iceberg.silver.stg_movies",
+      "status": "populated",
+      "lineage_status": "verified",
+      "snapshot_id": 8380250790601157578,
+      "total_records": 100,
+      "committed_at": "2026-10-16T15:45:18.151000+00:00",
+      "failure": false
+    },
+    {
+      "id": "iceberg.silver.stg_ratings",
+      "status": "populated",
+      "lineage_status": "verified",
+      "snapshot_id": 8795824390230744395,
+      "total_records": 57665,
+      "committed_at": "2026-10-16T15:45:17.206000+00:00",
+      "failure": false
+    },
+    {
+      "id": "iceberg.silver.stg_watch_sessions",
+      "status": "populated",
+      "lineage_status": "verified",
+      "snapshot_id": 1975472564804901513,
+      "total_records": 662830,
+      "committed_at": "2026-10-16T15:45:20.671000+00:00",
+      "failure": false
+    },
+    {
+      "id": "iceberg.silver.stg_playback_heartbeats",
+      "status": "expected_absent",
+      "lineage_status": "writer_gated",
+      "snapshot_id": null,
+      "total_records": null,
+      "committed_at": null,
+      "failure": false
+    },
+    {
+      "id": "iceberg.silver.stg_playback_windows",
+      "status": "expected_absent",
+      "lineage_status": "writer_gated",
+      "snapshot_id": null,
+      "total_records": null,
+      "committed_at": null,
+      "failure": false
+    },
+    {
+      "id": "iceberg.gold.dim_users",
+      "status": "populated",
+      "lineage_status": "verified",
+      "snapshot_id": 4373803545286674709,
+      "total_records": 5010,
+      "committed_at": "2026-10-18T06:35:33.870000+00:00",
+      "failure": false
+    },
+    {
+      "id": "iceberg.gold.dim_movies",
+      "status": "populated",
+      "lineage_status": "verified",
+      "snapshot_id": 1217011260721305647,
+      "total_records": 100,
+      "committed_at": "2026-10-16T15:45:22.042000+00:00",
+      "failure": false
+    },
+    {
+      "id": "iceberg.gold.fact_ratings",
+      "status": "populated",
+      "lineage_status": "verified",
+      "snapshot_id": 1324146680817977793,
+      "total_records": 57665,
+      "committed_at": "2026-10-18T06:35:38.391000+00:00",
+      "failure": false
+    },
+    {
+      "id": "iceberg.gold.fact_watch_sessions",
+      "status": "populated",
+      "lineage_status": "verified",
+      "snapshot_id": 4699535929651689042,
+      "total_records": 662830,
+      "committed_at": "2026-10-18T06:35:51.123000+00:00",
+      "failure": false
+    },
+    {
+      "id": "iceberg.gold.obt_movie_engagement",
+      "status": "populated",
+      "lineage_status": "verified",
+      "snapshot_id": 6121133416268278903,
+      "total_records": 662830,
+      "committed_at": "2026-10-18T06:36:03.708000+00:00",
+      "failure": false
+    },
+    {
+      "id": "iceberg.gold.feat_user_movie_stats_daily",
+      "status": "declared_empty",
+      "lineage_status": "declared_only",
+      "snapshot_id": -1,
+      "total_records": null,
+      "committed_at": null,
+      "failure": false
+    },
+    {
+      "id": "iceberg.gold.feat_movie_engagement_stats_daily",
+      "status": "declared_empty",
+      "lineage_status": "declared_only",
+      "snapshot_id": -1,
+      "total_records": null,
+      "committed_at": null,
+      "failure": false
+    },
+    {
+      "id": "clickhouse.movie_engagement",
+      "status": "declared",
+      "lineage_status": "verified",
+      "snapshot_id": null,
+      "total_records": null,
+      "committed_at": null,
+      "failure": false
+    },
+    {
+      "id": "clickhouse.movie_engagement_stage",
+      "status": "declared",
+      "lineage_status": "verified",
+      "snapshot_id": null,
+      "total_records": null,
+      "committed_at": null,
+      "failure": false
+    },
+    {
+      "id": "clickhouse.movie_ratings",
+      "status": "declared",
+      "lineage_status": "verified",
+      "snapshot_id": null,
+      "total_records": null,
+      "committed_at": null,
+      "failure": false
+    },
+    {
+      "id": "clickhouse.movie_ratings_stage",
+      "status": "declared",
+      "lineage_status": "verified",
+      "snapshot_id": null,
+      "total_records": null,
+      "committed_at": null,
+      "failure": false
+    },
+    {
+      "id": "clickhouse.sync_log",
+      "status": "declared",
+      "lineage_status": "verified",
+      "snapshot_id": null,
+      "total_records": null,
+      "committed_at": null,
+      "failure": false
+    },
+    {
+      "id": "clickhouse.movie_windows",
+      "status": "declared",
+      "lineage_status": "writer_gated",
+      "snapshot_id": null,
+      "total_records": null,
+      "committed_at": null,
+      "failure": false
+    },
+    {
+      "id": "clickhouse.movie_windows_stage",
+      "status": "declared",
+      "lineage_status": "writer_gated",
+      "snapshot_id": null,
+      "total_records": null,
+      "committed_at": null,
+      "failure": false
+    },
+    {
+      "id": "clickhouse.trending_sync_log",
+      "status": "declared",
+      "lineage_status": "writer_gated",
+      "snapshot_id": null,
+      "total_records": null,
+      "committed_at": null,
+      "failure": false
+    },
+    {
+      "id": "clickhouse.trending_worker_status",
+      "status": "declared",
+      "lineage_status": "writer_gated",
+      "snapshot_id": null,
+      "total_records": null,
+      "committed_at": null,
+      "failure": false
+    },
+    {
+      "id": "api.analytics.overview",
+      "status": "declared",
+      "lineage_status": "verified",
+      "snapshot_id": null,
+      "total_records": null,
+      "committed_at": null,
+      "failure": false
+    },
+    {
+      "id": "api.movies.top_rated",
+      "status": "declared",
+      "lineage_status": "verified",
+      "snapshot_id": null,
+      "total_records": null,
+      "committed_at": null,
+      "failure": false
+    },
+    {
+      "id": "api.movies.most_watched",
+      "status": "declared",
+      "lineage_status": "verified",
+      "snapshot_id": null,
+      "total_records": null,
+      "committed_at": null,
+      "failure": false
+    },
+    {
+      "id": "api.movies.trending",
+      "status": "declared",
+      "lineage_status": "verified",
+      "snapshot_id": null,
+      "total_records": null,
+      "committed_at": null,
+      "failure": false
+    },
+    {
+      "id": "api.serving.status",
+      "status": "declared",
+      "lineage_status": "verified",
+      "snapshot_id": null,
+      "total_records": null,
+      "committed_at": null,
+      "failure": false
+    },
+    {
+      "id": "api.health",
+      "status": "declared",
+      "lineage_status": "verified",
+      "snapshot_id": null,
+      "total_records": null,
+      "committed_at": null,
+      "failure": false
+    },
+    {
+      "id": "api.ready",
+      "status": "declared",
+      "lineage_status": "verified",
+      "snapshot_id": null,
+      "total_records": null,
+      "committed_at": null,
+      "failure": false
+    },
+    {
+      "id": "dashboard.analytics",
+      "status": "declared",
+      "lineage_status": "verified",
+      "snapshot_id": null,
+      "total_records": null,
+      "committed_at": null,
+      "failure": false
+    },
+    {
+      "id": "airflow.cinestream_daily_batch_lakehouse",
+      "status": "declared",
+      "lineage_status": "verified",
+      "snapshot_id": null,
+      "total_records": null,
+      "committed_at": null,
+      "failure": false
+    },
+    {
+      "id": "flink.heartbeat_window_job",
+      "status": "declared",
+      "lineage_status": "writer_gated",
+      "snapshot_id": null,
+      "total_records": null,
+      "committed_at": null,
+      "failure": false
+    },
+    {
+      "id": "integration.resources",
+      "status": "integration_only",
+      "lineage_status": "integration",
+      "snapshot_id": null,
+      "total_records": null,
+      "committed_at": null,
+      "failure": false
+    }
+  ],
+  "health": {
+    "success_inferred_from_snapshot": false,
+    "airflow": {
+      "latest_state": "success",
+      "latest_is_production": false,
+      "production_run_state": "success",
+      "production_run_id": "manual__2026-10-18T06:26:38+00:00",
+      "production_tasks": [
+        "check_source_ready",
+        "spark_raw_to_bronze",
+        "validate_bronze",
+        "spark_bronze_to_gold",
+        "validate_gold",
+        "publish_success"
+      ],
+      "production_success_implies_current_data": false,
+      "failed_run_count": 29,
+      "latest_failed_run": "manual__2026-10-18T09:17:33.303012+00:00",
+      "latest_failed_tasks": [
+        "validate_bronze",
+        "spark_raw_to_bronze",
+        "spark_bronze_to_gold",
+        "validate_gold",
+        "publish_success",
+        "sync_clickhouse"
+      ],
+      "latest_failed_is_production": false,
+      "latest_production_failure": "manual__2026-10-18T06:24:00+00:00",
+      "latest_production_failed_tasks": [
+        "validate_gold",
+        "publish_success",
+        "spark_raw_to_bronze",
+        "check_source_ready",
+        "validate_bronze",
+        "spark_bronze_to_gold"
+      ]
+    },
+    "marker": {
+      "present": true,
+      "batch_id": "batch-a3f18e1ea671765052443d7ef5608212",
+      "run_id": "manual__2026-10-18T06:26:38+00:00",
+      "published": true,
+      "snapshot_pins": false,
+      "gold_snapshots": {}
+    },
+    "serving": {
+      "status": "not_run",
+      "reason": "run production gần nhất không có task sync_clickhouse hoặc chưa có dòng"
+    },
+    "clickhouse": {
+      "production_rows": 0,
+      "engagement_versions": 0,
+      "rating_versions": 0,
+      "same_batch": null,
+      "databases": [
+        "it_api",
+        "it_audit",
+        "it_ch",
+        "it_e2e",
+        "it_it_af_real",
+        "it_it_af_real_retry",
+        "it_ops",
+        "it_trend"
+      ]
+    },
+    "flink": {
+      "status": "read",
+      "streaming_enabled": false,
+      "jobs_running": 0,
+      "jobs_failed": 0,
+      "jobs_cancelled": 1,
+      "checkpoint": "no_active_job",
+      "historical_cancelled_is_not_current_health": true
+    },
+    "freshness": {
+      "batch": "published_without_snapshot_pins",
+      "streaming": "disabled",
+      "success_inferred_from_snapshot": false
+    }
+  },
+  "cleanup": [
+    {
+      "namespace": "silver",
+      "name": "it_p05_sessions",
+      "snapshot_id": -1,
+      "committed_at": null,
+      "total_records": null,
+      "referenced_by_tests": false,
+      "disposition": "cleanup_candidate",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p05_windows",
+      "snapshot_id": -1,
+      "committed_at": null,
+      "total_records": null,
+      "referenced_by_tests": false,
+      "disposition": "cleanup_candidate",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p05b_sessions",
+      "snapshot_id": 1837828446037743893,
+      "committed_at": "2026-10-17T04:42:51.924000+00:00",
+      "total_records": 6,
+      "referenced_by_tests": false,
+      "disposition": "cleanup_candidate",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p05b_windows",
+      "snapshot_id": 8104295258870838600,
+      "committed_at": "2026-10-17T04:42:31.898000+00:00",
+      "total_records": 0,
+      "referenced_by_tests": false,
+      "disposition": "cleanup_candidate",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p05c_sessions",
+      "snapshot_id": 573392813891331198,
+      "committed_at": "2026-10-17T04:44:26.933000+00:00",
+      "total_records": 6,
+      "referenced_by_tests": false,
+      "disposition": "cleanup_candidate",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p05c_windows",
+      "snapshot_id": 4417590354551199996,
+      "committed_at": "2026-10-17T04:44:26.959000+00:00",
+      "total_records": 4,
+      "referenced_by_tests": false,
+      "disposition": "cleanup_candidate",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p05d_sessions",
+      "snapshot_id": 500831443125042804,
+      "committed_at": "2026-10-17T06:01:40.428000+00:00",
+      "total_records": 6,
+      "referenced_by_tests": false,
+      "disposition": "cleanup_candidate",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p05d_windows",
+      "snapshot_id": 5468627061814255722,
+      "committed_at": "2026-10-17T06:01:40.448000+00:00",
+      "total_records": 4,
+      "referenced_by_tests": false,
+      "disposition": "cleanup_candidate",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p1b_heartbeats",
+      "snapshot_id": 2179735268287161496,
+      "committed_at": "2026-10-17T06:37:20.388000+00:00",
+      "total_records": 8,
+      "referenced_by_tests": false,
+      "disposition": "cleanup_candidate",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p1b_windows",
+      "snapshot_id": 1958527007682927773,
+      "committed_at": "2026-10-17T06:37:10.384000+00:00",
+      "total_records": 11,
+      "referenced_by_tests": false,
+      "disposition": "cleanup_candidate",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p1c_heartbeats",
+      "snapshot_id": 6878460787691116059,
+      "committed_at": "2026-10-17T07:29:58.594000+00:00",
+      "total_records": 8,
+      "referenced_by_tests": false,
+      "disposition": "cleanup_candidate",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p1c_windows",
+      "snapshot_id": 5945112650292263716,
+      "committed_at": "2026-10-17T07:29:48.596000+00:00",
+      "total_records": 9,
+      "referenced_by_tests": false,
+      "disposition": "cleanup_candidate",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p25_heartbeats",
+      "snapshot_id": 914495152027471552,
+      "committed_at": "2026-10-17T08:32:15.071000+00:00",
+      "total_records": 5,
+      "referenced_by_tests": false,
+      "disposition": "cleanup_candidate",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p25_windows",
+      "snapshot_id": 2319698472873416012,
+      "committed_at": "2026-10-17T08:31:25.254000+00:00",
+      "total_records": 7,
+      "referenced_by_tests": false,
+      "disposition": "cleanup_candidate",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p25b_heartbeats",
+      "snapshot_id": 8311086370330874934,
+      "committed_at": "2026-10-17T08:44:12.846000+00:00",
+      "total_records": 5,
+      "referenced_by_tests": false,
+      "disposition": "cleanup_candidate",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p25b_windows",
+      "snapshot_id": 807743003647505878,
+      "committed_at": "2026-10-17T08:43:19.546000+00:00",
+      "total_records": 7,
+      "referenced_by_tests": false,
+      "disposition": "cleanup_candidate",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p25c_heartbeats",
+      "snapshot_id": -1,
+      "committed_at": null,
+      "total_records": null,
+      "referenced_by_tests": false,
+      "disposition": "cleanup_candidate",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p25c_windows",
+      "snapshot_id": -1,
+      "committed_at": null,
+      "total_records": null,
+      "referenced_by_tests": false,
+      "disposition": "cleanup_candidate",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p25d_heartbeats",
+      "snapshot_id": 1699065330023247144,
+      "committed_at": "2026-10-17T11:07:42.618000+00:00",
+      "total_records": 5,
+      "referenced_by_tests": false,
+      "disposition": "cleanup_candidate",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p25d_windows",
+      "snapshot_id": 3656248596890123163,
+      "committed_at": "2026-10-17T11:06:38.053000+00:00",
+      "total_records": 7,
+      "referenced_by_tests": false,
+      "disposition": "cleanup_candidate",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2_recbench1_heartbeats",
+      "snapshot_id": 8687685325905836756,
+      "committed_at": "2026-10-17T15:50:55.816000+00:00",
+      "total_records": 300,
+      "referenced_by_tests": false,
+      "disposition": "cleanup_candidate",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2_recbench1_windows",
+      "snapshot_id": 3870122845431633981,
+      "committed_at": "2026-10-17T15:50:55.790000+00:00",
+      "total_records": 4,
+      "referenced_by_tests": false,
+      "disposition": "cleanup_candidate",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2_recbench2_heartbeats",
+      "snapshot_id": 2494848728927448033,
+      "committed_at": "2026-10-17T15:51:16.285000+00:00",
+      "total_records": 300,
+      "referenced_by_tests": false,
+      "disposition": "cleanup_candidate",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2_recbench2_windows",
+      "snapshot_id": 1192007881222256897,
+      "committed_at": "2026-10-17T15:51:16.310000+00:00",
+      "total_records": 4,
+      "referenced_by_tests": false,
+      "disposition": "cleanup_candidate",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2_recgap_heartbeats",
+      "snapshot_id": 2634938979247405350,
+      "committed_at": "2026-10-17T15:49:20.722000+00:00",
+      "total_records": 6,
+      "referenced_by_tests": false,
+      "disposition": "cleanup_candidate",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2_recgap_windows",
+      "snapshot_id": 4649567514919190980,
+      "committed_at": "2026-10-17T15:49:20.786000+00:00",
+      "total_records": 1,
+      "referenced_by_tests": false,
+      "disposition": "cleanup_candidate",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2_recidle_heartbeats",
+      "snapshot_id": 7140367820832414690,
+      "committed_at": "2026-10-17T15:39:15.157000+00:00",
+      "total_records": 3,
+      "referenced_by_tests": false,
+      "disposition": "cleanup_candidate",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2_recidle_windows",
+      "snapshot_id": 1389855237356219058,
+      "committed_at": "2026-10-17T15:38:32.520000+00:00",
+      "total_records": 1,
+      "referenced_by_tests": false,
+      "disposition": "cleanup_candidate",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2_recnorm_heartbeats",
+      "snapshot_id": 6095455371154493023,
+      "committed_at": "2026-10-17T15:50:29.303000+00:00",
+      "total_records": 12,
+      "referenced_by_tests": false,
+      "disposition": "cleanup_candidate",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2_recnorm_windows",
+      "snapshot_id": 4211150728522201537,
+      "committed_at": "2026-10-17T15:50:19.332000+00:00",
+      "total_records": 3,
+      "referenced_by_tests": false,
+      "disposition": "cleanup_candidate",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2_recp1_heartbeats",
+      "snapshot_id": 3168917417026789332,
+      "committed_at": "2026-10-17T15:36:29.864000+00:00",
+      "total_records": 11,
+      "referenced_by_tests": false,
+      "disposition": "cleanup_candidate",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2_recp1_windows",
+      "snapshot_id": 4836744667291463079,
+      "committed_at": "2026-10-17T15:33:55.572000+00:00",
+      "total_records": 3,
+      "referenced_by_tests": false,
+      "disposition": "cleanup_candidate",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2_recslow_heartbeats",
+      "snapshot_id": 7884495710181836931,
+      "committed_at": "2026-10-17T15:37:44.900000+00:00",
+      "total_records": 6,
+      "referenced_by_tests": false,
+      "disposition": "cleanup_candidate",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2_recslow_windows",
+      "snapshot_id": 1792118595722442453,
+      "committed_at": "2026-10-17T15:37:44.939000+00:00",
+      "total_records": 1,
+      "referenced_by_tests": false,
+      "disposition": "cleanup_candidate",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_playback_windows",
+      "snapshot_id": -1,
+      "committed_at": null,
+      "total_records": null,
+      "referenced_by_tests": false,
+      "disposition": "cleanup_candidate",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_watch_sessions",
+      "snapshot_id": -1,
+      "committed_at": null,
+      "total_records": null,
+      "referenced_by_tests": false,
+      "disposition": "cleanup_candidate",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p1_heartbeats",
+      "snapshot_id": 4438548187833603834,
+      "committed_at": "2026-10-17T06:07:51.616000+00:00",
+      "total_records": 8,
+      "referenced_by_tests": true,
+      "disposition": "keep_referenced",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p1_windows",
+      "snapshot_id": 3918950703284482781,
+      "committed_at": "2026-10-17T06:07:51.635000+00:00",
+      "total_records": 11,
+      "referenced_by_tests": true,
+      "disposition": "keep_referenced",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p25e_heartbeats",
+      "snapshot_id": 6334276650286626003,
+      "committed_at": "2026-10-17T11:25:51.224000+00:00",
+      "total_records": 5,
+      "referenced_by_tests": true,
+      "disposition": "keep_referenced",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p25e_windows",
+      "snapshot_id": 4190524348751118122,
+      "committed_at": "2026-10-17T11:24:55.221000+00:00",
+      "total_records": 7,
+      "referenced_by_tests": true,
+      "disposition": "keep_referenced",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2_conflict",
+      "snapshot_id": 956253815334847399,
+      "committed_at": "2026-10-17T08:00:49.130000+00:00",
+      "total_records": 2001,
+      "referenced_by_tests": true,
+      "disposition": "keep_referenced",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2_e2e_heartbeats",
+      "snapshot_id": 4706719795897211398,
+      "committed_at": "2026-10-18T11:34:23.818000+00:00",
+      "total_records": 8,
+      "referenced_by_tests": true,
+      "disposition": "keep_referenced",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2_e2e_windows",
+      "snapshot_id": 4517552679501749559,
+      "committed_at": "2026-10-18T11:34:23.838000+00:00",
+      "total_records": 3,
+      "referenced_by_tests": true,
+      "disposition": "keep_referenced",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2_heartbeats",
+      "snapshot_id": 3918808922023806711,
+      "committed_at": "2026-10-17T07:51:28.286000+00:00",
+      "total_records": 6,
+      "referenced_by_tests": true,
+      "disposition": "keep_referenced",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2_ops_heartbeats",
+      "snapshot_id": 8382683217201827736,
+      "committed_at": "2026-10-18T10:38:03.059000+00:00",
+      "total_records": 6,
+      "referenced_by_tests": true,
+      "disposition": "keep_referenced",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2_ops_windows",
+      "snapshot_id": 8285505771515738282,
+      "committed_at": "2026-10-18T10:38:03.085000+00:00",
+      "total_records": 2,
+      "referenced_by_tests": true,
+      "disposition": "keep_referenced",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2_replace",
+      "snapshot_id": 1465327867327630447,
+      "committed_at": "2026-10-17T08:00:39.830000+00:00",
+      "total_records": 1,
+      "referenced_by_tests": true,
+      "disposition": "keep_referenced",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2_trending_empty",
+      "snapshot_id": -1,
+      "committed_at": null,
+      "total_records": null,
+      "referenced_by_tests": true,
+      "disposition": "keep_referenced",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2_trending_heartbeats",
+      "snapshot_id": 9058250921890936743,
+      "committed_at": "2026-10-18T09:57:47.591000+00:00",
+      "total_records": 10,
+      "referenced_by_tests": true,
+      "disposition": "keep_referenced",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2_trending_windows",
+      "snapshot_id": 1269177176000162692,
+      "committed_at": "2026-10-18T09:57:47.666000+00:00",
+      "total_records": 4,
+      "referenced_by_tests": true,
+      "disposition": "keep_referenced",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2_tumbling_heartbeats",
+      "snapshot_id": 7434450112366706204,
+      "committed_at": "2026-10-17T13:50:17.392000+00:00",
+      "total_records": 8,
+      "referenced_by_tests": true,
+      "disposition": "keep_referenced",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2_tumbling_windows",
+      "snapshot_id": 6962985192462335103,
+      "committed_at": "2026-10-17T13:49:33.506000+00:00",
+      "total_records": 3,
+      "referenced_by_tests": true,
+      "disposition": "keep_referenced",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2_valhold_heartbeats",
+      "snapshot_id": 4634319225052605340,
+      "committed_at": "2026-10-17T14:17:01.113000+00:00",
+      "total_records": 3,
+      "referenced_by_tests": true,
+      "disposition": "keep_referenced",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2_valhold_windows",
+      "snapshot_id": -1,
+      "committed_at": null,
+      "total_records": null,
+      "referenced_by_tests": true,
+      "disposition": "keep_referenced",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2_validle_heartbeats",
+      "snapshot_id": 2613658479168434829,
+      "committed_at": "2026-10-17T14:18:24.676000+00:00",
+      "total_records": 3,
+      "referenced_by_tests": true,
+      "disposition": "keep_referenced",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2_validle_windows",
+      "snapshot_id": 8469610912328288540,
+      "committed_at": "2026-10-17T14:17:48.997000+00:00",
+      "total_records": 1,
+      "referenced_by_tests": true,
+      "disposition": "keep_referenced",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2_valp1_heartbeats",
+      "snapshot_id": 8143588456471433046,
+      "committed_at": "2026-10-17T14:16:00.982000+00:00",
+      "total_records": 10,
+      "referenced_by_tests": true,
+      "disposition": "keep_referenced",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2_valp1_windows",
+      "snapshot_id": 743320088114811586,
+      "committed_at": "2026-10-17T14:14:20.019000+00:00",
+      "total_records": 3,
+      "referenced_by_tests": true,
+      "disposition": "keep_referenced",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2_windows",
+      "snapshot_id": 7707408308925084050,
+      "committed_at": "2026-10-17T07:51:28.301000+00:00",
+      "total_records": 9,
+      "referenced_by_tests": true,
+      "disposition": "keep_referenced",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2_wm1_heartbeats",
+      "snapshot_id": 7080828020263521307,
+      "committed_at": "2026-10-17T07:59:43.091000+00:00",
+      "total_records": 5,
+      "referenced_by_tests": true,
+      "disposition": "keep_referenced",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2_wm1_windows",
+      "snapshot_id": 9109625040259851631,
+      "committed_at": "2026-10-17T07:59:43.142000+00:00",
+      "total_records": 4,
+      "referenced_by_tests": true,
+      "disposition": "keep_referenced",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2_wm2_heartbeats",
+      "snapshot_id": 1400542689655681710,
+      "committed_at": "2026-10-17T08:00:02.300000+00:00",
+      "total_records": 4,
+      "referenced_by_tests": true,
+      "disposition": "keep_referenced",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2_wm2_windows",
+      "snapshot_id": 8530774362439565916,
+      "committed_at": "2026-10-17T08:00:32.347000+00:00",
+      "total_records": 2,
+      "referenced_by_tests": true,
+      "disposition": "keep_referenced",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2b_heartbeats",
+      "snapshot_id": 8149878681171993482,
+      "committed_at": "2026-10-17T07:53:09.601000+00:00",
+      "total_records": 5,
+      "referenced_by_tests": true,
+      "disposition": "keep_referenced",
+      "reason": "bảng test nằm trong namespace production"
+    },
+    {
+      "namespace": "silver",
+      "name": "it_p2b_windows",
+      "snapshot_id": 762276065730995534,
+      "committed_at": "2026-10-17T07:51:49.330000+00:00",
+      "total_records": 7,
+      "referenced_by_tests": true,
+      "disposition": "keep_referenced",
+      "reason": "bảng test nằm trong namespace production"
+    }
+  ],
+  "cleanup_summary": {
+    "silver_it_tables": 65,
+    "cleanup_candidate": 36,
+    "keep_referenced": 29
+  },
+  "impact": [
+    {
+      "dataset": "iceberg.silver.stg_movies",
+      "effect": "downstream_review",
+      "downstream": [
+        "iceberg.gold.dim_movies",
+        "iceberg.gold.fact_ratings",
+        "iceberg.gold.fact_watch_sessions",
+        "iceberg.gold.obt_movie_engagement",
+        "minio.orchestration_marker",
+        "clickhouse.movie_ratings_stage",
+        "clickhouse.movie_engagement_stage",
+        "clickhouse.movie_ratings",
+        "clickhouse.movie_engagement",
+        "clickhouse.sync_log",
+        "api.analytics.overview",
+        "api.movies.top_rated",
+        "api.serving.status",
+        "api.ready",
+        "api.movies.most_watched",
+        "dashboard.analytics"
+      ],
+      "classification": "manual_review"
+    },
+    {
+      "dataset": "iceberg.silver.stg_ratings",
+      "effect": "downstream_review",
+      "downstream": [
+        "iceberg.gold.fact_ratings",
+        "minio.orchestration_marker",
+        "clickhouse.movie_ratings_stage",
+        "clickhouse.movie_engagement_stage",
+        "clickhouse.movie_ratings",
+        "clickhouse.movie_engagement",
+        "clickhouse.sync_log",
+        "api.analytics.overview",
+        "api.movies.top_rated",
+        "api.serving.status",
+        "api.ready",
+        "api.movies.most_watched",
+        "dashboard.analytics"
+      ],
+      "classification": "manual_review"
+    },
+    {
+      "dataset": "iceberg.silver.stg_watch_sessions",
+      "effect": "downstream_review",
+      "downstream": [
+        "iceberg.gold.fact_watch_sessions",
+        "iceberg.gold.obt_movie_engagement",
+        "minio.orchestration_marker",
+        "clickhouse.movie_engagement_stage",
+        "clickhouse.movie_ratings_stage",
+        "clickhouse.movie_engagement",
+        "clickhouse.movie_ratings",
+        "clickhouse.sync_log",
+        "api.analytics.overview",
+        "api.movies.most_watched",
+        "api.serving.status",
+        "api.ready",
+        "api.movies.top_rated",
+        "dashboard.analytics"
+      ],
+      "classification": "manual_review"
+    },
+    {
+      "dataset": "iceberg.silver.stg_playback_heartbeats",
+      "effect": "disabled_path",
+      "downstream": [],
+      "classification": "match"
+    },
+    {
+      "dataset": "iceberg.silver.stg_playback_windows",
+      "effect": "disabled_path",
+      "downstream": [
+        "clickhouse.movie_windows_stage",
+        "clickhouse.trending_worker_status",
+        "clickhouse.movie_windows",
+        "api.movies.trending",
+        "clickhouse.trending_sync_log",
+        "api.serving.status",
+        "dashboard.analytics"
+      ],
+      "classification": "match"
+    },
+    {
+      "dataset": "iceberg.gold.dim_users",
+      "effect": "downstream_review",
+      "downstream": [
+        "iceberg.gold.fact_ratings",
+        "iceberg.gold.fact_watch_sessions",
+        "iceberg.gold.obt_movie_engagement",
+        "minio.orchestration_marker",
+        "clickhouse.movie_ratings_stage",
+        "clickhouse.movie_engagement_stage",
+        "clickhouse.movie_ratings",
+        "clickhouse.movie_engagement",
+        "clickhouse.sync_log",
+        "api.analytics.overview",
+        "api.movies.top_rated",
+        "api.serving.status",
+        "api.ready",
+        "api.movies.most_watched",
+        "dashboard.analytics"
+      ],
+      "classification": "manual_review"
+    },
+    {
+      "dataset": "iceberg.gold.dim_movies",
+      "effect": "downstream_review",
+      "downstream": [
+        "iceberg.gold.fact_ratings",
+        "iceberg.gold.fact_watch_sessions",
+        "iceberg.gold.obt_movie_engagement",
+        "minio.orchestration_marker",
+        "clickhouse.movie_ratings_stage",
+        "clickhouse.movie_engagement_stage",
+        "clickhouse.movie_ratings",
+        "clickhouse.movie_engagement",
+        "clickhouse.sync_log",
+        "api.analytics.overview",
+        "api.movies.top_rated",
+        "api.serving.status",
+        "api.ready",
+        "api.movies.most_watched",
+        "dashboard.analytics"
+      ],
+      "classification": "manual_review"
+    },
+    {
+      "dataset": "iceberg.gold.fact_ratings",
+      "effect": "downstream_review",
+      "downstream": [
+        "minio.orchestration_marker",
+        "clickhouse.movie_ratings_stage",
+        "clickhouse.movie_engagement_stage",
+        "clickhouse.movie_ratings",
+        "clickhouse.movie_engagement",
+        "clickhouse.sync_log",
+        "api.analytics.overview",
+        "api.movies.top_rated",
+        "api.serving.status",
+        "api.ready",
+        "api.movies.most_watched",
+        "dashboard.analytics"
+      ],
+      "classification": "manual_review"
+    },
+    {
+      "dataset": "iceberg.gold.fact_watch_sessions",
+      "effect": "downstream_review",
+      "downstream": [],
+      "classification": "manual_review"
+    },
+    {
+      "dataset": "iceberg.gold.obt_movie_engagement",
+      "effect": "downstream_review",
+      "downstream": [
+        "minio.orchestration_marker",
+        "clickhouse.movie_engagement_stage",
+        "clickhouse.movie_ratings_stage",
+        "clickhouse.movie_engagement",
+        "clickhouse.movie_ratings",
+        "clickhouse.sync_log",
+        "api.analytics.overview",
+        "api.movies.most_watched",
+        "api.serving.status",
+        "api.ready",
+        "api.movies.top_rated",
+        "dashboard.analytics"
+      ],
+      "classification": "manual_review"
+    },
+    {
+      "dataset": "iceberg.gold.feat_user_movie_stats_daily",
+      "effect": "none",
+      "downstream": [],
+      "classification": "match"
+    },
+    {
+      "dataset": "iceberg.gold.feat_movie_engagement_stats_daily",
+      "effect": "none",
+      "downstream": [],
+      "classification": "match"
+    }
+  ],
+  "namespaces": [
+    "bronze",
+    "gold",
+    "it_af_backfill",
+    "it_af_badts",
+    "it_af_contract",
+    "it_af_ok",
+    "it_af_real",
+    "it_af_real_retry",
+    "it_af_retry",
+    "it_api_gold",
+    "it_audit_gold",
+    "it_ch_gold",
+    "silver"
+  ],
+  "clickhouse_databases": [
+    "it_api",
+    "it_audit",
+    "it_ch",
+    "it_e2e",
+    "it_it_af_real",
+    "it_it_af_real_retry",
+    "it_ops",
+    "it_trend"
+  ]
+}

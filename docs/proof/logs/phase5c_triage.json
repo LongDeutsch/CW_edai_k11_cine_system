@@ -1,0 +1,47 @@
+{
+  "head": "4e90eda009a4498c198fa399f9c75c47919eee86",
+  "reads": {
+    "iceberg_rest": "http://127.0.0.1:8181/v1",
+    "airflow": "http://127.0.0.1:18082/api/v1/dags/cinestream_daily_batch_lakehouse",
+    "git": "log -S gold_snapshots and show c5e4fda publish_success"
+  },
+  "airflow": {
+    "fileloc": "/opt/cinestream/orchestration/dags/cinestream_daily_batch_lakehouse.py",
+    "is_paused": true,
+    "last_parsed_time": "2026-10-19T03:34:37.804670+00:00",
+    "tasks": [
+      "check_source_ready",
+      "publish_success",
+      "spark_bronze_to_gold",
+      "spark_raw_to_bronze",
+      "sync_clickhouse",
+      "validate_bronze",
+      "validate_gold"
+    ],
+    "newest_run_start": "2026-10-18T09:24:25.048774+00:00",
+    "newest_run_id": "manual__2026-10-18T09:24:24.266744+00:00"
+  },
+  "marker_code": {
+    "legacy_commit": "c5e4fda",
+    "legacy_committed_at": "2026-10-18T14:36:05+07:00",
+    "legacy_has_gold_snapshots": false,
+    "legacy_has_sync_clickhouse": false,
+    "current_commit": "4e90eda",
+    "current_committed_at": "2026-10-18T21:17:56+07:00",
+    "current_has_gold_snapshots": true,
+    "production_run_id": "manual__2026-10-18T06:26:38+00:00",
+    "production_run_before_current_commit": true
+  },
+  "schema_history": {
+    "silver.stg_ratings": {"schemas": 1, "snapshots": 1, "latest_summary_operation": "append", "latest_commit": "2026-10-16T15:45:17.206000+00:00", "rating_val": "double", "extra": ["dt"]},
+    "silver.stg_watch_sessions": {"schemas": 1, "snapshots": 1, "latest_summary_operation": "append", "latest_commit": "2026-10-16T15:45:20.671000+00:00", "extra": ["dt"]},
+    "silver.stg_movies": {"schemas": 1, "snapshots": 1, "latest_commit": "2026-10-16T15:45:18.151000+00:00", "created_ts": "timestamp"},
+    "gold.dim_movies": {"schemas": 1, "snapshots": 1, "latest_commit": "2026-10-16T15:45:22.042000+00:00", "valid_from_ts": "timestamp", "valid_to_ts": "timestamptz"},
+    "gold.dim_users": {"schemas": 1, "snapshots": 2, "latest_summary_operation": "overwrite", "latest_commit": "2026-10-18T06:35:33.870000+00:00", "valid_from_ts": "timestamptz"},
+    "gold.fact_ratings": {"schemas": 1, "snapshots": 2, "latest_summary_operation": "overwrite", "latest_commit": "2026-10-18T06:35:38.391000+00:00", "rating_val": "decimal(2, 1)", "created_ts": "timestamp"},
+    "gold.fact_watch_sessions": {"schemas": 1, "snapshots": 2, "latest_summary_operation": "overwrite", "latest_commit": "2026-10-18T06:35:51.123000+00:00"},
+    "gold.obt_movie_engagement": {"schemas": 1, "snapshots": 2, "latest_summary_operation": "overwrite", "latest_commit": "2026-10-18T06:36:03.708000+00:00"},
+    "bronze.raw_ratings": {"rating_val": "double", "rating_ts": "timestamptz", "partition": ["event_date"]}
+  },
+  "lineage_changes": "freshness text of minio.orchestration_marker only"
+}

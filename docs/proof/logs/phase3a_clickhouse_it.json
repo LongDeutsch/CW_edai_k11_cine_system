@@ -7,9 +7,9 @@
       "status": "PASS",
       "expected": "current là v3 nhưng VERSION AS OF v1 ra session 1 và 2",
       "actual": {
-        "current_snapshot": 1459502348599313135,
-        "requested_snapshot": 652964320605388397,
-        "v3_snapshot": 1459502348599313135,
+        "current_snapshot": 2167781481955030222,
+        "requested_snapshot": 7980605104700335618,
+        "v3_snapshot": 2167781481955030222,
         "rows": [
           1,
           2
@@ -26,14 +26,14 @@
           "batch_id": "it-ch-v1",
           "gold_namespace": "it_ch_gold",
           "requested_snapshots": {
-            "dim_movies": 5296904003772463296,
-            "fact_ratings": 659573280070420171,
-            "obt_movie_engagement": 652964320605388397
+            "dim_movies": 3752457156759397824,
+            "fact_ratings": 962723629922185449,
+            "obt_movie_engagement": 7980605104700335618
           },
           "current_snapshots": {
-            "dim_movies": 7888989563421118529,
-            "fact_ratings": 6078864566578051031,
-            "obt_movie_engagement": 1459502348599313135
+            "dim_movies": 1068421404189628287,
+            "fact_ratings": 4376926707125998302,
+            "obt_movie_engagement": 2167781481955030222
           },
           "engagement_rows": 2,
           "rating_rows": 2,
@@ -41,10 +41,10 @@
             "engagement_rows": 2,
             "rating_rows": 2,
             "engagement_snapshots": [
-              652964320605388397
+              7980605104700335618
             ],
             "rating_snapshots": [
-              659573280070420171
+              962723629922185449
             ],
             "stage_engagement_rows": 0,
             "log_rows": 1
@@ -140,18 +140,18 @@
           "batch_id": "it-ch-v1",
           "gold_namespace": "it_ch_gold",
           "requested_snapshots": {
-            "dim_movies": 5296904003772463296,
-            "fact_ratings": 659573280070420171,
-            "obt_movie_engagement": 652964320605388397
+            "dim_movies": 3752457156759397824,
+            "fact_ratings": 962723629922185449,
+            "obt_movie_engagement": 7980605104700335618
           },
           "serving": {
             "engagement_rows": 2,
             "rating_rows": 2,
             "engagement_snapshots": [
-              652964320605388397
+              7980605104700335618
             ],
             "rating_snapshots": [
-              659573280070420171
+              962723629922185449
             ],
             "stage_engagement_rows": 0,
             "log_rows": 1
@@ -169,14 +169,14 @@
           "batch_id": "it-ch-v2",
           "gold_namespace": "it_ch_gold",
           "requested_snapshots": {
-            "dim_movies": 1553274870249905868,
-            "fact_ratings": 1785751602824973087,
-            "obt_movie_engagement": 9093496930361517656
+            "dim_movies": 3036525610520099131,
+            "fact_ratings": 4577571207977681747,
+            "obt_movie_engagement": 3555233599705444375
           },
           "current_snapshots": {
-            "dim_movies": 7888989563421118529,
-            "fact_ratings": 6078864566578051031,
-            "obt_movie_engagement": 1459502348599313135
+            "dim_movies": 1068421404189628287,
+            "fact_ratings": 4376926707125998302,
+            "obt_movie_engagement": 2167781481955030222
           },
           "engagement_rows": 2,
           "rating_rows": 2,
@@ -184,10 +184,10 @@
             "engagement_rows": 2,
             "rating_rows": 2,
             "engagement_snapshots": [
-              9093496930361517656
+              3555233599705444375
             ],
             "rating_snapshots": [
-              1785751602824973087
+              4577571207977681747
             ],
             "stage_engagement_rows": 2,
             "log_rows": 2
@@ -260,14 +260,14 @@
           "batch_id": "it-ch-v3",
           "gold_namespace": "it_ch_gold",
           "requested_snapshots": {
-            "dim_movies": 7888989563421118529,
-            "fact_ratings": 6078864566578051031,
-            "obt_movie_engagement": 1459502348599313135
+            "dim_movies": 1068421404189628287,
+            "fact_ratings": 4376926707125998302,
+            "obt_movie_engagement": 2167781481955030222
           },
           "current_snapshots": {
-            "dim_movies": 7888989563421118529,
-            "fact_ratings": 6078864566578051031,
-            "obt_movie_engagement": 1459502348599313135
+            "dim_movies": 1068421404189628287,
+            "fact_ratings": 4376926707125998302,
+            "obt_movie_engagement": 2167781481955030222
           },
           "engagement_rows": 3,
           "rating_rows": 3,
@@ -275,10 +275,10 @@
             "engagement_rows": 3,
             "rating_rows": 3,
             "engagement_snapshots": [
-              1459502348599313135
+              2167781481955030222
             ],
             "rating_snapshots": [
-              6078864566578051031
+              4376926707125998302
             ],
             "stage_engagement_rows": 2,
             "log_rows": 3
