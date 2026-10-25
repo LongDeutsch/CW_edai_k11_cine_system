@@ -1,0 +1,217 @@
+{
+  "namespace": "it_b1",
+  "warehouse": "file:///private/var/folders/df/p7lmy0917s36_bmbrvhq4tn00000gp/T/cinestream-feast-it-47sn3xra/warehouse",
+  "batch_id": "batch-b1-file-snapshot",
+  "historical_dp3_batch_id": "batch-ad6a69a535ee5297ad2c73b10942813a",
+  "historical_dp3_snapshots": {
+    "feat_user_movie_stats_daily": "1992904055192348575",
+    "feat_movie_engagement_stats_daily": "1720343794407991313"
+  },
+  "feast_version": "0.67.0",
+  "status": "PASS",
+  "production_namespace_blocked": true,
+  "first_write": {
+    "user": "overwritten",
+    "movie": "overwritten",
+    "ready": true
+  },
+  "second_write": {
+    "user": "unchanged",
+    "movie": "unchanged"
+  },
+  "user_snapshots": 1,
+  "movie_snapshots": 1,
+  "snapshot_ids": {
+    "feat_user_movie_stats_daily": "2533810920237671057",
+    "feat_movie_engagement_stats_daily": "2290706951991004865"
+  },
+  "export_rows": {
+    "feat_user_movie_stats_daily": 4,
+    "feat_movie_engagement_stats_daily": 4
+  },
+  "logical_rows": {
+    "feat_user_movie_stats_daily": 4,
+    "feat_movie_engagement_stats_daily": 4
+  },
+  "feast_rows": [
+    {
+      "user_id": 7,
+      "movie_id": 11,
+      "event_timestamp": "2026-01-21T03:00:00+00:00",
+      "user_total_ratings_90d": 1.0,
+      "user_avg_rating_90d": 4.0,
+      "user_favorite_genre": null,
+      "user_total_watch_hours_30d": 0.166667,
+      "movie_rating_count_30d": 1.0,
+      "movie_avg_rating_30d": 4.0,
+      "movie_completion_rate_30d": 0.5,
+      "movie_trending_score_7d": 0.166667
+    },
+    {
+      "user_id": 7,
+      "movie_id": 11,
+      "event_timestamp": "2026-01-21T02:00:00+00:00",
+      "user_total_ratings_90d": null,
+      "user_avg_rating_90d": null,
+      "user_favorite_genre": null,
+      "user_total_watch_hours_30d": null,
+      "movie_rating_count_30d": null,
+      "movie_avg_rating_30d": null,
+      "movie_completion_rate_30d": null,
+      "movie_trending_score_7d": null
+    },
+    {
+      "user_id": 7,
+      "movie_id": 11,
+      "event_timestamp": "2026-02-01T00:00:00+00:00",
+      "user_total_ratings_90d": 2.0,
+      "user_avg_rating_90d": 4.5,
+      "user_favorite_genre": null,
+      "user_total_watch_hours_30d": 0.166667,
+      "movie_rating_count_30d": 2.0,
+      "movie_avg_rating_30d": 4.5,
+      "movie_completion_rate_30d": 0.5,
+      "movie_trending_score_7d": 0.0
+    },
+    {
+      "user_id": 8,
+      "movie_id": 12,
+      "event_timestamp": "2026-01-21T03:00:00+00:00",
+      "user_total_ratings_90d": 1.0,
+      "user_avg_rating_90d": 3.0,
+      "user_favorite_genre": null,
+      "user_total_watch_hours_30d": 0.0,
+      "movie_rating_count_30d": 1.0,
+      "movie_avg_rating_30d": 3.0,
+      "movie_completion_rate_30d": null,
+      "movie_trending_score_7d": 0.0
+    },
+    {
+      "user_id": 8,
+      "movie_id": 11,
+      "event_timestamp": "2026-02-01T00:00:00+00:00",
+      "user_total_ratings_90d": 1.0,
+      "user_avg_rating_90d": 3.0,
+      "user_favorite_genre": null,
+      "user_total_watch_hours_30d": 0.0,
+      "movie_rating_count_30d": 2.0,
+      "movie_avg_rating_30d": 4.5,
+      "movie_completion_rate_30d": 0.5,
+      "movie_trending_score_7d": 0.0
+    },
+    {
+      "user_id": 9,
+      "movie_id": 99,
+      "event_timestamp": "2026-02-01T00:00:00+00:00",
+      "user_total_ratings_90d": null,
+      "user_avg_rating_90d": null,
+      "user_favorite_genre": null,
+      "user_total_watch_hours_30d": null,
+      "movie_rating_count_30d": null,
+      "movie_avg_rating_30d": null,
+      "movie_completion_rate_30d": null,
+      "movie_trending_score_7d": null
+    }
+  ],
+  "iceberg_sample": {
+    "feat_user_movie_stats_daily": [
+      {
+        "user_id": 8,
+        "event_timestamp": "2026-02-01T00:00:00+00:00",
+        "created_timestamp": "2026-01-21T03:00:00+00:00",
+        "user_total_ratings_90d": 1,
+        "user_avg_rating_90d": 3.0,
+        "user_favorite_genre": null,
+        "user_total_watch_hours_30d": 0.0
+      },
+      {
+        "user_id": 7,
+        "event_timestamp": "2026-02-01T00:00:00+00:00",
+        "created_timestamp": "2026-01-21T03:00:00+00:00",
+        "user_total_ratings_90d": 2,
+        "user_avg_rating_90d": 4.5,
+        "user_favorite_genre": null,
+        "user_total_watch_hours_30d": 0.166667
+      },
+      {
+        "user_id": 7,
+        "event_timestamp": "2026-01-20T00:00:00+00:00",
+        "created_timestamp": "2026-01-21T03:00:00+00:00",
+        "user_total_ratings_90d": 1,
+        "user_avg_rating_90d": 4.0,
+        "user_favorite_genre": null,
+        "user_total_watch_hours_30d": 0.166667
+      },
+      {
+        "user_id": 8,
+        "event_timestamp": "2026-01-20T00:00:00+00:00",
+        "created_timestamp": "2026-01-21T03:00:00+00:00",
+        "user_total_ratings_90d": 1,
+        "user_avg_rating_90d": 3.0,
+        "user_favorite_genre": null,
+        "user_total_watch_hours_30d": 0.0
+      }
+    ],
+    "feat_movie_engagement_stats_daily": [
+      {
+        "movie_id": 12,
+        "event_timestamp": "2026-02-01T00:00:00+00:00",
+        "created_timestamp": "2026-01-21T03:00:00+00:00",
+        "movie_rating_count_30d": 1,
+        "movie_avg_rating_30d": 3.0,
+        "movie_completion_rate_30d": null,
+        "movie_trending_score_7d": 0.0
+      },
+      {
+        "movie_id": 11,
+        "event_timestamp": "2026-02-01T00:00:00+00:00",
+        "created_timestamp": "2026-01-21T03:00:00+00:00",
+        "movie_rating_count_30d": 2,
+        "movie_avg_rating_30d": 4.5,
+        "movie_completion_rate_30d": 0.5,
+        "movie_trending_score_7d": 0.0
+      },
+      {
+        "movie_id": 11,
+        "event_timestamp": "2026-01-20T00:00:00+00:00",
+        "created_timestamp": "2026-01-21T03:00:00+00:00",
+        "movie_rating_count_30d": 1,
+        "movie_avg_rating_30d": 4.0,
+        "movie_completion_rate_30d": 0.5,
+        "movie_trending_score_7d": 0.166667
+      },
+      {
+        "movie_id": 12,
+        "event_timestamp": "2026-01-20T00:00:00+00:00",
+        "created_timestamp": "2026-01-21T03:00:00+00:00",
+        "movie_rating_count_30d": 1,
+        "movie_avg_rating_30d": 3.0,
+        "movie_completion_rate_30d": null,
+        "movie_trending_score_7d": 0.0
+      }
+    ]
+  },
+  "production_before": {
+    "namespaces/it_af_dp/tables/raw_users": {
+      "snapshot": "1062383487765229157",
+      "schema": 2
+    },
+    "namespaces/gold/tables/fact_ratings": "unavailable:HTTPError",
+    "namespaces/gold/tables/fact_watch_sessions": "unavailable:HTTPError",
+    "namespaces/gold/tables/feat_user_movie_stats_daily": "unavailable:HTTPError",
+    "namespaces/gold/tables/feat_movie_engagement_stats_daily": "unavailable:HTTPError",
+    "namespaces/silver/tables/stg_ratings": "unavailable:HTTPError"
+  },
+  "production_after": {
+    "namespaces/it_af_dp/tables/raw_users": {
+      "snapshot": "1062383487765229157",
+      "schema": 2
+    },
+    "namespaces/gold/tables/fact_ratings": "unavailable:HTTPError",
+    "namespaces/gold/tables/fact_watch_sessions": "unavailable:HTTPError",
+    "namespaces/gold/tables/feat_user_movie_stats_daily": "unavailable:HTTPError",
+    "namespaces/gold/tables/feat_movie_engagement_stats_daily": "unavailable:HTTPError",
+    "namespaces/silver/tables/stg_ratings": "unavailable:HTTPError"
+  },
+  "production_unchanged": true
+}

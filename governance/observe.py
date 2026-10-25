@@ -50,6 +50,8 @@ def classify_dataset(dataset, observation: dict) -> dict:
         status = "missing_unexpected"
     elif dataset.lineage_status == "declared_only" and snapshot_id in (None, -1):
         status = "declared_empty"
+    elif dataset.id.startswith("iceberg.gold.feat_") and snapshot_id in (None, -1):
+        status = "declared_empty"
     elif snapshot_id in (None, -1):
         status = "catalog_without_snapshot"
     elif total == 0:

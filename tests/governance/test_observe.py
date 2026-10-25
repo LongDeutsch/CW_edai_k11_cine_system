@@ -205,7 +205,7 @@ class HygieneTests(unittest.TestCase):
         self.assertIn("api.movies.top_rated", downstream)
         self.assertIn("dashboard.analytics", downstream)
         self.assertNotIn("clickhouse.movie_windows", downstream)
-        self.assertNotIn("iceberg.gold.feat_movie_engagement_stats_daily", downstream)
+        self.assertIn("iceberg.gold.feat_movie_engagement_stats_daily", downstream)
 
 
 if __name__ == "__main__":

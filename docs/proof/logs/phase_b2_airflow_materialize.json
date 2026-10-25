@@ -1,0 +1,60 @@
+{
+  "namespace": "it_af_dp_b2",
+  "logical_date": "2026-06-01T00:00:00+00:00",
+  "batch_id": "batch-bc2183e8026ee1ac2ad75370cfb4be58",
+  "dp1": "success",
+  "dp2": "success",
+  "dp3": "success",
+  "dp4": "success",
+  "dp4_tasks": {
+    "wait_for_dp3": "success",
+    "materialize_online": "success"
+  },
+  "snapshot_ids": {
+    "feat_user_movie_stats_daily": "2820089896547319496",
+    "feat_movie_engagement_stats_daily": "1690044593843706509"
+  },
+  "materialize": {
+    "batch_id": "batch-bc2183e8026ee1ac2ad75370cfb4be58",
+    "sequence": 1,
+    "snapshot_ids": {
+      "feat_user_movie_stats_daily": "2820089896547319496",
+      "feat_movie_engagement_stats_daily": "1690044593843706509"
+    },
+    "status": "success",
+    "materialized_at": "2026-10-25T06:35:06.546994+00:00",
+    "result": "materialized"
+  },
+  "status": "PASS",
+  "legacy_paused": true,
+  "production_unchanged": true,
+  "serving_unchanged": true,
+  "reconcile": {
+    "iceberg_user_7": {
+      "snapshot_id": "2820089896547319496",
+      "user_total_ratings_90d": 1,
+      "user_avg_rating_90d": 4.0,
+      "user_favorite_genre": null,
+      "user_total_watch_hours_30d": 0.166667
+    },
+    "iceberg_movie_11": {
+      "snapshot_id": "1690044593843706509",
+      "movie_rating_count_30d": 1,
+      "movie_avg_rating_30d": 4.0,
+      "movie_completion_rate_30d": 0.5,
+      "movie_trending_score_7d": 0.166667
+    },
+    "online_user_7_movie_11": {
+      "user_total_ratings_90d": 1,
+      "user_avg_rating_90d": 4.0,
+      "user_favorite_genre": null,
+      "user_total_watch_hours_30d": 0.166667,
+      "movie_rating_count_30d": 1,
+      "movie_avg_rating_30d": 4.0,
+      "movie_completion_rate_30d": 0.5,
+      "movie_trending_score_7d": 0.166667
+    },
+    "online_missing_user_9_movie_99_null": true,
+    "online_user_8_movie_12_null": true
+  }
+}

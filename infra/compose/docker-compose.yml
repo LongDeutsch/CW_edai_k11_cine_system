@@ -65,7 +65,7 @@ services:
       CATALOG_S3_PATH__STYLE__ACCESS: "true"
       CATALOG_S3_ACCESS__KEY__ID: minioadmin
       CATALOG_S3_SECRET__ACCESS__KEY: minioadmin
-      CATALOG_URI: jdbc:sqlite:file:/tmp/iceberg_catalog.db
+      CATALOG_URI: jdbc:sqlite:file:/tmp/iceberg_catalog.db?busy_timeout=10000
     depends_on:
       minio:
         condition: service_healthy

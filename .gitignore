@@ -22,3 +22,6 @@ metastore_db/
 derby.log
 spark-warehouse/
 checkpoints/
+
+# Registry và Parquet sinh khi chạy Feast local.
+ml/feast/data/

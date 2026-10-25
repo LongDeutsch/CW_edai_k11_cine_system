@@ -8,7 +8,7 @@ import sys
 def main(argv: list[str] | None = None) -> None:
     args = list(sys.argv[1:] if argv is None else argv)
     if not args:
-        raise SystemExit("cần ingest, publish, validate-bronze hoặc validate-gold")
+        raise SystemExit("cần ingest, publish, validate-bronze, validate-gold hoặc features")
     command, rest = args[0], args[1:]
     if command == "ingest":
         from transformation.batch.jobs.ingest_to_bronze import main as run
@@ -29,6 +29,11 @@ def main(argv: list[str] | None = None) -> None:
         from transformation.batch.jobs.validate_lakehouse import validate_gold
 
         validate_gold(rest)
+        return
+    if command == "features":
+        from transformation.batch.jobs.build_offline_features import main as run
+
+        run(rest)
         return
     raise SystemExit(f"lệnh không hỗ trợ: {command}")
 

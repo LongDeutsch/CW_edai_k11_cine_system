@@ -76,7 +76,7 @@ class LineageTests(unittest.TestCase):
         review = lineage_review()
         self.assertEqual(review["fact_watch_downstream"], [])
         self.assertEqual(review["feature_downstream"]["iceberg.gold.feat_movie_engagement_stats_daily"], [])
-        self.assertEqual(review["feature_status"]["iceberg.gold.feat_user_movie_stats_daily"], "declared_only")
+        self.assertEqual(review["feature_status"]["iceberg.gold.feat_user_movie_stats_daily"], "verified")
         self.assertEqual(review["playback_status"], "writer_gated")
         self.assertIn("clickhouse.movie_windows", review["playback_downstream"])
         self.assertEqual(review["heartbeats_downstream"], [])

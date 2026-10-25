@@ -93,12 +93,17 @@ class GovernanceViewTests(unittest.TestCase):
         self.assertIn("iceberg.gold.fact_ratings", ratings["descendants"])
         self.assertIn("api.movies.top_rated", ratings["descendants"])
         self.assertNotIn("clickhouse.movie_windows", ratings["descendants"])
-        self.assertNotIn("iceberg.gold.feat_movie_engagement_stats_daily", ratings["descendants"])
+        self.assertIn("iceberg.gold.feat_user_movie_stats_daily", ratings["descendants"])
+        self.assertIn("iceberg.gold.feat_movie_engagement_stats_daily", ratings["descendants"])
         watch = _row(view, "iceberg.gold.fact_watch_sessions")
         self.assertEqual(watch["downstream"], [])
-        features = [item["id"] for item in view["datasets"] if item["lineage_status"] == "declared_only"]
+        features = {
+            "iceberg.gold.feat_user_movie_stats_daily",
+            "iceberg.gold.feat_movie_engagement_stats_daily",
+        }
         linked = {item["upstream"] for item in view["edges"]} | {item["downstream"] for item in view["edges"]}
-        self.assertTrue(set(features).isdisjoint(linked))
+        self.assertTrue(features <= linked)
+        self.assertEqual(by_key[("iceberg.silver.stg_ratings", "iceberg.gold.feat_user_movie_stats_daily", "user_total_ratings_90d")], "data_flow")
 
     def test_filter_separates_environment_and_status(self):
         view = build_view(_raw())

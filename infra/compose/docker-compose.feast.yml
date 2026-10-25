@@ -1,0 +1,16 @@
+# Redis cho Feast online. Không đụng ClickHouse hay FastAPI serving.
+# Host: localhost:16379. Trong mạng compose: redis:6379. Database 1.
+
+name: cinestream
+
+services:
+  redis:
+    image: redis:7.4-alpine
+    ports:
+      - "16379:6379"
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20

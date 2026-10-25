@@ -138,7 +138,8 @@ class SourceReadySensor(BaseSensorOperator):
         return self._result
 
     def poke(self, context) -> bool:
-        _namespaces(_conf(context))
+        conf = _conf(context)
+        _exclusive(context, _namespaces(conf))
         self._result = _source_assessment(context)
         if self._result["ready"]:
             self.log.info("batch nguồn %s, %s file", self._result["batch_id"], self._result["files"])
@@ -149,14 +150,28 @@ class SourceReadySensor(BaseSensorOperator):
 
 def _batch(context) -> dict:
     pulled = context["ti"].xcom_pull(task_ids="check_source_ready")
-    if not pulled or not pulled.get("batch_id"):
-        raise AirflowException("check_source_ready chưa trả batch_id")
-    return pulled
+    if pulled and pulled.get("batch_id"):
+        return pulled
+    conf = _conf(context)
+    if conf.get("batch_id"):
+        return {
+            "batch_id": str(conf["batch_id"]),
+            "source_dir": conf.get("source_dir"),
+            "files": conf.get("files"),
+        }
+    raise AirflowException("check_source_ready chưa trả batch_id")
+
+
+def _exclusive(context, names: tuple[str, ...]) -> None:
+    from orchestration.batch_guard import assert_exclusive_writer
+
+    assert_exclusive_writer(context["dag"].dag_id, names)
 
 
 def _submit(context, command: str, extra: list[str]) -> dict:
     conf = _conf(context)
     bronze, silver, gold = _namespaces(conf)
+    _exclusive(context, (bronze, silver, gold))
     cmd = [
         "spark-submit",
         "--master",
@@ -319,36 +334,42 @@ def validate_gold_task(**context) -> dict:
 
 
 _SERVING_TABLES = ("dim_movies", "fact_ratings", "obt_movie_engagement")
+_FEATURE_SOURCE_TABLES = ("stg_ratings", "stg_watch_sessions")
 
 
-def _gold_snapshots(conf: dict, gold: str) -> dict:
-    """Ghim snapshot hiện tại vào marker. Sync không được tự lấy snapshot mới hơn."""
+def _current_snapshots(conf: dict, namespace: str, tables: tuple[str, ...]) -> dict:
+    """Đọc snapshot hiện tại qua Iceberg REST. Không tự chọn snapshot mới hơn."""
     import urllib.error
     import urllib.request
 
     rest = str(conf.get("iceberg_rest") or "http://iceberg-rest:8181").rstrip("/")
     found = {}
-    for name in _SERVING_TABLES:
-        url = f"{rest}/v1/namespaces/{gold}/tables/{name}"
+    for name in tables:
+        url = f"{rest}/v1/namespaces/{namespace}/tables/{name}"
         try:
             with urllib.request.urlopen(url, timeout=15) as response:
                 meta = json.loads(response.read().decode())["metadata"]
         except urllib.error.HTTPError as exc:
-            raise AirflowException(f"không đọc snapshot {gold}.{name}: HTTP {exc.code}") from exc
+            raise AirflowException(f"không đọc snapshot {namespace}.{name}: HTTP {exc.code}") from exc
         snapshot_id = meta.get("current-snapshot-id")
         if snapshot_id in (None, -1):
-            raise AirflowException(f"{gold}.{name} chưa có snapshot để phát hành")
+            raise AirflowException(f"{namespace}.{name} chưa có snapshot để phát hành")
         found[name] = int(snapshot_id)
     return found
+
+
+def _gold_snapshots(conf: dict, gold: str) -> dict:
+    return _current_snapshots(conf, gold, _SERVING_TABLES)
 
 
 def publish_success(**context) -> dict:
     batch = _batch(context)
     conf = _conf(context)
     bronze, silver, gold = _namespaces(conf)
+    _exclusive(context, (bronze, silver, gold))
     payload = {
         "published": True,
-        "dag_id": DAG_ID,
+        "dag_id": context["dag"].dag_id,
         "run_id": str(context["run_id"]),
         "logical_date": str(context["logical_date"]),
         "data_interval_start": context["data_interval_start"].isoformat(),
@@ -358,9 +379,11 @@ def publish_success(**context) -> dict:
         "source_dir": batch.get("source_dir"),
         "files": batch.get("files"),
         "namespaces": {"bronze": bronze, "silver": silver, "gold": gold},
-        "bronze_quality": context["ti"].xcom_pull(task_ids="validate_bronze"),
+        "bronze_quality": context["ti"].xcom_pull(task_ids="validate_bronze")
+        or context["ti"].xcom_pull(task_ids="validate_bronze", dag_id="cinestream_dp1_raw_to_bronze"),
         "gold_quality": context["ti"].xcom_pull(task_ids="validate_gold"),
         "gold_snapshots": _gold_snapshots(conf, gold),
+        "silver_snapshots": _current_snapshots(conf, silver, _FEATURE_SOURCE_TABLES),
     }
     _put_marker(conf, bronze, batch["batch_id"], payload)
     print("RESULT_JSON=" + json.dumps({"published": True, "batch_id": batch["batch_id"], "gold_snapshots": payload["gold_snapshots"]}))
@@ -372,6 +395,7 @@ def sync_clickhouse(**context) -> dict:
     batch = _batch(context)
     conf = _conf(context)
     bronze, _, gold = _namespaces(conf)
+    _exclusive(context, (bronze, bronze, gold))
     args = sync_arguments(
         batch_id=batch["batch_id"],
         marker_namespace=bronze,
@@ -442,6 +466,68 @@ def _fail_marker(context):
     from pathlib import Path
 
     return Path("/opt/airflow/logs/fail-once") / f"{context['run_id']}.txt"
+
+
+def _require_published_batch(context, conf: dict, silver: str, gold: str) -> dict:
+    """DP3 chỉ chạy khi snapshot Gold và Silver còn đúng batch DP2 đã phát hành."""
+    published = context["ti"].xcom_pull(
+        task_ids="publish_success",
+        dag_id="cinestream_dp2_bronze_to_gold",
+    )
+    if not published or published.get("published") is not True:
+        raise AirflowException("DP3 không thấy publish_success của DP2 cùng logical date")
+    if conf.get("batch_id") and str(conf["batch_id"]) != str(published.get("batch_id")):
+        raise AirflowException("batch_id DP3 khác batch DP2 đã phát hành")
+    expected_gold = {name: int(published["gold_snapshots"][name]) for name in _SERVING_TABLES}
+    current_gold = _gold_snapshots(conf, gold)
+    if current_gold != expected_gold:
+        raise AirflowException(f"gold snapshot lệch DP2: {current_gold} != {expected_gold}")
+    expected_silver = {name: int(published["silver_snapshots"][name]) for name in _FEATURE_SOURCE_TABLES}
+    current_silver = _current_snapshots(conf, silver, _FEATURE_SOURCE_TABLES)
+    if current_silver != expected_silver:
+        raise AirflowException(f"silver snapshot lệch DP2: {current_silver} != {expected_silver}")
+    return published
+
+
+def spark_offline_features(**context) -> dict:
+    """DP3 đọc Silver của đúng snapshot DP2 đã ghim, rồi ghi feat_*.
+
+    ``fact_ratings`` không có ``user_id``. Mốc thời gian của watch cũng chỉ
+    còn trên Silver, nên phép tính feature không đổi. Task này từ chối chạy
+    nếu snapshot Gold hoặc Silver hiện tại khác marker ``publish_success``.
+    """
+    conf = _conf(context)
+    _, silver, gold = _namespaces(conf)
+    _require_published_batch(context, conf, silver, gold)
+    as_of = str(conf.get("as_of") or _effective_ts(context))
+    created = str(conf.get("created_timestamp") or as_of)
+    extra = [
+        "--silver-namespace",
+        silver,
+        "--gold-namespace",
+        gold,
+        "--as-of",
+        as_of,
+        "--created-timestamp",
+        created,
+    ]
+    if conf.get("allow_production") in (True, "true", "True", "1", 1) or _env_allows_production():
+        extra.append("--allow-production")
+    result = _submit(context, "features", extra)
+    if result.get("ready") is False:
+        raise AirflowException("feature không đạt: " + "; ".join(result.get("reasons") or []))
+    return result
+
+
+def validate_offline_features(**context) -> dict:
+    result = context["ti"].xcom_pull(task_ids="spark_offline_features")
+    if not result or result.get("ready") is not True:
+        raise AirflowException("chưa có feature đạt kiểm tra")
+    if result.get("user_rows") != result.get("user_distinct"):
+        raise AirflowException("trùng (user_id, event_timestamp)")
+    if result.get("movie_rows") != result.get("movie_distinct"):
+        raise AirflowException("trùng (movie_id, event_timestamp)")
+    return result
 
 
 default_args = {

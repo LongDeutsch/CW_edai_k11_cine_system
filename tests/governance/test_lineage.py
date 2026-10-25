@@ -13,17 +13,18 @@ class LineageTests(unittest.TestCase):
     def test_lineage_has_no_dangling_or_inconsistent_references(self):
         self.assertEqual(problems(), [])
 
-    def test_feature_tables_stay_out_of_serving_edges(self):
-        linked = {edge.upstream for edge in edges()} | {edge.downstream for edge in edges()}
-        features = {item.id for item in datasets() if item.lineage_status == "declared_only"}
-        self.assertEqual(
-            features,
-            {
-                "iceberg.gold.feat_user_movie_stats_daily",
-                "iceberg.gold.feat_movie_engagement_stats_daily",
-            },
-        )
-        self.assertTrue(features.isdisjoint(linked))
+    def test_feature_tables_read_silver_and_do_not_feed_serving(self):
+        features = {
+            "iceberg.gold.feat_user_movie_stats_daily",
+            "iceberg.gold.feat_movie_engagement_stats_daily",
+        }
+        for item in datasets():
+            if item.id in features:
+                self.assertEqual(item.lineage_status, "verified")
+        incoming = {edge.downstream for edge in edges() if edge.downstream in features}
+        self.assertEqual(incoming, features)
+        outgoing = {edge.downstream for edge in edges() if edge.upstream in features}
+        self.assertEqual(outgoing, set())
 
     def test_integration_resources_are_not_on_production_edges(self):
         for edge in edges():

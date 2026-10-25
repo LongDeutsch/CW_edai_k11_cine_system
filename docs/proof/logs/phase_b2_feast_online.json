@@ -1,0 +1,77 @@
+{
+  "namespace": "it_b2",
+  "warehouse": "file:///private/var/folders/df/p7lmy0917s36_bmbrvhq4tn00000gp/T/cinestream-feast-online-mpvmrr40/warehouse",
+  "redis": "localhost:16379,db=1",
+  "status": "PASS",
+  "production_namespace_blocked": true,
+  "first_write": "overwritten",
+  "second_write": "overwritten",
+  "third_write": "unchanged",
+  "snapshot_ids": {
+    "first": {
+      "feat_user_movie_stats_daily": "3703638653197485553",
+      "feat_movie_engagement_stats_daily": "2086065432481338326"
+    },
+    "second": {
+      "feat_user_movie_stats_daily": "6236898748916454034",
+      "feat_movie_engagement_stats_daily": "6473351710346622994"
+    }
+  },
+  "online_first": "materialized",
+  "online_second": "materialized",
+  "online_rerun": "unchanged",
+  "stale_refused": "sequence 1 c\u0169 h\u01a1n 2",
+  "online_rows": [
+    {
+      "user_id": 7,
+      "movie_id": 11,
+      "user_favorite_genre": null,
+      "user_avg_rating_90d": 4.5,
+      "user_total_watch_hours_30d": 0.166667,
+      "user_total_ratings_90d": 2,
+      "movie_rating_count_30d": 2,
+      "movie_completion_rate_30d": 0.5,
+      "movie_trending_score_7d": 0.0,
+      "movie_avg_rating_30d": 4.5
+    },
+    {
+      "user_id": 9,
+      "movie_id": 99,
+      "user_favorite_genre": null,
+      "user_avg_rating_90d": null,
+      "user_total_watch_hours_30d": null,
+      "user_total_ratings_90d": null,
+      "movie_rating_count_30d": null,
+      "movie_completion_rate_30d": null,
+      "movie_trending_score_7d": null,
+      "movie_avg_rating_30d": null
+    },
+    {
+      "user_id": 8,
+      "movie_id": 12,
+      "user_favorite_genre": null,
+      "user_avg_rating_90d": null,
+      "user_total_watch_hours_30d": null,
+      "user_total_ratings_90d": null,
+      "movie_rating_count_30d": null,
+      "movie_completion_rate_30d": null,
+      "movie_trending_score_7d": null,
+      "movie_avg_rating_30d": null
+    }
+  ],
+  "user_snapshots": 2,
+  "movie_snapshots": 2,
+  "production_before": {
+    "namespaces/it_af_dp/tables/raw_users": "1062383487765229157",
+    "namespaces/gold/tables/fact_ratings": "unavailable:HTTPError",
+    "namespaces/gold/tables/feat_user_movie_stats_daily": "unavailable:HTTPError",
+    "namespaces/silver/tables/stg_ratings": "unavailable:HTTPError"
+  },
+  "production_after": {
+    "namespaces/it_af_dp/tables/raw_users": "1062383487765229157",
+    "namespaces/gold/tables/fact_ratings": "unavailable:HTTPError",
+    "namespaces/gold/tables/feat_user_movie_stats_daily": "unavailable:HTTPError",
+    "namespaces/silver/tables/stg_ratings": "unavailable:HTTPError"
+  },
+  "production_unchanged": true
+}

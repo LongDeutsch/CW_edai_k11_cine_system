@@ -1,0 +1,94 @@
+{
+  "namespace": "it_a1",
+  "warehouse": "/private/var/folders/df/p7lmy0917s36_bmbrvhq4tn00000gp/T/cinestream-features-it-kju_qsp7/warehouse",
+  "status": "PASS",
+  "production_namespace_blocked": true,
+  "first_write": {
+    "user": "overwritten",
+    "movie": "overwritten",
+    "ready": true
+  },
+  "second_write": {
+    "user": "unchanged",
+    "movie": "unchanged"
+  },
+  "user_snapshots": 1,
+  "movie_snapshots": 1,
+  "users": {
+    "1": {
+      "user_id": 1,
+      "event_timestamp": "2026-06-01T00:00:00",
+      "created_timestamp": "2026-06-02T03:00:00",
+      "user_total_ratings_90d": 1,
+      "user_avg_rating_90d": 5.0,
+      "user_favorite_genre": "Action",
+      "user_total_watch_hours_30d": 1.0
+    },
+    "2": {
+      "user_id": 2,
+      "event_timestamp": "2026-06-01T00:00:00",
+      "created_timestamp": "2026-06-02T03:00:00",
+      "user_total_ratings_90d": 0,
+      "user_avg_rating_90d": null,
+      "user_favorite_genre": null,
+      "user_total_watch_hours_30d": 2.0
+    }
+  },
+  "movies": {
+    "10": {
+      "movie_id": 10,
+      "event_timestamp": "2026-06-01T00:00:00",
+      "created_timestamp": "2026-06-02T03:00:00",
+      "movie_rating_count_30d": 1,
+      "movie_avg_rating_30d": 5.0,
+      "movie_completion_rate_30d": 0.5,
+      "movie_trending_score_7d": 1.0
+    }
+  },
+  "genre_without_source": "null",
+  "production_unchanged": true,
+  "production_before": {
+    "namespaces/gold/tables/fact_ratings": {
+      "snapshot": 1324146680817977793,
+      "schema": 0
+    },
+    "namespaces/gold/tables/fact_watch_sessions": {
+      "snapshot": 4699535929651689042,
+      "schema": 0
+    },
+    "namespaces/gold/tables/feat_user_movie_stats_daily": {
+      "snapshot": -1,
+      "schema": 0
+    },
+    "namespaces/gold/tables/feat_movie_engagement_stats_daily": {
+      "snapshot": -1,
+      "schema": 0
+    },
+    "namespaces/silver/tables/stg_ratings": {
+      "snapshot": 8795824390230744395,
+      "schema": 0
+    }
+  },
+  "production_after": {
+    "namespaces/gold/tables/fact_ratings": {
+      "snapshot": 1324146680817977793,
+      "schema": 0
+    },
+    "namespaces/gold/tables/fact_watch_sessions": {
+      "snapshot": 4699535929651689042,
+      "schema": 0
+    },
+    "namespaces/gold/tables/feat_user_movie_stats_daily": {
+      "snapshot": -1,
+      "schema": 0
+    },
+    "namespaces/gold/tables/feat_movie_engagement_stats_daily": {
+      "snapshot": -1,
+      "schema": 0
+    },
+    "namespaces/silver/tables/stg_ratings": {
+      "snapshot": 8795824390230744395,
+      "schema": 0
+    }
+  }
+}
