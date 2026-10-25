@@ -2,6 +2,10 @@
 
 Chờ ``validate_features`` cùng logical date. Không ghi Iceberg, không sync
 ClickHouse và không bật streaming. Feast chỉ được import khi task chạy.
+
+DP4 chỉ nạp hai Feature View batch ``user_movie_stats`` và
+``movie_engagement_stats`` vào Redis database 1. Cửa sổ Flink nằm ở view
+``movie_minute_playback`` trên Redis database 2. Task này không mở database 2.
 """
 
 from __future__ import annotations

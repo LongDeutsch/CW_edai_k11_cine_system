@@ -1,6 +1,6 @@
 {
   "namespace": "it_b2",
-  "warehouse": "file:///private/var/folders/df/p7lmy0917s36_bmbrvhq4tn00000gp/T/cinestream-feast-online-mpvmrr40/warehouse",
+  "warehouse": "file:///private/var/folders/df/p7lmy0917s36_bmbrvhq4tn00000gp/T/cinestream-feast-online-o2ta58jz/warehouse",
   "redis": "localhost:16379,db=1",
   "status": "PASS",
   "production_namespace_blocked": true,
@@ -9,12 +9,12 @@
   "third_write": "unchanged",
   "snapshot_ids": {
     "first": {
-      "feat_user_movie_stats_daily": "3703638653197485553",
-      "feat_movie_engagement_stats_daily": "2086065432481338326"
+      "feat_user_movie_stats_daily": "7124386063535507229",
+      "feat_movie_engagement_stats_daily": "1021463994014543999"
     },
     "second": {
-      "feat_user_movie_stats_daily": "6236898748916454034",
-      "feat_movie_engagement_stats_daily": "6473351710346622994"
+      "feat_user_movie_stats_daily": "5310933193076097422",
+      "feat_movie_engagement_stats_daily": "1637381519741724244"
     }
   },
   "online_first": "materialized",
@@ -25,10 +25,10 @@
     {
       "user_id": 7,
       "movie_id": 11,
-      "user_favorite_genre": null,
-      "user_avg_rating_90d": 4.5,
-      "user_total_watch_hours_30d": 0.166667,
       "user_total_ratings_90d": 2,
+      "user_favorite_genre": null,
+      "user_total_watch_hours_30d": 0.166667,
+      "user_avg_rating_90d": 4.5,
       "movie_rating_count_30d": 2,
       "movie_completion_rate_30d": 0.5,
       "movie_trending_score_7d": 0.0,
@@ -37,10 +37,10 @@
     {
       "user_id": 9,
       "movie_id": 99,
-      "user_favorite_genre": null,
-      "user_avg_rating_90d": null,
-      "user_total_watch_hours_30d": null,
       "user_total_ratings_90d": null,
+      "user_favorite_genre": null,
+      "user_total_watch_hours_30d": null,
+      "user_avg_rating_90d": null,
       "movie_rating_count_30d": null,
       "movie_completion_rate_30d": null,
       "movie_trending_score_7d": null,
@@ -49,10 +49,10 @@
     {
       "user_id": 8,
       "movie_id": 12,
-      "user_favorite_genre": null,
-      "user_avg_rating_90d": null,
-      "user_total_watch_hours_30d": null,
       "user_total_ratings_90d": null,
+      "user_favorite_genre": null,
+      "user_total_watch_hours_30d": null,
+      "user_avg_rating_90d": null,
       "movie_rating_count_30d": null,
       "movie_completion_rate_30d": null,
       "movie_trending_score_7d": null,

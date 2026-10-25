@@ -9,5 +9,7 @@ online_store:
   skip_dedup: true
 offline_store:
   type: duckdb
-# Redis db=1 của service local. Không trỏ ClickHouse hay serving production.
+# Redis db=1 của service local, dành cho feature batch DP4.
+# Cửa sổ streaming dùng db=2 và project cinestream_streaming.
+# Không trỏ ClickHouse hay serving production.
 # get_online_features chỉ có dữ liệu sau materialize. Chưa có KServe.

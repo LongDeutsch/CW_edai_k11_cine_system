@@ -139,27 +139,26 @@ def drop_tables(spark, names: list[str]) -> None:
         spark.sql(f"DROP TABLE IF EXISTS {name}")
 
 
-def submit(args: list[str]) -> str:
-    completed = compose(
-        "exec",
-        "-T",
-        "jobmanager",
-        "flink",
-        "run",
-        "-d",
-        "-py",
-        "/opt/cinestream/streaming/flink/jobs/heartbeat_window_job.py",
-        "--engine",
-        "flink",
-        "--bootstrap",
-        "kafka:29092",
-        "--iceberg-rest",
-        "http://iceberg-rest:8181",
-        "--s3-endpoint",
-        "http://minio:9000",
-        *args,
-        check=False,
+def submit(args: list[str], flink_args: list[str] | None = None) -> str:
+    command = ["exec", "-T", "jobmanager", "flink", "run", "-d"]
+    if flink_args:
+        command.extend(flink_args)
+    command.extend(
+        [
+            "-py",
+            "/opt/cinestream/streaming/flink/jobs/heartbeat_window_job.py",
+            "--engine",
+            "flink",
+            "--bootstrap",
+            "kafka:29092",
+            "--iceberg-rest",
+            "http://iceberg-rest:8181",
+            "--s3-endpoint",
+            "http://minio:9000",
+            *args,
+        ]
     )
+    completed = compose(*command, check=False)
     text = completed.stdout + completed.stderr
     print(text, flush=True)
     marker = "JobID "

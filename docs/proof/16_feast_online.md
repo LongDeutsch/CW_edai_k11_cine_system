@@ -87,7 +87,7 @@ User 9 / movie 99 và user 8 / movie 12 trả null. Đây là dòng logic một 
 
 `stg_playback_windows` có grain `(movie_id, window_start)`, cửa sổ tumbling một phút, cột `total_watch_seconds`, `heartbeat_count`, `active_users`, chế độ upsert. Nếu đẩy lên Feast, event time nên là `window_end`: một giá trị online cho mỗi `movie_id` là cửa sổ đã đóng mới nhất.
 
-Dedup theo `event_timestamp` của Redis sẽ bỏ một bản sửa cùng cửa sổ vì timestamp bằng nhau. Đó là lý do đường batch bật `skip_dedup` và tự giữ sequence. B2 không tạo topic Kafka riêng, không tạo bảng feature streaming, và không submit job push. Sink mặc định của job production vẫn là `cinestream.silver.stg_playback_windows`. R12 giữ MISSING.
+Dedup theo `event_timestamp` của Redis sẽ bỏ một bản sửa cùng cửa sổ vì timestamp bằng nhau. Đó là lý do đường batch bật `skip_dedup` và tự giữ sequence. Phase B3 sau đó sync cửa sổ Flink cô lập vào view riêng. Trạng thái R12 nằm ở `docs/proof/17_feast_streaming.md`.
 
 ## Bảo đảm
 

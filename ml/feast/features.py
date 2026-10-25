@@ -1,5 +1,10 @@
 """Feature View offline cho hai bảng feat_* .
 
+View cửa sổ streaming ``movie_minute_playback`` nằm ở
+``ml/feast/streaming_features.py``, project và Redis database khác. File này
+không khai báo view đó, nên ``feast apply`` của DP4 không đụng key streaming.
+
+
 Nguồn là Parquet đã export từ một snapshot Iceberg. Feast 0.67 không nhận
 snapshot id trên IcebergSource, nên repo này không trỏ REST Catalog.
 

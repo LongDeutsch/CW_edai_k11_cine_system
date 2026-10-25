@@ -2,7 +2,7 @@
 # make/ml.mk: Feast offline và Redis online. Không train model, không KServe.
 # ==============================================================================
 
-.PHONY: feast-offline-it feast-redis-up feast-online-it feast-airflow-it
+.PHONY: feast-offline-it feast-redis-up feast-online-it feast-airflow-it feast-streaming-it
 
 feast-redis-up: ## Redis local :16379, db 1, không đụng serving
 	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) -f infra/compose/docker-compose.feast.yml up -d --no-deps --wait redis
@@ -19,3 +19,7 @@ feast-online-it: feast-redis-up ## Materialize snapshot sang Redis và get_onlin
 
 feast-airflow-it: feast-redis-up ## DP1–DP4 trên it_af_dp_b2, materialize Redis, không ghi production
 	PYTHONPATH=. $(UV) run --no-project --python 3.12 --with pyspark==3.5.5 --with boto3 --with pandas --with pyarrow --with setuptools python -m orchestration.it_feast_airflow
+
+feast-streaming-it: feast-redis-up ## Cửa sổ Flink cô lập → Feast offline + Redis db=2
+	FEAST_USAGE=False PYTHONPATH=. $(UV) run --no-project --python 3.12 --with 'feast[duckdb,redis]==0.67.0' --with pyarrow --with pandas python -m unittest tests.ml.test_streaming_sync
+	SPARK_LOCAL_IP=127.0.0.1 FEAST_USAGE=False PYTHONUNBUFFERED=1 PYTHONPATH=. $(UV) run --no-project --python 3.12 --with 'feast[duckdb,redis]==0.67.0' --with pyspark==3.5.5 --with pyarrow --with pandas --with setuptools --with boto3 --with kafka-python python -m ml.online.it_streaming_features

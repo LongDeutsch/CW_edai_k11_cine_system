@@ -10,7 +10,7 @@ However, a strict compliance audit reveals critical discrepancies between docume
 1. **Discrepancy Between Docs and Implementation:** README and specification guides claim components that do not actually exist in code or runtime deployment (e.g., DataHub at port 9002, Multi-stage Docker optimization reducing images by 88%, and a 100 GB offline dataset).
 2. **DataHub Absence:** The repository does not deploy DataHub. All lineage and metadata operations are handled by an in-house Python module (`governance/`) and custom dashboard UI, whereas the rubric explicitly awards points for DataHub UI lineage and assertions.
 3. **Airflow Pipeline Consolidation:** The rubric requires 3 distinct, independent pipelines (DP1 Ingestion, DP2 Transformation, DP3 Feature Materialization). The codebase collapses these into a single monolithic DAG (`cinestream_daily_batch_lakehouse.py`).
-4. **Module 2 Unimplemented State:** The 2026-10-23 audit left Module 2 at 2.0 verified points. B2 (2026-10-25) verifies the offline-to-online Airflow materialize, so verified points are 4.0 and missing points are 90.0. Streaming push, Kubeflow, MLflow, KServe, vLLM/Ollama, MCP Gateway, Agent Fleet, and Helm charts are still absent.
+4. **Module 2 Unimplemented State:** B2 verified the offline-to-online Airflow materialize. B3 (2026-10-25) verifies the isolated streaming push into Feast offline and Redis. Verified Module 2 points are 6.0 and missing points are 88.0. Kubeflow, MLflow, KServe, vLLM/Ollama, MCP Gateway, Agent Fleet, and Helm charts are still absent.
 
 ---
 
@@ -55,14 +55,14 @@ However, a strict compliance audit reveals critical discrepancies between docume
 
 ## 3. Deep-Dive Gap Analysis: Module 2 (MLE & Agent Platform)
 
-Module 2 still has a 90-point missing gap after B2. The following table highlights the critical missing pillars:
+Module 2 still has an 88-point missing gap after B3. The following table highlights the critical missing pillars:
 
 | Pillar | Rubric Rows | Points | Status | Gap Description |
 | :--- | :---: | :---: | :---: | :--- |
 | **LLM Inference Server** | R3–R6 | 7.0 | `MISSING` | No vLLM or Ollama deployment; no benchmark or latency optimization. |
 | **Global Model Config & Registry** | R7–R8 | 4.0 | `MISSING` | No centralized model YAML config; no Agent Registry service. |
 | **RAG Pipeline & Embeddings** | R9–R10 | 4.0 | `MISSING` | No chunking, vector embedding generation, or Qdrant/Feast integration. |
-| **Feast Feature Store** | R11–R12 | 4.0 | `PARTIAL` | R11 is verified: DP4 materializes a snapshot-pinned export into Redis. R12 remains missing: no streaming push into either store. |
+| **Feast Feature Store** | R11–R12 | 4.0 | `VERIFIED` | R11 is the batch DP4 materialize into Redis db=1. R12 is the isolated Flink window sync into the Feast offline file source and Redis db=2. |
 | **ML Pipelines (Kubeflow/MLflow)** | R13–R14 | 4.0 | `MISSING` | No training notebook, Kubeflow pipeline DSL, or MLflow model registry integration. |
 | **KServe Model Serving** | R15 | 2.0 | `MISSING` | No KServe Custom Predictor manifest or model-inside-image container. |
 | **Web API & Multi-Agent Fleet** | R18–R27 | 21.0 | `MISSING` | No MCP tools, Coordinator Agent, Sub-agents, Sandboxing, or Warm-up Fleet. |

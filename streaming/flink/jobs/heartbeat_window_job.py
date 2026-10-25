@@ -74,6 +74,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Bảng heartbeat silver. Không trỏ vào stg_watch_sessions của batch.",
     )
     parser.add_argument("--windows-table", default="cinestream.silver.stg_playback_windows")
+    parser.add_argument("--job-name", default="")
     return parser
 
 
@@ -103,6 +104,7 @@ def config_from_args(args: argparse.Namespace) -> StreamJobConfig:
         restart_attempts=args.restart_attempts,
         restart_delay_ms=args.restart_delay_ms,
         transactional_id_prefix=args.transactional_id_prefix,
+        job_name=args.job_name,
     )
 
 

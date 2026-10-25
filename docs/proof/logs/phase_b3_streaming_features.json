@@ -1,0 +1,189 @@
+{
+  "redis": "localhost:16379,db=2",
+  "table": "cinestream.silver.it_p2_b3_windows",
+  "topic": "it.p2.b3.heartbeat",
+  "production_offsets_before": {
+    "0": 469,
+    "1": 513,
+    "2": 519
+  },
+  "production_snapshots_before": {
+    "stg_watch_sessions": {
+      "error": "         +- 'UnresolvedRelation [cinestream, silver, stg_watch_sessions, snapshots], [], false"
+    },
+    "stg_playback_heartbeats": {
+      "snapshot_id": "2913439599822163993",
+      "operation": "append"
+    },
+    "stg_playback_windows": {
+      "snapshot_id": "4894481358013256565",
+      "operation": "append"
+    }
+  },
+  "job_id": "eb8f2f890e868020ffdabf28b6ad5a97",
+  "vertices": [
+    "Source: kafka-heartbeats -> json, Extract-Timestamp -> Timestamps/Watermarks -> bounded-out-of-orderness -> _stream_key_by_map_operator",
+    "dedup-heartbeat-id -> (*anonymous_datastream_source$1*[1] -> Calc[2] -> IcebergStreamWriter, _stream_key_by_map_operator)",
+    "IcebergFilesCommitter -> Sink: IcebergSink cinestream.silver.it_p2_b3_heartbeats",
+    "recovery-late-gate -> (Map, _stream_key_by_map_operator)",
+    "tumbling-1m -> (Map, late-json, *anonymous_datastream_source$2*[7] -> Calc[8] -> ConstraintEnforcer[9])",
+    "*anonymous_datastream_source$3*[4] -> Calc[5] -> dlq_sink[6]: Writer -> dlq_sink[6]: Committer",
+    "IcebergStreamWriter",
+    "IcebergFilesCommitter -> Sink: IcebergSink cinestream.silver.it_p2_b3_windows"
+  ],
+  "flink_initial_ms": 17611.825,
+  "initial_snapshot": {
+    "snapshot_id": "5088493782630165949",
+    "parent_id": null,
+    "committed_at": "2026-10-25T07:44:03.937000+00:00",
+    "operation": "overwrite",
+    "rows": [
+      {
+        "movie_id": 42,
+        "window_end": "1970-01-01T00:01:00+00:00",
+        "heartbeat_count": 4,
+        "total_watch_seconds": 40,
+        "active_users": 4
+      }
+    ]
+  },
+  "initial_sync": {
+    "result": "materialized",
+    "snapshot_id": "5088493782630165949",
+    "sequence": 1,
+    "elapsed_ms": 4596.63,
+    "window_rows": 1
+  },
+  "flink_late_ms": 3635.679,
+  "late_snapshot": {
+    "snapshot_id": "6355621532166202131",
+    "parent_id": "5088493782630165949",
+    "committed_at": "2026-10-25T07:44:14.060000+00:00",
+    "operation": "overwrite",
+    "rows": [
+      {
+        "movie_id": 42,
+        "window_end": "1970-01-01T00:01:00+00:00",
+        "heartbeat_count": 5,
+        "total_watch_seconds": 50,
+        "active_users": 5
+      }
+    ]
+  },
+  "late_evidence": {
+    "snapshots": [
+      {
+        "snapshot_id": "5088493782630165949",
+        "operation": "overwrite",
+        "added_equality_deletes": 1,
+        "total_equality_deletes": 1
+      },
+      {
+        "snapshot_id": "6355621532166202131",
+        "operation": "overwrite",
+        "added_equality_deletes": 1,
+        "total_equality_deletes": 2
+      }
+    ],
+    "delete_files": [
+      {
+        "content": 2,
+        "records": 2
+      }
+    ],
+    "logical_rows": 1,
+    "data_records": 2
+  },
+  "late_sync": {
+    "result": "materialized",
+    "snapshot_id": "6355621532166202131",
+    "sequence": 2,
+    "elapsed_ms": 3301.314,
+    "window_rows": 1
+  },
+  "flink_second_window_ms": 13273.438,
+  "second_snapshot": {
+    "snapshot_id": "6499007111653214070",
+    "parent_id": "6355621532166202131",
+    "committed_at": "2026-10-25T07:44:34.163000+00:00",
+    "operation": "overwrite",
+    "rows": [
+      {
+        "movie_id": 42,
+        "window_end": "1970-01-01T00:02:00+00:00",
+        "heartbeat_count": 1,
+        "total_watch_seconds": 10,
+        "active_users": 1
+      },
+      {
+        "movie_id": 42,
+        "window_end": "1970-01-01T00:01:00+00:00",
+        "heartbeat_count": 5,
+        "total_watch_seconds": 50,
+        "active_users": 5
+      }
+    ]
+  },
+  "second_sync": {
+    "result": "materialized",
+    "snapshot_id": "6499007111653214070",
+    "sequence": 3,
+    "elapsed_ms": 2739.781,
+    "window_rows": 2
+  },
+  "rerun": "unchanged",
+  "reloaded": "reloaded",
+  "stale_refused": "snapshot 5088493782630165949 c\u0169 h\u01a1n 6499007111653214070",
+  "missing_source": "ngu\u1ed3n c\u1eeda s\u1ed5 kh\u00f4ng c\u00f3",
+  "restored": {
+    "counts": {
+      "restored": 1,
+      "total": 7,
+      "in_progress": 0,
+      "completed": 6,
+      "failed": 1
+    },
+    "completed": {
+      "id": 6,
+      "status": "COMPLETED",
+      "state_size": 77017,
+      "end_to_end_duration": 51,
+      "external_path": "file:/opt/flink/checkpoints/eb8f2f890e868020ffdabf28b6ad5a97/chk-6"
+    },
+    "restored": {
+      "id": 6,
+      "status": null,
+      "state_size": null,
+      "end_to_end_duration": null,
+      "external_path": "file:/opt/flink/checkpoints/eb8f2f890e868020ffdabf28b6ad5a97/chk-6"
+    },
+    "failed": {
+      "id": 7,
+      "status": "FAILED",
+      "state_size": 0,
+      "end_to_end_duration": 683,
+      "external_path": null
+    }
+  },
+  "recovered_sync": "unchanged",
+  "status": "PASS",
+  "production_snapshots_after": {
+    "stg_watch_sessions": {
+      "error": "         +- 'UnresolvedRelation [cinestream, silver, stg_watch_sessions, snapshots], [], false"
+    },
+    "stg_playback_heartbeats": {
+      "snapshot_id": "2913439599822163993",
+      "operation": "append"
+    },
+    "stg_playback_windows": {
+      "snapshot_id": "4894481358013256565",
+      "operation": "append"
+    }
+  },
+  "production_offsets_after": {
+    "0": 469,
+    "1": 513,
+    "2": 519
+  },
+  "production_offsets_unchanged": true
+}

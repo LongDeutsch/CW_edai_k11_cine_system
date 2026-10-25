@@ -45,4 +45,6 @@ def job_configuration(config: StreamJobConfig):
     configuration.set_string("restart-strategy", "fixed-delay")
     configuration.set_string("restart-strategy.fixed-delay.attempts", str(config.restart_attempts))
     configuration.set_string("restart-strategy.fixed-delay.delay", f"{config.restart_delay_ms} ms")
+    if config.job_name:
+        configuration.set_string("pipeline.name", config.job_name)
     return configuration

@@ -52,6 +52,8 @@ class StreamJobConfig:
     restart_attempts: int = 10
     restart_delay_ms: int = 5_000
     transactional_id_prefix: str = "cinestream-heartbeat-dlq"
+    # Trống thì Flink giữ tên job mặc định. IT cô lập đặt tên có ``it_p2``.
+    job_name: str = ""
 
 
 def flink_checkpoint_configs(checkpoint: CheckpointConfig) -> dict[str, str]:

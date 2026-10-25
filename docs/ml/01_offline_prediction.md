@@ -40,7 +40,7 @@ Count bằng 0 khi entity có hoạt động ở nguồn kia nhưng không có s
 
 ## Feature streaming, chưa tính
 
-Khi streaming được phép chạy, feature online có thể lấy số heartbeat và số người xem trong cửa sổ từ `stg_playback_windows`. Bảng đó hiện `expected_absent` vì job Flink production chưa submit. Phase này không tạo feature từ bảng đó.
+Khi streaming được phép chạy, feature online có thể lấy số heartbeat và số người xem khác nhau trong một phút từ `stg_playback_windows`. Phase B3 đã sync bảng cô lập `it_p2_b3_windows`, không phải bảng production. Chi tiết ở `docs/proof/17_feast_streaming.md`.
 
 ## Rò dữ liệu và cách chia tập
 

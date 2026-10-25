@@ -45,6 +45,8 @@ def materialize_export(
     redis: str = "localhost:16379,db=1",
     after_write=None,
 ) -> dict:
+    if _redis_db(redis) == "2":
+        raise MaterializeFailed("materialize batch không được ghi Redis db=2")
     export_dir = Path(export_dir)
     meta_path = export_dir / "snapshot.json"
     if not meta_path.exists():
@@ -91,6 +93,14 @@ def materialize_export(
     _atomic(committed_path, done)
     pending_path.unlink(missing_ok=True)
     return {**done, "result": "materialized"}
+
+
+def _redis_db(redis: str) -> str | None:
+    for part in str(redis).split(","):
+        item = part.strip()
+        if item.startswith("db="):
+            return item.split("=", 1)[1]
+    return None
 
 
 def _write_online(export_dir: Path, repo_dir: Path, redis: str) -> None:
