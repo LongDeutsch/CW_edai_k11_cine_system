@@ -1,29 +1,26 @@
 # PySpark 3.5 kèm Iceberg runtime và Hadoop AWS để đọc MinIO.
-# Job local vẫn chạy trên máy host. Image này dành cho spark-master / spark-worker.
+# Stage builder tải JAR và Python. Image chạy không giữ curl hay apt cache.
 
-FROM apache/spark:3.5.3
+FROM apache/spark:3.5.3 AS builder
 
 USER root
 
 ARG ICEBERG_VERSION=1.6.1
 ARG HADOOP_AWS_VERSION=3.3.4
 ARG AWS_SDK_VERSION=1.12.262
+ARG PYTHON_BUILD=20241016
+ARG PYTHON_VERSION=3.12.7
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends curl ca-certificates \
-    && curl -fsSL -o /opt/spark/jars/iceberg-spark-runtime-3.5_2.12-${ICEBERG_VERSION}.jar \
+    && mkdir -p /opt/extra-jars /opt/python \
+    && curl -fsSL -o /opt/extra-jars/iceberg-spark-runtime-3.5_2.12-${ICEBERG_VERSION}.jar \
         https://repo1.maven.org/maven2/org/apache/iceberg/iceberg-spark-runtime-3.5_2.12/${ICEBERG_VERSION}/iceberg-spark-runtime-3.5_2.12-${ICEBERG_VERSION}.jar \
-    && curl -fsSL -o /opt/spark/jars/hadoop-aws-${HADOOP_AWS_VERSION}.jar \
+    && curl -fsSL -o /opt/extra-jars/hadoop-aws-${HADOOP_AWS_VERSION}.jar \
         https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/${HADOOP_AWS_VERSION}/hadoop-aws-${HADOOP_AWS_VERSION}.jar \
-    && curl -fsSL -o /opt/spark/jars/aws-java-sdk-bundle-${AWS_SDK_VERSION}.jar \
+    && curl -fsSL -o /opt/extra-jars/aws-java-sdk-bundle-${AWS_SDK_VERSION}.jar \
         https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/${AWS_SDK_VERSION}/aws-java-sdk-bundle-${AWS_SDK_VERSION}.jar \
-    && rm -rf /var/lib/apt/lists/*
-
-# Executor PySpark cần cùng dòng Python 3.12 với driver Airflow.
-# Image Spark là Ubuntu 20.04 arm64, không có gói python3.12.
-ARG PYTHON_BUILD=20241016
-ARG PYTHON_VERSION=3.12.7
-RUN arch="$(dpkg --print-architecture)" \
+    && arch="$(dpkg --print-architecture)" \
     && case "$arch" in \
          arm64) target=aarch64-unknown-linux-gnu ;; \
          amd64) target=x86_64-unknown-linux-gnu ;; \
@@ -31,12 +28,18 @@ RUN arch="$(dpkg --print-architecture)" \
        esac \
     && curl -fsSL -o /tmp/python.tgz \
          "https://github.com/astral-sh/python-build-standalone/releases/download/${PYTHON_BUILD}/cpython-${PYTHON_VERSION}%2B${PYTHON_BUILD}-${target}-install_only.tar.gz" \
-    && mkdir -p /opt/python \
     && tar -xzf /tmp/python.tgz -C /opt/python --strip-components=1 \
-    && ln -sf /opt/python/bin/python3.12 /usr/bin/python3 \
+    && rm -rf /var/lib/apt/lists/* /tmp/python.tgz
+
+FROM apache/spark:3.5.3
+
+USER root
+
+COPY --from=builder /opt/extra-jars/ /opt/spark/jars/
+COPY --from=builder /opt/python /opt/python
+RUN ln -sf /opt/python/bin/python3.12 /usr/bin/python3 \
     && ln -sf /opt/python/bin/python3.12 /usr/bin/python \
-    && python3 --version \
-    && rm /tmp/python.tgz
+    && python3 --version
 
 COPY transformation /opt/cinestream/transformation
 COPY storage /opt/cinestream/storage

@@ -6,7 +6,7 @@ COMPOSE_FILE ?= infra/compose/docker-compose.yml
 
 ##@ 2. Hạ tầng & Dịch vụ (Docker Compose)
 
-.PHONY: up down restart ps logs urls demo-flow
+.PHONY: up down restart ps logs urls demo-flow datahub-up datahub-down
 
 up: ## Khởi động MinIO + Kafka và chờ healthcheck (Console :9001, Kafka UI :8085)
 	@if [ -f "$(COMPOSE_FILE)" ]; then \
@@ -47,6 +47,14 @@ urls: ## In địa chỉ UI MinIO và Kafka sau khi cụm đã lên
 	@echo -e "  MinIO API      $(BOLD)$(MINIO_ENDPOINT)$(RESET)   bucket $(MINIO_BUCKET)"
 	@echo -e "  Kafka broker   $(BOLD)$(KAFKA_BROKER)$(RESET)"
 	@echo ""
+
+DATAHUB_COMPOSE := $(DOCKER_COMPOSE) -f infra/compose/docker-compose.datahub.yml
+
+datahub-up: ## Bật DataHub trên mạng cinestream_default. UI :9002, GMS :18083
+	$(DATAHUB_COMPOSE) up -d
+
+datahub-down: ## Tắt DataHub. Không đụng MinIO, Kafka heartbeat hay Iceberg
+	$(DATAHUB_COMPOSE) down
 
 demo-flow: up ## Sinh Parquet nhỏ, đẩy lên MinIO, bắn heartbeat vào Kafka, rồi in link UI
 	@if [ ! -d "$(OFFLINE_OUT)/ratings" ]; then \

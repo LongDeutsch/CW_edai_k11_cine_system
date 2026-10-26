@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="1220" viewBox="0 0 1100 1220">
+<rect width="100%" height="100%" fill="#f7f4ee"/>
+<text x="40" y="36" font-family="Georgia, serif" font-size="22" fill="#1c1915">CineStream dim / fact</text>
+<text x="40" y="56" font-family="ui-sans-serif, sans-serif" font-size="12" fill="#5c564c">Nguồn cột: iceberg-minio-metadata+clickhouse</text>
+<rect x="40" y="78" width="340" height="162" rx="8" fill="#fffdf8" stroke="#1c1915" stroke-width="1.5"/>
+<rect x="40" y="78" width="340" height="28" rx="8" fill="#1c1915"/>
+<rect x="40" y="94" width="340" height="12" fill="#1c1915"/>
+<text x="52" y="97" font-family="ui-sans-serif, sans-serif" font-size="13" fill="#f7f4ee">dim_users</text>
+<text x="52" y="124" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">user_sk long</text>
+<text x="52" y="142" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">user_id long</text>
+<text x="52" y="160" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">country string</text>
+<text x="52" y="178" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">subscription_tier string</text>
+<text x="52" y="196" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">valid_from_ts timestamptz</text>
+<text x="52" y="214" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">valid_to_ts timestamptz</text>
+<text x="52" y="232" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">is_current boolean</text>
+<rect x="40" y="268" width="340" height="198" rx="8" fill="#fffdf8" stroke="#1c1915" stroke-width="1.5"/>
+<rect x="40" y="268" width="340" height="28" rx="8" fill="#1c1915"/>
+<rect x="40" y="284" width="340" height="12" fill="#1c1915"/>
+<text x="52" y="287" font-family="ui-sans-serif, sans-serif" font-size="13" fill="#f7f4ee">dim_movies</text>
+<text x="52" y="314" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">movie_sk long</text>
+<text x="52" y="332" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">movie_id long</text>
+<text x="52" y="350" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">title string</text>
+<text x="52" y="368" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">release_year int</text>
+<text x="52" y="386" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">content_rating string</text>
+<text x="52" y="404" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">hdr_format string</text>
+<text x="52" y="422" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">valid_from_ts timestamp</text>
+<text x="52" y="440" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">valid_to_ts timestamptz</text>
+<text x="52" y="458" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">is_current boolean</text>
+<rect x="40" y="494" width="340" height="144" rx="8" fill="#fffdf8" stroke="#1c1915" stroke-width="1.5"/>
+<rect x="40" y="494" width="340" height="28" rx="8" fill="#1c1915"/>
+<rect x="40" y="510" width="340" height="12" fill="#1c1915"/>
+<text x="52" y="513" font-family="ui-sans-serif, sans-serif" font-size="13" fill="#f7f4ee">fact_ratings</text>
+<text x="52" y="540" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">rating_sk long</text>
+<text x="52" y="558" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">user_sk long</text>
+<text x="52" y="576" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">movie_sk long</text>
+<text x="52" y="594" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">rating_val decimal(2, 1)</text>
+<text x="52" y="612" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">rating_date_key int</text>
+<text x="52" y="630" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">created_ts timestamp</text>
+<rect x="40" y="666" width="340" height="162" rx="8" fill="#fffdf8" stroke="#1c1915" stroke-width="1.5"/>
+<rect x="40" y="666" width="340" height="28" rx="8" fill="#1c1915"/>
+<rect x="40" y="682" width="340" height="12" fill="#1c1915"/>
+<text x="52" y="685" font-family="ui-sans-serif, sans-serif" font-size="13" fill="#f7f4ee">fact_watch_sessions</text>
+<text x="52" y="712" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">session_sk long</text>
+<text x="52" y="730" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">user_sk long</text>
+<text x="52" y="748" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">movie_sk long</text>
+<text x="52" y="766" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">watch_duration_seconds int</text>
+<text x="52" y="784" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">completion_rate double</text>
+<text x="52" y="802" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">device_type string</text>
+<text x="52" y="820" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">session_date_key int</text>
+<rect x="40" y="856" width="340" height="216" rx="8" fill="#fffdf8" stroke="#1c1915" stroke-width="1.5"/>
+<rect x="40" y="856" width="340" height="28" rx="8" fill="#1c1915"/>
+<rect x="40" y="872" width="340" height="12" fill="#1c1915"/>
+<text x="52" y="875" font-family="ui-sans-serif, sans-serif" font-size="13" fill="#f7f4ee">obt_movie_engagement</text>
+<text x="52" y="902" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">session_sk long</text>
+<text x="52" y="920" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">session_date_key int</text>
+<text x="52" y="938" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">user_id long</text>
+<text x="52" y="956" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">subscription_tier string</text>
+<text x="52" y="974" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">movie_id long</text>
+<text x="52" y="992" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">title string</text>
+<text x="52" y="1010" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">content_rating string</text>
+<text x="52" y="1028" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">watch_duration_seconds int</text>
+<text x="52" y="1046" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">completion_rate double</text>
+<text x="52" y="1064" font-family="ui-monospace, monospace" font-size="12" fill="#1c1915">device_type string</text>
+<text x="430" y="100" font-family="Georgia, serif" font-size="16" fill="#1c1915">Quan hệ khóa</text>
+<text x="430" y="128" font-family="ui-monospace, monospace" font-size="13" fill="#8a5a2a">dim_users.user_sk  1 — n  fact_ratings.user_sk</text>
+<text x="430" y="156" font-family="ui-monospace, monospace" font-size="13" fill="#8a5a2a">dim_movies.movie_sk  1 — n  fact_ratings.movie_sk</text>
+<text x="430" y="184" font-family="ui-monospace, monospace" font-size="13" fill="#8a5a2a">dim_users.user_sk  1 — n  fact_watch_sessions.user_sk</text>
+<text x="430" y="212" font-family="ui-monospace, monospace" font-size="13" fill="#8a5a2a">dim_movies.movie_sk  1 — n  fact_watch_sessions.movie_sk</text>
+<text x="430" y="240" font-family="ui-monospace, monospace" font-size="13" fill="#8a5a2a">fact_watch_sessions.session_sk  1 — 1  obt_movie_engagement.session_sk</text>
+</svg>

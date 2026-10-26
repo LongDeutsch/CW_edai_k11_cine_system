@@ -149,6 +149,12 @@ def main(argv: list[str] | None = None) -> None:
         counts["tags"],
         counts["watch_history"],
     )
+    if counts["watch_history"] > 2_000_000:
+        from generator.large_scale import run_chunked
+
+        logger.info("watch_history vượt một mảng trong RAM, ghi theo chunk cùng phân phối")
+        run_chunked(args, rng, seed, counts)
+        return
 
     theoretical, solved_s = popularity_weights(
         counts["movies"],

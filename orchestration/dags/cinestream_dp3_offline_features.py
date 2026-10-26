@@ -12,6 +12,7 @@ from airflow.models import DAG
 from airflow.operators.python import PythonOperator
 from airflow.sensors.external_task import ExternalTaskSensor
 
+from governance.datahub.emit import publish_datahub
 from orchestration.dags.cinestream_daily_batch_lakehouse import (
     _on_failure,
     _schedule,
@@ -58,4 +59,10 @@ with DAG(
     )
     features = PythonOperator(task_id="spark_offline_features", python_callable=spark_offline_features)
     validate = PythonOperator(task_id="validate_features", python_callable=validate_offline_features, retries=0)
-    wait_dp2 >> features >> validate
+    hub = PythonOperator(
+        task_id="publish_datahub",
+        python_callable=publish_datahub,
+        trigger_rule="all_done",
+        retries=0,
+    )
+    wait_dp2 >> features >> validate >> hub

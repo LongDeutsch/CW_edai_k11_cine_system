@@ -22,6 +22,7 @@ x-airflow-env: &airflow-env
   # tự chạy cron mà không cần dán allow_production vào JSON.
   CINESTREAM_ALLOW_PRODUCTION: "${CINESTREAM_ALLOW_PRODUCTION:-false}"
   CINESTREAM_CLICKHOUSE_HTTP: "${CINESTREAM_CLICKHOUSE_HTTP:-http://clickhouse:8123}"
+  DATAHUB_GMS_URL: "${DATAHUB_GMS_URL:-http://datahub-gms:8080}"
   CINESTREAM_CODE: /opt/cinestream
   PYTHONPATH: /opt/cinestream
   SPARK_HOME: /opt/spark

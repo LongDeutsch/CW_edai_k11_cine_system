@@ -1,0 +1,54 @@
+{
+  "source": "iceberg-minio-metadata+clickhouse",
+  "columns": {
+    "dim_users": [
+      "user_sk long",
+      "user_id long",
+      "country string",
+      "subscription_tier string",
+      "valid_from_ts timestamptz",
+      "valid_to_ts timestamptz",
+      "is_current boolean"
+    ],
+    "dim_movies": [
+      "movie_sk long",
+      "movie_id long",
+      "title string",
+      "release_year int",
+      "content_rating string",
+      "hdr_format string",
+      "valid_from_ts timestamp",
+      "valid_to_ts timestamptz",
+      "is_current boolean"
+    ],
+    "fact_ratings": [
+      "rating_sk long",
+      "user_sk long",
+      "movie_sk long",
+      "rating_val decimal(2, 1)",
+      "rating_date_key int",
+      "created_ts timestamp"
+    ],
+    "fact_watch_sessions": [
+      "session_sk long",
+      "user_sk long",
+      "movie_sk long",
+      "watch_duration_seconds int",
+      "completion_rate double",
+      "device_type string",
+      "session_date_key int"
+    ],
+    "obt_movie_engagement": [
+      "session_sk long",
+      "session_date_key int",
+      "user_id long",
+      "subscription_tier string",
+      "movie_id long",
+      "title string",
+      "content_rating string",
+      "watch_duration_seconds int",
+      "completion_rate double",
+      "device_type string"
+    ]
+  }
+}

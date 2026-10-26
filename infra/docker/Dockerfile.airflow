@@ -1,23 +1,18 @@
 # Airflow 2.10 LocalExecutor. spark-submit trong scheduler nói với spark-master.
-# Biến đổi nặng vẫn ở cụm Spark, không chạy PySpark local trong worker Airflow.
+# Builder tải Spark và JAR. Image chạy giữ JRE, không giữ curl hay apt cache.
 
-FROM apache/airflow:2.10.5-python3.12
+FROM apache/airflow:2.10.5-python3.12 AS spark-fetch
 
 USER root
-
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends openjdk-17-jre-headless curl ca-certificates \
-    && ln -sfn "$(dirname "$(dirname "$(readlink -f /usr/bin/java)")")" /usr/lib/jvm/java-17-openjdk \
-    && rm -rf /var/lib/apt/lists/*
-
-ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk
 
 ARG SPARK_VERSION=3.5.3
 ARG ICEBERG_VERSION=1.6.1
 ARG HADOOP_AWS_VERSION=3.3.4
 ARG AWS_SDK_VERSION=1.12.262
 
-RUN curl -fsSL -o /tmp/spark.tgz \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl ca-certificates \
+    && curl -fsSL -o /tmp/spark.tgz \
         https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop3.tgz \
     && tar -xzf /tmp/spark.tgz -C /opt \
     && mv /opt/spark-${SPARK_VERSION}-bin-hadoop3 /opt/spark \
@@ -28,13 +23,26 @@ RUN curl -fsSL -o /tmp/spark.tgz \
     && curl -fsSL -o /opt/spark/jars/aws-java-sdk-bundle-${AWS_SDK_VERSION}.jar \
         https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/${AWS_SDK_VERSION}/aws-java-sdk-bundle-${AWS_SDK_VERSION}.jar \
     && chmod -R a+rX /opt/spark \
-    && rm /tmp/spark.tgz
+    && rm -rf /var/lib/apt/lists/* /tmp/spark.tgz
 
+FROM apache/airflow:2.10.5-python3.12
+
+USER root
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends openjdk-17-jre-headless ca-certificates \
+    && ln -sfn "$(dirname "$(dirname "$(readlink -f /usr/bin/java)")")" /usr/lib/jvm/java-17-openjdk \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=spark-fetch /opt/spark /opt/spark
+
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk
 ENV SPARK_HOME=/opt/spark
 ENV PATH="/opt/spark/bin:${PATH}"
 
 USER airflow
 
-RUN pip install --no-cache-dir \
+RUN pip install --no-cache-dir --timeout 120 --retries 8 \
         --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.10.5/constraints-3.12.txt" \
-        boto3
+        boto3 \
+    && pip install --no-cache-dir --timeout 120 --retries 8 "acryl-datahub==0.14.1"

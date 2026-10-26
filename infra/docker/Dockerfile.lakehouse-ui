@@ -1,7 +1,14 @@
+# UI lakehouse. Stage đầu chỉ nhận source. Image chạy không có toolchain cài đặt.
+
+FROM python:3.12-slim AS builder
+
+WORKDIR /build
+COPY storage /build/storage
+
 FROM python:3.12-slim
 
 WORKDIR /app
-COPY storage /app/storage
+COPY --from=builder /build/storage /app/storage
 ENV PYTHONPATH=/app
 EXPOSE 8088
 

@@ -12,6 +12,7 @@ from airflow.models import DAG
 from airflow.operators.python import PythonOperator
 from airflow.sensors.external_task import ExternalTaskSensor
 
+from governance.datahub.emit import publish_datahub
 from orchestration.dags.cinestream_daily_batch_lakehouse import (
     _on_failure,
     _schedule,
@@ -61,4 +62,11 @@ with DAG(
     validate = PythonOperator(task_id="validate_gold", python_callable=validate_gold_task, retries=0)
     marker = PythonOperator(task_id="publish_success", python_callable=publish_success, retries=0)
     serving = PythonOperator(task_id="sync_clickhouse", python_callable=sync_clickhouse, retries=1)
+    hub = PythonOperator(
+        task_id="publish_datahub",
+        python_callable=publish_datahub,
+        trigger_rule="all_done",
+        retries=0,
+    )
     wait_dp1 >> publish >> validate >> marker >> serving
+    validate >> hub

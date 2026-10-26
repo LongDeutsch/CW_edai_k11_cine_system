@@ -11,6 +11,7 @@ from datetime import datetime, timedelta, timezone
 from airflow.models import DAG
 from airflow.operators.python import PythonOperator
 
+from governance.datahub.emit import publish_datahub
 from orchestration.dags.cinestream_daily_batch_lakehouse import (
     SourceReadySensor,
     _on_failure,
@@ -54,4 +55,10 @@ with DAG(
     )
     ingest = PythonOperator(task_id="spark_raw_to_bronze", python_callable=spark_raw_to_bronze)
     validate = PythonOperator(task_id="validate_bronze", python_callable=validate_bronze_task, retries=0)
-    ready >> ingest >> validate
+    hub = PythonOperator(
+        task_id="publish_datahub",
+        python_callable=publish_datahub,
+        trigger_rule="all_done",
+        retries=0,
+    )
+    ready >> ingest >> validate >> hub

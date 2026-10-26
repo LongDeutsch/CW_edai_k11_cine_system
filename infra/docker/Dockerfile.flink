@@ -1,68 +1,72 @@
+# Flink 1.18 PyFlink. Builder cài JDK, gcc và tải JAR.
+# Image chạy chỉ giữ JRE của base, Python runtime, JAR và site-packages.
+
+FROM flink:1.18.1-scala_2.12 AS builder
+
+USER root
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        python3 python3-pip python3-dev gcc curl ca-certificates openjdk-17-jdk-headless \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p /opt/extra/lib /opt/extra/plugins/rocksdb \
+    && curl -fsSL -o /opt/extra/plugins/rocksdb/flink-statebackend-rocksdb-1.18.1.jar \
+        https://repo1.maven.org/maven2/org/apache/flink/flink-statebackend-rocksdb/1.18.1/flink-statebackend-rocksdb-1.18.1.jar \
+    && curl -fsSL -o /opt/extra/plugins/rocksdb/frocksdbjni-6.20.3-ververica-2.0.jar \
+        https://repo1.maven.org/maven2/com/ververica/frocksdbjni/6.20.3-ververica-2.0/frocksdbjni-6.20.3-ververica-2.0.jar \
+    && curl -fsSL -o /opt/extra/lib/flink-sql-connector-kafka-3.2.0-1.18.jar \
+        https://repo1.maven.org/maven2/org/apache/flink/flink-sql-connector-kafka/3.2.0-1.18/flink-sql-connector-kafka-3.2.0-1.18.jar \
+    && curl -fsSL -o /opt/extra/lib/iceberg-flink-runtime-1.18-1.6.1.jar \
+        https://repo1.maven.org/maven2/org/apache/iceberg/iceberg-flink-runtime-1.18/1.6.1/iceberg-flink-runtime-1.18-1.6.1.jar \
+    && curl -fsSL -o /opt/extra/lib/hadoop-aws-3.3.4.jar \
+        https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.3.4/hadoop-aws-3.3.4.jar \
+    && curl -fsSL -o /opt/extra/lib/aws-java-sdk-bundle-1.12.262.jar \
+        https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.262/aws-java-sdk-bundle-1.12.262.jar \
+    && curl -fsSL -o /opt/extra/lib/hadoop-common-3.3.4.jar \
+        https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-common/3.3.4/hadoop-common-3.3.4.jar \
+    && curl -fsSL -o /opt/extra/lib/hadoop-auth-3.3.4.jar \
+        https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-auth/3.3.4/hadoop-auth-3.3.4.jar \
+    && curl -fsSL -o /opt/extra/lib/hadoop-shaded-guava-1.1.1.jar \
+        https://repo1.maven.org/maven2/org/apache/hadoop/thirdparty/hadoop-shaded-guava/1.1.1/hadoop-shaded-guava-1.1.1.jar \
+    && curl -fsSL -o /opt/extra/lib/hadoop-shaded-protobuf_3_7-1.1.1.jar \
+        https://repo1.maven.org/maven2/org/apache/hadoop/thirdparty/hadoop-shaded-protobuf_3_7/1.1.1/hadoop-shaded-protobuf_3_7-1.1.1.jar \
+    && curl -fsSL -o /opt/extra/lib/commons-configuration2-2.1.1.jar \
+        https://repo1.maven.org/maven2/org/apache/commons/commons-configuration2/2.1.1/commons-configuration2-2.1.1.jar \
+    && curl -fsSL -o /opt/extra/lib/commons-lang3-3.12.0.jar \
+        https://repo1.maven.org/maven2/org/apache/commons/commons-lang3/3.12.0/commons-lang3-3.12.0.jar \
+    && curl -fsSL -o /opt/extra/lib/commons-logging-1.1.3.jar \
+        https://repo1.maven.org/maven2/commons-logging/commons-logging/1.1.3/commons-logging-1.1.3.jar \
+    && curl -fsSL -o /opt/extra/lib/commons-collections-3.2.2.jar \
+        https://repo1.maven.org/maven2/commons-collections/commons-collections/3.2.2/commons-collections-3.2.2.jar \
+    && curl -fsSL -o /opt/extra/lib/woodstox-core-5.3.0.jar \
+        https://repo1.maven.org/maven2/com/fasterxml/woodstox/woodstox-core/5.3.0/woodstox-core-5.3.0.jar \
+    && curl -fsSL -o /opt/extra/lib/stax2-api-4.2.1.jar \
+        https://repo1.maven.org/maven2/org/codehaus/woodstox/stax2-api/4.2.1/stax2-api-4.2.1.jar \
+    && curl -fsSL -o /opt/extra/lib/re2j-1.1.jar \
+        https://repo1.maven.org/maven2/com/google/re2j/re2j/1.1/re2j-1.1.jar \
+    && curl -fsSL -o /opt/extra/lib/hadoop-hdfs-client-3.3.4.jar \
+        https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-hdfs-client/3.3.4/hadoop-hdfs-client-3.3.4.jar
+
+RUN JAVA_HOME="/usr/lib/jvm/java-17-openjdk-$(dpkg --print-architecture)" \
+    pip3 install --no-cache-dir --timeout 120 --retries 8 --target /opt/pydeps "apache-flink==1.18.1"
+
+COPY streaming /opt/cinestream/streaming
+
 FROM flink:1.18.1-scala_2.12
 
 USER root
 
-# Image gốc chỉ có JRE. pemja (PyFlink) cần header JNI lúc cài, nên tạm dùng JDK.
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        python3 python3-pip python3-dev gcc curl openjdk-17-jdk-headless \
+    && apt-get install -y --no-install-recommends python3 python3-pkg-resources \
     && ln -sf /usr/bin/python3 /usr/bin/python \
+    && rm -rf /opt/flink/plugins/metrics-graphite \
     && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p /opt/flink/plugins/rocksdb \
-    && curl -fsSL -o /opt/flink/plugins/rocksdb/flink-statebackend-rocksdb-1.18.1.jar \
-        https://repo1.maven.org/maven2/org/apache/flink/flink-statebackend-rocksdb/1.18.1/flink-statebackend-rocksdb-1.18.1.jar \
-    && curl -fsSL -o /opt/flink/plugins/rocksdb/frocksdbjni-6.20.3-ververica-2.0.jar \
-        https://repo1.maven.org/maven2/com/ververica/frocksdbjni/6.20.3-ververica-2.0/frocksdbjni-6.20.3-ververica-2.0.jar \
-    && curl -fsSL -o /opt/flink/lib/flink-sql-connector-kafka-3.2.0-1.18.jar \
-        https://repo1.maven.org/maven2/org/apache/flink/flink-sql-connector-kafka/3.2.0-1.18/flink-sql-connector-kafka-3.2.0-1.18.jar \
-    && curl -fsSL -o /opt/flink/lib/iceberg-flink-runtime-1.18-1.6.1.jar \
-        https://repo1.maven.org/maven2/org/apache/iceberg/iceberg-flink-runtime-1.18/1.6.1/iceberg-flink-runtime-1.18-1.6.1.jar \
-    && curl -fsSL -o /opt/flink/lib/hadoop-aws-3.3.4.jar \
-        https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.3.4/hadoop-aws-3.3.4.jar \
-    && curl -fsSL -o /opt/flink/lib/aws-java-sdk-bundle-1.12.262.jar \
-        https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.262/aws-java-sdk-bundle-1.12.262.jar
-
-RUN JAVA_HOME="/usr/lib/jvm/java-17-openjdk-$(dpkg --print-architecture)" \
-    pip3 install --no-cache-dir "apache-flink==1.18.1"
-
-# Iceberg FlinkCatalogFactory luôn nạp org.apache.hadoop.conf.Configuration.
-# HadoopFileIO dùng S3A. Bộ này là dependency trực tiếp trong BOM Hadoop 3.3.4
-# (cùng aws-java-sdk-bundle 1.12.262 đã tải ở trên). Không thêm guava, jetty,
-# jersey, jackson, zookeeper: các thứ đó đụng class Flink đã shade.
-RUN curl -fsSL -o /opt/flink/lib/hadoop-common-3.3.4.jar \
-        https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-common/3.3.4/hadoop-common-3.3.4.jar \
-    && curl -fsSL -o /opt/flink/lib/hadoop-auth-3.3.4.jar \
-        https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-auth/3.3.4/hadoop-auth-3.3.4.jar \
-    && curl -fsSL -o /opt/flink/lib/hadoop-shaded-guava-1.1.1.jar \
-        https://repo1.maven.org/maven2/org/apache/hadoop/thirdparty/hadoop-shaded-guava/1.1.1/hadoop-shaded-guava-1.1.1.jar \
-    && curl -fsSL -o /opt/flink/lib/hadoop-shaded-protobuf_3_7-1.1.1.jar \
-        https://repo1.maven.org/maven2/org/apache/hadoop/thirdparty/hadoop-shaded-protobuf_3_7/1.1.1/hadoop-shaded-protobuf_3_7-1.1.1.jar \
-    && curl -fsSL -o /opt/flink/lib/commons-configuration2-2.1.1.jar \
-        https://repo1.maven.org/maven2/org/apache/commons/commons-configuration2/2.1.1/commons-configuration2-2.1.1.jar \
-    && curl -fsSL -o /opt/flink/lib/commons-lang3-3.12.0.jar \
-        https://repo1.maven.org/maven2/org/apache/commons/commons-lang3/3.12.0/commons-lang3-3.12.0.jar \
-    && curl -fsSL -o /opt/flink/lib/commons-logging-1.1.3.jar \
-        https://repo1.maven.org/maven2/commons-logging/commons-logging/1.1.3/commons-logging-1.1.3.jar \
-    && curl -fsSL -o /opt/flink/lib/commons-collections-3.2.2.jar \
-        https://repo1.maven.org/maven2/commons-collections/commons-collections/3.2.2/commons-collections-3.2.2.jar \
-    && curl -fsSL -o /opt/flink/lib/woodstox-core-5.3.0.jar \
-        https://repo1.maven.org/maven2/com/fasterxml/woodstox/woodstox-core/5.3.0/woodstox-core-5.3.0.jar \
-    && curl -fsSL -o /opt/flink/lib/stax2-api-4.2.1.jar \
-        https://repo1.maven.org/maven2/org/codehaus/woodstox/stax2-api/4.2.1/stax2-api-4.2.1.jar \
-    && curl -fsSL -o /opt/flink/lib/re2j-1.1.jar \
-        https://repo1.maven.org/maven2/com/google/re2j/re2j/1.1/re2j-1.1.jar \
-    && curl -fsSL -o /opt/flink/lib/hadoop-hdfs-client-3.3.4.jar \
-        https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-hdfs-client/3.3.4/hadoop-hdfs-client-3.3.4.jar
-
-# Plugin Graphite không được cấu hình làm reporter. Flink vẫn nạp mọi thư mục
-# trong /opt/flink/plugins bằng ChildFirstClassLoader. JAR này chứa
-# com.codahale.metrics.Histogram, trùng class trong iceberg-flink-runtime
-# trên app classloader và gây LinkageError lúc checkpoint.
-RUN rm -rf /opt/flink/plugins/metrics-graphite
-
-COPY streaming /opt/cinestream/streaming
-ENV PYTHONPATH=/opt/cinestream
-RUN chown -R flink:flink /opt/cinestream /opt/flink/lib
+COPY --from=builder --chown=flink:flink /opt/extra/lib/ /opt/flink/lib/
+COPY --from=builder --chown=flink:flink /opt/extra/plugins/rocksdb/ /opt/flink/plugins/rocksdb/
+COPY --from=builder --chown=flink:flink /opt/pydeps /opt/pydeps
+COPY --from=builder --chown=flink:flink /opt/cinestream /opt/cinestream
+ENV PYTHONPATH=/opt/cinestream:/opt/pydeps
 
 USER flink

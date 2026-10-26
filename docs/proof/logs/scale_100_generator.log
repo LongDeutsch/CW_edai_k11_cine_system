@@ -1,0 +1,11 @@
+11:03:46 | seed data_generator/data_offline/ml-latest-small | movies=9742 ratings=100836 tags=3683 users=610 | phim đông nhất trong seed chiếm 0.33%
+11:03:46 | scale-factor=100 = 100.000% volume đặc tả | users=5000000 movies=100000 genres=300000 ratings=250000000 tags=30000000 watch=800000000
+11:03:46 | watch_history vượt một mảng trong RAM, ghi theo chunk cùng phân phối
+11:03:50 | ratings 1,000,000 / 250,000,000 dòng gốc | ngày 2026-01-01
+11:07:09 | ratings 250,000,000 / 250,000,000 dòng gốc | ngày 2026-06-29
+11:07:09 | tags 166,667 / 30,000,000 dòng gốc | ngày 2026-01-01
+11:07:43 | tags 30,000,000 / 30,000,000 dòng gốc | ngày 2026-06-29
+11:07:44 | watch_history 1,000,000 / 800,000,000 dòng gốc | ngày 2026-01-01
+11:20:27 | watch_history 800,000,000 / 800,000,000 dòng gốc | ngày 2026-06-29
+11:20:27 | đã ghi docs/proof/23_dataset_scale_100.md
+11:20:27 | chunked xong | parquet_bytes=27,527,170,951 | ratings_dup=2.5000 | watch_dup=2.5000 | anchor_share=4.00%

@@ -22,6 +22,9 @@ class PipelineLayoutTests(unittest.TestCase):
         self.assertIn("cinestream_dp1_raw_to_bronze", text)
         self.assertIn("spark_raw_to_bronze", text)
         self.assertIn("validate_bronze", text)
+        self.assertIn("publish_datahub", text)
+        self.assertIn("validate >> hub", text)
+        self.assertLess(text.index('task_id="spark_raw_to_bronze"'), text.index('task_id="publish_datahub"'))
         self.assertNotIn("spark_bronze_to_gold", text)
         self.assertIn("is_paused_upon_creation=True", text)
 
@@ -34,6 +37,10 @@ class PipelineLayoutTests(unittest.TestCase):
         self.assertIn("validate_gold", text)
         self.assertIn("publish_success", text)
         self.assertIn("sync_clickhouse", text)
+        self.assertIn("publish_datahub", text)
+        self.assertIn("validate >> marker >> serving", text)
+        self.assertIn("validate >> hub", text)
+        self.assertNotIn("hub >> marker", text)
         self.assertNotIn("spark_offline_features", text)
 
     def test_dp3_waits_for_publish_and_validates_features(self):
@@ -43,6 +50,9 @@ class PipelineLayoutTests(unittest.TestCase):
         self.assertIn("upstream_failed", text)
         self.assertIn("spark_offline_features", text)
         self.assertIn("validate_features", text)
+        self.assertIn("publish_datahub", text)
+        self.assertIn("validate >> hub", text)
+        self.assertLess(text.index('task_id="spark_offline_features"'), text.index('task_id="publish_datahub"'))
         self.assertNotIn("sync_clickhouse", text)
 
     def test_dp4_materializes_only_after_dp3(self):

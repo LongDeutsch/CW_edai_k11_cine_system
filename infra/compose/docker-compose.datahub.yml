@@ -1,0 +1,237 @@
+# DataHub chiếu lineage DP1–DP3. Không dùng Kafka heartbeat của CineStream.
+# UI: http://localhost:9002   GMS trên host: http://localhost:18083
+# Trong mạng cinestream_default, Airflow gọi http://datahub-gms:8080.
+# Broker metadata là service ``broker``, tách khỏi service ``kafka``.
+
+name: cinestream
+
+networks:
+  default:
+    name: cinestream_default
+    external: true
+
+services:
+  datahub-zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    hostname: datahub-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    healthcheck:
+      test: ["CMD-SHELL", "echo srvr | nc -w 2 datahub-zookeeper 2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  datahub-broker:
+    image: confluentinc/cp-kafka:7.4.0
+    hostname: broker
+    depends_on:
+      datahub-zookeeper:
+        condition: service_healthy
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: datahub-zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_HEAP_OPTS: -Xms256m -Xmx256m
+      KAFKA_CONFLUENT_SUPPORT_METRICS_ENABLE: "false"
+      KAFKA_MESSAGE_MAX_BYTES: 5242880
+      KAFKA_MAX_MESSAGE_BYTES: 5242880
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z broker 29092"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 25s
+
+  datahub-schema-registry:
+    image: confluentinc/cp-schema-registry:7.4.0
+    hostname: schema-registry
+    depends_on:
+      datahub-broker:
+        condition: service_healthy
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_SECURITY_PROTOCOL: PLAINTEXT
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: broker:29092
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z schema-registry 8081"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 20s
+
+  datahub-mysql:
+    image: mysql:8.0
+    hostname: mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_bin --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_DATABASE: datahub
+      MYSQL_USER: datahub
+      MYSQL_PASSWORD: datahub
+      MYSQL_ROOT_PASSWORD: datahub
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -udatahub -pdatahub"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+    volumes:
+      - datahub_mysql:/var/lib/mysql
+
+  datahub-elasticsearch:
+    image: elasticsearch:7.17.23
+    hostname: elasticsearch
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: -Xms256m -Xmx512m -Dlog4j2.formatMsgNoLookups=true
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS 'http://127.0.0.1:9200/_cluster/health?wait_for_status=yellow&timeout=5s'"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 30s
+    volumes:
+      - datahub_es:/usr/share/elasticsearch/data
+
+  datahub-mysql-setup:
+    image: acryldata/datahub-mysql-setup:v0.14.1
+    hostname: mysql-setup
+    depends_on:
+      datahub-mysql:
+        condition: service_healthy
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_USERNAME: datahub
+      MYSQL_PASSWORD: datahub
+      DATAHUB_DB_NAME: datahub
+    restart: "no"
+
+  datahub-elasticsearch-setup:
+    image: acryldata/datahub-elasticsearch-setup:v0.14.1
+    hostname: elasticsearch-setup
+    depends_on:
+      datahub-elasticsearch:
+        condition: service_healthy
+    environment:
+      ELASTICSEARCH_USE_SSL: "false"
+      USE_AWS_ELASTICSEARCH: "false"
+      ELASTICSEARCH_HOST: elasticsearch
+      ELASTICSEARCH_PORT: 9200
+      ELASTICSEARCH_PROTOCOL: http
+    restart: "no"
+
+  datahub-kafka-setup:
+    image: acryldata/datahub-kafka-setup:v0.14.1
+    hostname: kafka-setup
+    depends_on:
+      datahub-broker:
+        condition: service_healthy
+      datahub-schema-registry:
+        condition: service_healthy
+    environment:
+      DATAHUB_PRECREATE_TOPICS: "true"
+      KAFKA_BOOTSTRAP_SERVER: broker:29092
+      KAFKA_ZOOKEEPER_CONNECT: datahub-zookeeper:2181
+      USE_CONFLUENT_SCHEMA_REGISTRY: "TRUE"
+    restart: "no"
+
+  datahub-upgrade:
+    image: acryldata/datahub-upgrade:v0.14.1
+    hostname: datahub-upgrade
+    command: ["-u", "SystemUpdate"]
+    depends_on:
+      datahub-mysql-setup:
+        condition: service_completed_successfully
+      datahub-elasticsearch-setup:
+        condition: service_completed_successfully
+      datahub-kafka-setup:
+        condition: service_completed_successfully
+    environment:
+      EBEAN_DATASOURCE_USERNAME: datahub
+      EBEAN_DATASOURCE_PASSWORD: datahub
+      EBEAN_DATASOURCE_HOST: mysql:3306
+      EBEAN_DATASOURCE_URL: jdbc:mysql://mysql:3306/datahub?verifyServerCertificate=false&useSSL=true&useUnicode=yes&characterEncoding=UTF-8
+      EBEAN_DATASOURCE_DRIVER: com.mysql.jdbc.Driver
+      KAFKA_BOOTSTRAP_SERVER: broker:29092
+      KAFKA_SCHEMAREGISTRY_URL: http://schema-registry:8081
+      ELASTICSEARCH_HOST: elasticsearch
+      ELASTICSEARCH_PORT: 9200
+      ELASTICSEARCH_INDEX_BUILDER_MAPPINGS_REINDEX: "true"
+      ELASTICSEARCH_INDEX_BUILDER_SETTINGS_REINDEX: "true"
+      ELASTICSEARCH_BUILD_INDICES_CLONE_INDICES: "false"
+      GRAPH_SERVICE_IMPL: elasticsearch
+      DATAHUB_GMS_HOST: datahub-gms
+      DATAHUB_GMS_PORT: 8080
+      ENTITY_REGISTRY_CONFIG_PATH: /datahub/datahub-gms/resources/entity-registry.yml
+    restart: "no"
+
+  datahub-gms:
+    image: acryldata/datahub-gms:v0.14.1
+    hostname: datahub-gms
+    depends_on:
+      datahub-upgrade:
+        condition: service_completed_successfully
+    environment:
+      DATAHUB_SERVER_TYPE: quickstart
+      DATAHUB_TELEMETRY_ENABLED: "false"
+      DATAHUB_UPGRADE_HISTORY_KAFKA_CONSUMER_GROUP_ID: generic-duhe-consumer-job-client-gms
+      EBEAN_DATASOURCE_DRIVER: com.mysql.jdbc.Driver
+      EBEAN_DATASOURCE_HOST: mysql:3306
+      EBEAN_DATASOURCE_PASSWORD: datahub
+      EBEAN_DATASOURCE_URL: jdbc:mysql://mysql:3306/datahub?verifyServerCertificate=false&useSSL=true&useUnicode=yes&characterEncoding=UTF-8
+      EBEAN_DATASOURCE_USERNAME: datahub
+      ELASTICSEARCH_HOST: elasticsearch
+      ELASTICSEARCH_PORT: 9200
+      ELASTICSEARCH_INDEX_BUILDER_MAPPINGS_REINDEX: "true"
+      ELASTICSEARCH_INDEX_BUILDER_SETTINGS_REINDEX: "true"
+      ENTITY_REGISTRY_CONFIG_PATH: /datahub/datahub-gms/resources/entity-registry.yml
+      ENTITY_SERVICE_ENABLE_RETENTION: "true"
+      ES_BULK_REFRESH_POLICY: WAIT_UNTIL
+      GRAPH_SERVICE_IMPL: elasticsearch
+      JAVA_OPTS: -Xms768m -Xmx768m
+      KAFKA_BOOTSTRAP_SERVER: broker:29092
+      KAFKA_SCHEMAREGISTRY_URL: http://schema-registry:8081
+      MAE_CONSUMER_ENABLED: "true"
+      MCE_CONSUMER_ENABLED: "true"
+      PE_CONSUMER_ENABLED: "true"
+      UI_INGESTION_ENABLED: "true"
+    ports:
+      - "18083:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://datahub-gms:8080/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 30
+      start_period: 90s
+
+  datahub-frontend-react:
+    image: acryldata/datahub-frontend-react:v0.14.1
+    hostname: datahub-frontend-react
+    depends_on:
+      datahub-gms:
+        condition: service_healthy
+    environment:
+      DATAHUB_GMS_HOST: datahub-gms
+      DATAHUB_GMS_PORT: 8080
+      DATAHUB_SECRET: YouKnowNothing
+      DATAHUB_APP_VERSION: 1.0
+      DATAHUB_PLAY_MEM_BUFFER_SIZE: 10MB
+      JAVA_OPTS: -Xms384m -Xmx384m -Dhttp.port=9002 -Dconfig.file=datahub-frontend/conf/application.conf -Djava.security.auth.login.config=datahub-frontend/conf/jaas.conf -Dlogback.configurationFile=datahub-frontend/conf/logback.xml -Dlogback.debug=false -Dpidfile.path=/dev/null
+      KAFKA_BOOTSTRAP_SERVER: broker:29092
+      DATAHUB_TRACKING_TOPIC: DataHubUsageEvent_v1
+      ELASTIC_CLIENT_HOST: elasticsearch
+      ELASTIC_CLIENT_PORT: 9200
+    ports:
+      - "9002:9002"
+
+volumes:
+  datahub_mysql:
+  datahub_es:
