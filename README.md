@@ -45,41 +45,125 @@ Bảng dưới chỉ gồm bước đang có code. Mỗi bước trỏ tới fil
 
 ## Sơ đồ hệ thống
 
-Mỗi hộp là một đơn vị chạy. Dòng thứ hai là file Compose hoặc target Make. Mũi tên là đường dữ liệu. Airflow và DataHub đứng ngoài sơ đồ, ở đoạn ngay bên dưới.
+Mỗi thành phần là một đơn vị triển khai độc lập (Deployable Unit) với thông tin container/cổng tương ứng. Các mũi tên thể hiện hướng đi của dữ liệu, kèm mô tả nội dung truyền tải và số thứ tự luồng:
+- **[B1–B13] Luồng Batch:** Dữ liệu ngoại tuyến qua Medallion Lakehouse, tính toán feature offline và đồng bộ phục vụ.
+- **[S1–S5] Luồng Streaming:** Dữ liệu nhịp tim thời gian thực qua Kafka, Flink gán watermark, tách DLQ và sync online feature.
+- **[G1–G2] Luồng Governance:** Tự động phát sinh metadata, lineage và kiểm định chất lượng (assertions) lên DataHub.
+- **[P1–P3] Luồng Serving:** Truy vấn phục vụ phân tích dữ liệu và hiển thị trên Dashboard.
 
 ```mermaid
-flowchart LR
-  subgraph sources [Nguồn]
-    Gen["Generator Parquet<br/>make gen-offline"]
-    Beat["Heartbeat<br/>generator/streaming_producer.py"]
+flowchart TB
+  %% Định nghĩa các Subgraph theo từng phân vùng kiến trúc
+  
+  subgraph sources ["1. Nguồn Dữ Liệu (Data Sources)"]
+    direction TB
+    Gen["Offline Generator<br/><code>generator/offline_generator.py</code>"]
+    Beat["Streaming Producer<br/><code>generator/streaming_producer.py</code>"]
   end
-  subgraph ingest [Nạp]
-    MinIO["MinIO external-source-lake<br/>docker-compose.yml"]
-    Kafka["Kafka<br/>docker-compose.yml"]
+
+  subgraph ingest ["2. Tầng Nạp & Đệm (Landing / Message Broker)"]
+    direction TB
+    MinIO_Ext[("MinIO Landing<br/><code>external-source-lake:9000</code>")]
+    Kafka_Broker[["Apache Kafka<br/><code>topic: movie.playback.heartbeat:19092</code>"]]
+    Kafka_DLQ[["Kafka DLQ<br/><code>topic: it.module1.deadletter</code>"]]
   end
-  subgraph lake [Lakehouse]
-    Spark["Spark<br/>docker-compose.yml"]
-    Ice["Iceberg bronze silver gold<br/>iceberg-rest trong docker-compose.yml"]
-    Flink["Flink cửa sổ<br/>docker-compose.streaming.yml"]
+
+  subgraph orch_gov ["3. Điều Phối & Quản Trị (Orchestration & Governance)"]
+    direction TB
+    Airflow["Apache Airflow<br/><code>UI:18082 (DP1, DP2, DP3, DP4)</code>"]
+    DataHub["DataHub GMS & Frontend<br/><code>UI:9002 | GMS:18083</code>"]
   end
-  subgraph serve [Phục vụ]
-    CH["ClickHouse<br/>docker-compose.clickhouse.yml"]
-    Redis["Redis Feast<br/>docker-compose.feast.yml"]
-    API["FastAPI và dashboard<br/>make serving-api"]
+
+  subgraph processing ["4. Tầng Xử Lý Phân Tán (Distributed Compute Engines)"]
+    direction TB
+    Spark_Engine["Apache Spark Engine<br/><code>Baseline / Salting Skew / MergeSchema</code>"]
+    Flink_Engine["Apache Flink Stream Cluster<br/><code>JobManager:18081 | Tumbling 1m + RocksDB TTL</code>"]
   end
-  Gen --> MinIO --> Spark --> Ice
-  Beat --> Kafka --> Flink --> Ice
-  Ice --> CH --> API
-  Ice --> Redis
-  Flink --> Redis
+
+  subgraph lakehouse ["5. Apache Iceberg Lakehouse (Storage on MinIO)"]
+    direction TB
+    Ice_Bronze[("Bronze Zone<br/><code>raw_users, raw_movies, raw_ratings</code>")]
+    Ice_Silver[("Silver Zone<br/><code>dim_users (SCD2), fact_ratings, stg_windows</code>")]
+    Ice_Gold[("Gold Zone<br/><code>feat_user_stats, feat_movie_stats, obt_*</code>")]
+  end
+
+  subgraph serving ["6. Tầng Phục Vụ & Tiêu Thụ (Serving & Feature Store)"]
+    direction TB
+    ClickHouse[("ClickHouse DWH<br/><code>HTTP:18123 | cinestream_serving</code>")]
+    Redis_Feast[("Redis Feature Store<br/><code>Port:16379 (db 1: Batch | db 2: Streaming)</code>")]
+    FastAPI_App["FastAPI Service<br/><code>Port:18083 /governance & /metrics</code>"]
+    Dashboard_UI["Analytics Dashboard<br/><code>Port:18084 | Nginx:18085</code>"]
+  end
+
+  %% ==========================================
+  %% LUỒNG BATCH (B1 -> B13)
+  %% ==========================================
+  Gen -->|"B1. Upload Parquet raw (~100GB)"| MinIO_Ext
+  Airflow -.->|"B2. Trigger DP1 (Ingest)"| Spark_Engine
+  MinIO_Ext -->|"B3. Đọc raw Parquet"| Spark_Engine
+  Spark_Engine -->|"B4. Validate & ghi Bronze"| Ice_Bronze
+
+  Airflow -.->|"B5. Trigger DP2 (Transform & Skew Salting)"| Spark_Engine
+  Ice_Bronze -->|"B6. Đọc Bronze"| Spark_Engine
+  Spark_Engine -->|"B7. Ghi SCD2 Dim & Fact"| Ice_Silver
+
+  Airflow -.->|"B8. Trigger DP3 (Offline Features)"| Spark_Engine
+  Ice_Silver -->|"B9. Tính toán Window 30d/90d"| Spark_Engine
+  Spark_Engine -->|"B10. Ghi feat_* & OBT"| Ice_Gold
+
+  Ice_Gold -->|"B11. Sync Gold Snapshot"| ClickHouse
+  Airflow -.->|"B12. Trigger DP4 (Materialize)"| Redis_Feast
+  Ice_Gold -->|"B13. Feast Offline -> Online"| Redis_Feast
+
+  %% ==========================================
+  %% LUỒNG STREAMING (S1 -> S5)
+  %% ==========================================
+  Beat -->|"S1. Emit Playback Heartbeats"| Kafka_Broker
+  Kafka_Broker -->|"S2. Stream Ingestion"| Flink_Engine
+  Flink_Engine -->|"S3. Tách dữ liệu trễ 10-35m"| Kafka_DLQ
+  Flink_Engine -->|"S4. 1-min Window Aggs"| Ice_Silver
+  Flink_Engine -->|"S5. Push Streaming Feature (db 2)"| Redis_Feast
+
+  %% ==========================================
+  %% LUỒNG GOVERNANCE & LINEAGE (G1 -> G2)
+  %% ==========================================
+  Airflow ==>|"G1. Emit Run Lineage DP1-DP3"| DataHub
+  Spark_Engine -.->|"G2. Emit Schema & Table Assertions"| DataHub
+
+  %% ==========================================
+  %% LUỒNG SERVING & DASHBOARD (P1 -> P3)
+  %% ==========================================
+  ClickHouse -->|"P1. Query Aggregated OBT"| FastAPI_App
+  Redis_Feast -->|"P2. Get Online Features"| FastAPI_App
+  FastAPI_App -->|"P3. Render Bi-Weekly Stats"| Dashboard_UI
+
+  %% Class styles cho màu sắc trực quan
+  classDef sourceStyle fill:#eceff1,stroke:#607d8b,stroke-width:2px;
+  classDef queueStyle fill:#fff3e0,stroke:#ff9800,stroke-width:2px;
+  classDef computeStyle fill:#e1f5fe,stroke:#03a9f4,stroke-width:2px;
+  classDef storageStyle fill:#e8f5e9,stroke:#4caf50,stroke-width:2px;
+  classDef serveStyle fill:#f3e5f5,stroke:#9c27b0,stroke-width:2px;
+  classDef govStyle fill:#fbe9e7,stroke:#ff5722,stroke-width:2px;
+
+  class Gen,Beat sourceStyle;
+  class MinIO_Ext,Kafka_Broker,Kafka_DLQ queueStyle;
+  class Spark_Engine,Flink_Engine computeStyle;
+  class Ice_Bronze,Ice_Silver,Ice_Gold storageStyle;
+  class ClickHouse,Redis_Feast,FastAPI_App,Dashboard_UI serveStyle;
+  class Airflow,DataHub govStyle;
 ```
 
-Airflow ([`infra/compose/docker-compose.airflow.yml`](infra/compose/docker-compose.airflow.yml)) chạy DP1–DP4. DataHub ([`infra/compose/docker-compose.datahub.yml`](infra/compose/docker-compose.datahub.yml)) hiện lineage và assertion của DP1–DP3.
+### Bảng chi tiết các luồng dữ liệu (Data Flows)
 
-| Luồng | Ai / khi nào | Đường đi |
-|---|---|---|
-| **B** Batch hằng ngày | Airflow DP1–DP4. DAG tạo ra ở trạng thái paused | Parquet → MinIO → Spark → bronze → silver và gold → feature offline → Feast materialize Redis db 1. Gold đã publish sang ClickHouse, FastAPI đọc ClickHouse |
-| **R** Cửa sổ streaming | Topic cô lập, ví dụ `it.module1.heartbeat` và `it.p2.b3.heartbeat` | Heartbeat → Kafka → Flink cửa sổ → Iceberg → sync Redis db 2 |
+| Luồng | Loại luồng | Thành phần kích hoạt | Chi tiết dữ liệu và đích đến |
+|---|---|---|---|
+| **B1–B4** | **DP1: Raw $\rightarrow$ Bronze** | Generator / Airflow DP1 | Generator nạp Parquet thô vào MinIO `external-source-lake`. Spark nạp dữ liệu vào Iceberg `bronze` và kiểm định schema contract. |
+| **B5–B7** | **DP2: Bronze $\rightarrow$ Silver** | Airflow DP2 | Spark xử lý Skew salting `movie_id` và schema evolution; ghi `dim_users` (SCD Type 2), `fact_ratings`, `fact_watch_sessions`. |
+| **B8–B10** | **DP3: Silver $\rightarrow$ Gold** | Airflow DP3 | Spark tính toán 2 bảng đặc trưng `feat_user_movie_stats_daily` và `feat_movie_engagement_stats_daily` cùng bảng OBT. |
+| **B11–B13** | **DP4 & Serving Sync** | Airflow DP4 / Serving Job | Snapshot Gold được publish sang ClickHouse. DAG DP4 chạy Feast Materialize từ Offline Parquet sang Redis Online Store (db 1). |
+| **S1–S5** | **Streaming Heartbeats** | Producer / Flink | Heartbeats đẩy vào Kafka. Flink gán watermark, trễ 10–35m chuyển vào Dead Letter Queue (DLQ). Dữ liệu hợp lệ ghi Silver và sync vào Redis (db 2). |
+| **G1–G2** | **Governance & Lineage** | Airflow / DataHub Emitter | Sau khi chạy DP1–DP3, `governance/datahub/emit.py` gửi dataflow lineage và assertion test results lên DataHub GMS (`:18083`). |
+| **P1–P3** | **Serving & Consumption** | Client / FastAPI | FastAPI đọc dữ liệu tổng hợp từ ClickHouse và Redis, cung cấp REST API cho Dashboard analytics (`:18084`). |
 
 <a id="cho-chay"></a>
 
