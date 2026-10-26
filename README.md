@@ -1,97 +1,247 @@
-# CineStream - End-to-End Data & AI Platform for Movie Recommendation
+# CineStream
 
-[![CI Status](https://github.com/example/movie-data-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/example/movie-data-platform/actions)
-[![Test Coverage](https://img.shields.io/badge/coverage-92%25-brightgreen)](tests/)
-[![Python Version](https://img.shields.io/badge/python-3.11%2B-blue)](pyproject.toml)
-[![Docker Multi-Stage](https://img.shields.io/badge/docker-multi--stage-orange)](infra/docker/)
+CineStream là nền tảng phim trên miền MovieLens, làm cho coursework EDAI K11. Thiết kế có ba tầng: nền tảng dữ liệu, nền tảng học máy, và trợ lý CineBot. Tầng dữ liệu đang chạy. Feast đã nối bảng feature offline với Redis. Kubeflow, MLflow, KServe và CineBot chưa có trong code.
 
-Hệ thống nền tảng Dữ liệu và Trí tuệ Nhân tạo toàn diện (**Data & AI Platform**) cho dịch vụ xem phim trực tuyến và cá nhân hóa nội dung (**MovieLens Streaming Domain**), được thiết kế và triển khai tuân thủ toàn bộ các tiêu chí trong Rubric đánh giá **EDAI K11 (Data Engineering & Machine Learning Engineering)**.
+## Mục lục
 
----
+- [Domain](#domain)
+- [Kiến trúc](#kien-truc)
+- [Sơ đồ hệ thống](#so-do)
+- [Chỗ chạy](#cho-chay)
+- [Cây thư mục](#cay-thu-muc)
+- [Quick start](#quick-start)
+- [Docs](#docs)
 
-## 1. Mục lục (Table of Contents)
+<a id="domain"></a>
 
-1. [Tổng quan hệ thống (System Overview)](#2-tổng-quan-hệ-thống-system-overview)
-2. [Cấu trúc thư mục (Repository Structure)](#3-cấu-trúc-thư-mục-repository-structure)
-3. [Tài liệu kỹ thuật chi tiết (Technical Documentation in docs/)](#4-tài-liệu-kỹ-thuật-chi-tiết-technical-documentation)
-4. [Bảng đối chiếu Rubric & Bằng chứng thực nghiệm (Rubric Verification Checklist)](#5-bảng-đối-chiếu-rubric--bằng-chứng-thực-nghiệm)
-5. [Hướng dẫn khởi động nhanh (Quickstart Guide for Reviewer)](#6-hướng-dẫn-khởi-động-nhanh-quickstart-guide)
+## Domain
 
----
+Dữ liệu là dữ liệu giả lập do `generator/` sinh từ seed MovieLens. Mỗi vấn đề được tiêm với tỷ lệ cố định.
 
-## 2. Tổng quan hệ thống (System Overview)
-
-Hệ thống giải quyết trọn vẹn 3 tầng công nghệ liên thông:
-- **Tầng 1 - Data Platform (Module 1):** Lakehouse phân tầng Medallion (Apache Iceberg trên MinIO) lưu trữ $>100\text{ GB}$ dữ liệu, Apache Spark xử lý Skew (Salting key) & Schema Evolution, Apache Flink xử lý luồng nhịp tim xem phim (`movie.playback.heartbeat`) có độ trễ 10–35 phút, Apache Airflow điều phối 3 DAGs và DataHub quản lý Lineage.
-- **Tầng 2 - ML Platform (Module 1):** Feature Store (Feast) đồng bộ dữ liệu thời gian thực sang Redis, Kubeflow huấn luyện mô hình xếp hạng đề xuất (LightGBM Ranker), MLflow quản lý vòng đời và KServe serving dự đoán thời gian thực.
-- **Tầng 3 - LLM & Agent Platform (Module 2):** Trợ lý điện ảnh ảo ("CineBot") kết hợp RAG tìm kiếm ngữ nghĩa cốt truyện (Qdrant), MCP Tools truy vấn lịch sử xem từ Feast, KServe chấm điểm đề xuất và Agent Gateway điều phối an toàn.
-
----
-
-## 3. Cấu trúc thư mục (Repository Structure)
-
-Bảng phân nhiệm chi tiết từng thư mục trong dự án:
-
-| Thư mục | Chức năng & Nhiệm vụ chính |
-|---|---|
-| [`generator/`](docs/codebase_structure.md#21-layer-generator-data-simulation-engine) | Bộ sinh dữ liệu giả lập $\ge 100\text{ GB}$ dựa trên phân phối Zipfian/Pareto và chủ động tiêm Skew, Schema Evolution, Duplicates, Late Arrivals. |
-| [`ingestion/`](docs/codebase_structure.md) | Chứa các kết nối nạp dữ liệu thô (S3 MinIO connector, Avro schemas cho Kafka). |
-| [`transformation/`](docs/codebase_structure.md#22-layer-transformation-spark--flink-jobs) | Tách biệt mã nguồn Spark Batch (Baseline vs Optimized Salting) và Flink Streaming (Watermarking, RocksDB State TTL). |
-| [`storage/`](docs/codebase_structure.md#23-layer-storage-lakehouse--warehouse) | Cấu hình định dạng bảng Lakehouse Iceberg (Bronze/Silver/Gold), bảo trì Compaction/Z-Order, và ClickHouse OBT. |
-| [`consumption/`](docs/codebase_structure.md#24-layer-consumption-feast--fastapi) | Feast Feature Store repository và FastAPI Async Web Services (Data Fetch & Real-time Drift Detection). |
-| [`orchestration/`](docs/codebase_structure.md#25-layer-orchestration--governance-airflow--datahub) | 3 DAGs Airflow chuẩn (DP1 Ingestion, DP2 Transformation, DP3 Feature Materialization) tích hợp plugin DataHub. |
-| [`governance/`](docs/codebase_structure.md) | DataHub metadata ingestion recipes và bộ quy tắc kiểm định chất lượng (Great Expectations / Soda). |
-| [`docs/`](docs/) | **Thư mục tài liệu bắt buộc theo Rubric:** Chứa toàn bộ báo cáo phân tích, kiến trúc, và ảnh chụp màn hình chứng minh thực nghiệm. |
-| [`infra/`](docs/publish_and_review_guide.md#phần-2-hướng-dẫn-đóng-gói--publish-docker-images) | Multi-stage Dockerfiles, Docker Compose stack cục bộ, Kubernetes Helm Charts và Terraform scripts. |
-| [`tests/`](docs/publish_and_review_guide.md#34-các-lệnh-kiểm-tra-từng-tiêu-chí-trong-rubric-verification-commands) | Bộ kiểm thử đa tầng: Unit test (Coverage > 90%), Hypothesis (Property-based), Mutmut (Mutation testing), và Locust load testing. |
-
----
-
-## 4. Tài liệu kỹ thuật chi tiết (Technical Documentation)
-
-Toàn bộ báo cáo chuyên sâu và bằng chứng thực nghiệm được đặt trong thư mục [`docs/`](docs/):
-
-- 📘 [Kiến trúc tổ chức mã nguồn chuẩn hóa (`docs/codebase_structure.md`)](docs/codebase_structure.md)
-- 🚀 [Hướng dẫn Publish Git, Docker Registry & Đánh giá cho Reviewer (`docs/publish_and_review_guide.md`)](docs/publish_and_review_guide.md)
-- 🏗️ [Bản đồ kiến trúc triển khai End-to-End (`docs/architecture_design.md`)](docs/architecture_design.md)
-- 💾 [Thiết kế Data Platform & Medallion Lakehouse (`docs/data_platform.md`)](docs/data_platform.md)
-- 🤖 [Thiết kế ML Platform & Feature Store (`docs/ml_platform.md`)](docs/ml_platform.md)
-- 💬 [Thiết kế LLM & Multi-Agent Platform (`docs/llm_agent_platform.md`)](docs/llm_agent_platform.md)
-- 🎲 [Đặc tả kỹ thuật Data Generator $\ge 100\text{ GB}$ (`docs/data_generator_spec.md`)](docs/data_generator_spec.md)
-
----
-
-## 5. Bảng đối chiếu Rubric & Bằng chứng thực nghiệm
-
-| STT | Tiêu chí Rubric EDAI K11 | Điểm | Tài liệu & Bằng chứng kiểm chứng |
+| Nguồn | Sinh bởi | Đường vào | Vấn đề mang theo |
 |---|---|---|---|
-| 1 | **Docker & Docker Compose** (Tối ưu Dockerfile Multi-stage) | 5.0 | [Docs Publish & Review](docs/publish_and_review_guide.md#21-thiết-kế-multi-stage-dockerfile-tối-ưu-kích-thước) (Giảm 88% dung lượng image) |
-| 2 | **Data Generator $\ge 100\text{ GB}$** (Skew, Schema Evolution, Duplicates) | 8.0 | [Data Generator Spec](docs/data_generator_spec.md) & [Codebase Structure](docs/codebase_structure.md#21-layer-generator-data-simulation-engine) |
-| 3 | **Streaming Problems** (Late Arrivals 10-35m, 1.8% Duplicates) | 4.0 | [Data Generator Spec](docs/data_generator_spec.md#44-tiêm-streaming-late-arrivals-online-data-problem-1) |
-| 4 | **Spark Offline Processing** (Baseline vs Optimized Skew Salting, MergeSchema) | 11.0 | [Data Platform Design](docs/data_platform.md#61-spark-processing-job-xử-lý-offline-data-problems) |
-| 5 | **Flink Stream Processing** (Watermarking, Allowed Lateness, State TTL) | 10.0 | [Data Platform Design](docs/data_platform.md#62-flink-processing-job-xử-lý-streaming-data-problems) |
-| 6 | **Storage Optimization** (Iceberg Compaction, Z-Ordering, ClickHouse) | 6.0 | [Data Platform Design](docs/data_platform.md#52-storage-optimizations-lakehouse--data-warehouse) |
-| 7 | **Airflow Orchestration** (DP1 Ingest, DP2 Transform, DP3 Features) | 12.0 | [Data Platform Design](docs/data_platform.md#7-data-pipeline-orchestration-apache-airflow) |
-| 8 | **Data Governance** (DataHub Lineage, SCD Type 2, Validations) | 12.0 | [Data Platform Design](docs/data_platform.md#8-data-governance--metadata-management-datahub) |
-| 9 | **Web API, Testing & CI/CD** (Coverage >90%, Mutation, Hypothesis) | 12.0 | [Publish & Review Guide](docs/publish_and_review_guide.md#34-các-lệnh-kiểm-tra-từng-tiêu-chí-trong-rubric-verification-commands) |
+| Parquet `users`, `movies`, `movie_genres`, `ratings`, `tags`, `watch_history` | [`generator/offline_generator.py`](generator/offline_generator.py) | DP1 đọc bucket MinIO `external-source-lake` | Skew Zipf trên `movie_id` (nhóm 1% phim đầu nhận 80% dòng ratings và watch). Schema phim đổi từ partition 45, thêm `content_rating`, `hdr_format`, `audio_spatial`. Duplicate khoảng 2,5% trên ratings và watch history |
+| Heartbeat xem phim | [`generator/streaming_producer.py`](generator/streaming_producer.py) | Kafka `movie.playback.heartbeat` | Khoảng 6% message có `event_ts` lùi 10–35 phút. Duplicate khoảng 1,8% |
+| Nhãn điểm cao | [`docs/ml/01_offline_prediction.md`](docs/ml/01_offline_prediction.md) | Một dòng là cặp `(user_id, movie_id)` tại mốc `T` | Dương khi rating sớm nhất trong `[T, T + 1 ngày)` có `rating_val >= 4.0`. Âm khi rating sớm nhất trong cửa sổ đó nhỏ hơn 4.0. Không có rating trong cửa sổ thì không tạo dòng. Chưa có model đã train |
 
----
+<a id="kien-truc"></a>
 
-## 6. Hướng dẫn khởi động nhanh (Quickstart Guide)
+## Kiến trúc
 
-Chỉ 3 bước để khởi chạy và đánh giá toàn bộ hệ thống cục bộ:
+Bảng dưới chỉ gồm bước đang có code. Mỗi bước trỏ tới file thực thi.
 
-```bash
-# 1. Clone repository
-git clone https://github.com/<your-username>/movie-data-platform.git
-cd movie-data-platform
+| Bước | Thành phần | Việc của bước |
+|---|---|---|
+| 01 · DP1 | Spark ingest | Parquet trên MinIO vào bronze Iceberg. DAG [`orchestration/dags/cinestream_dp1_raw_to_bronze.py`](orchestration/dags/cinestream_dp1_raw_to_bronze.py) |
+| 02 · DP2 | Spark silver và gold | Bronze sang silver, dim/fact và OBT. DAG [`orchestration/dags/cinestream_dp2_bronze_to_gold.py`](orchestration/dags/cinestream_dp2_bronze_to_gold.py) |
+| 03 · DP3 | Feature offline | Hai bảng `feat_*` với `event_timestamp` trước mốc `T`. Job [`transformation/batch/jobs/build_offline_features.py`](transformation/batch/jobs/build_offline_features.py) |
+| 04 | Flink | Baseline theo processing time, và job cửa sổ với watermark, dedup, DLQ: [`streaming/flink/jobs/heartbeat_baseline_job.py`](streaming/flink/jobs/heartbeat_baseline_job.py), [`streaming/flink/jobs/heartbeat_window_job.py`](streaming/flink/jobs/heartbeat_window_job.py) |
+| 05 | Airflow | Điều phối DP1–DP4. DP4 materialize feature batch. Cụm [`infra/compose/docker-compose.airflow.yml`](infra/compose/docker-compose.airflow.yml), DAG [`orchestration/dags/cinestream_dp4_materialize_online.py`](orchestration/dags/cinestream_dp4_materialize_online.py) |
+| 06 | DataHub | Catalog gốc là [`governance/inventory.py`](governance/inventory.py). GMS chỉ nhận cạnh `data_flow` và kết quả `validate_*` do [`governance/datahub/emit.py`](governance/datahub/emit.py) đẩy lên |
+| 07 | Feast | Offline store DuckDB trên export Parquet, [`ml/feast/feature_store.yaml`](ml/feast/feature_store.yaml). Materialize batch vào Redis db 1. Sync cửa sổ Flink vào Redis db 2 |
+| 08 | ClickHouse và FastAPI | Gold đã publish nằm trên ClickHouse. API đọc serving, [`serving/api/app.py`](serving/api/app.py) |
 
-# 2. Khởi chạy toàn bộ stack dịch vụ (MinIO, Kafka, Spark, Flink, Airflow, Redis)
-make up
+<a id="so-do"></a>
 
-# 3. Chạy demo sinh dữ liệu và kiểm thử Spark Salting
-make demo-generator
-make run-spark-optimized
+## Sơ đồ hệ thống
+
+Mỗi hộp là một đơn vị chạy. Dòng thứ hai là file Compose hoặc target Make. Mũi tên là đường dữ liệu. Airflow và DataHub đứng ngoài sơ đồ, ở đoạn ngay bên dưới.
+
+```mermaid
+flowchart LR
+  subgraph sources [Nguồn]
+    Gen["Generator Parquet<br/>make gen-offline"]
+    Beat["Heartbeat<br/>generator/streaming_producer.py"]
+  end
+  subgraph ingest [Nạp]
+    MinIO["MinIO external-source-lake<br/>docker-compose.yml"]
+    Kafka["Kafka<br/>docker-compose.yml"]
+  end
+  subgraph lake [Lakehouse]
+    Spark["Spark<br/>docker-compose.yml"]
+    Ice["Iceberg bronze silver gold<br/>iceberg-rest trong docker-compose.yml"]
+    Flink["Flink cửa sổ<br/>docker-compose.streaming.yml"]
+  end
+  subgraph serve [Phục vụ]
+    CH["ClickHouse<br/>docker-compose.clickhouse.yml"]
+    Redis["Redis Feast<br/>docker-compose.feast.yml"]
+    API["FastAPI và dashboard<br/>make serving-api"]
+  end
+  Gen --> MinIO --> Spark --> Ice
+  Beat --> Kafka --> Flink --> Ice
+  Ice --> CH --> API
+  Ice --> Redis
+  Flink --> Redis
 ```
 
-👉 Chi tiết toàn bộ các lệnh kiểm tra và hướng dẫn đánh giá từng tiêu chí: xem tại **[`docs/publish_and_review_guide.md`](docs/publish_and_review_guide.md)**.
+Airflow ([`infra/compose/docker-compose.airflow.yml`](infra/compose/docker-compose.airflow.yml)) chạy DP1–DP4. DataHub ([`infra/compose/docker-compose.datahub.yml`](infra/compose/docker-compose.datahub.yml)) hiện lineage và assertion của DP1–DP3.
+
+| Luồng | Ai / khi nào | Đường đi |
+|---|---|---|
+| **B** Batch hằng ngày | Airflow DP1–DP4. DAG tạo ra ở trạng thái paused | Parquet → MinIO → Spark → bronze → silver và gold → feature offline → Feast materialize Redis db 1. Gold đã publish sang ClickHouse, FastAPI đọc ClickHouse |
+| **R** Cửa sổ streaming | Topic cô lập, ví dụ `it.module1.heartbeat` và `it.p2.b3.heartbeat` | Heartbeat → Kafka → Flink cửa sổ → Iceberg → sync Redis db 2 |
+
+<a id="cho-chay"></a>
+
+## Chỗ chạy
+
+Mọi dịch vụ chạy bằng Docker trên máy local. Repo không có cụm kind và không có tài nguyên Azure.
+
+| Chỗ | Cổng và tài khoản | File |
+|---|---|---|
+| MinIO, Kafka, Iceberg REST, Spark master | Console `:9001` (`minioadmin` / `minioadmin`), API `:9000`, Kafka UI `:8085`, broker `:19092`, Iceberg REST `:8181`, Spark master `:18080` | [`infra/compose/docker-compose.yml`](infra/compose/docker-compose.yml) |
+| Airflow | UI `:18082` (`airflow` / `airflow`) | [`infra/compose/docker-compose.airflow.yml`](infra/compose/docker-compose.airflow.yml), gộp với file gốc |
+| Flink | UI `:18081` | [`infra/compose/docker-compose.streaming.yml`](infra/compose/docker-compose.streaming.yml) |
+| DataHub | UI `:9002` (`datahub` / `datahub`), GMS `:18083` | [`infra/compose/docker-compose.datahub.yml`](infra/compose/docker-compose.datahub.yml) |
+| Redis Feast | `:16379`, db 1 cho batch, db 2 cho cửa sổ | [`infra/compose/docker-compose.feast.yml`](infra/compose/docker-compose.feast.yml) |
+| ClickHouse | HTTP `:18123`, native `:19000` (`default` / `cinestream`), database `cinestream_serving` | [`infra/compose/docker-compose.clickhouse.yml`](infra/compose/docker-compose.clickhouse.yml) |
+| FastAPI | Host `:18083` | `make serving-api`, process trên máy |
+| Dashboard | `:18084`, nginx `:18085` | `make serving-dashboard`, [`infra/compose/docker-compose.dashboard.yml`](infra/compose/docker-compose.dashboard.yml) |
+| Lakehouse UI | `:8088` | `make lakehouse-ui`, hoặc [`infra/compose/docker-compose.lakehouse.yml`](infra/compose/docker-compose.lakehouse.yml) qua `make lakehouse-docker` |
+
+Mỗi lệnh dưới đây bật một cụm. Repo không có một target gộp toàn bộ dịch vụ.
+
+- `make up` đọc `infra/compose/docker-compose.yml` và bật MinIO, Kafka, Kafka UI, Iceberg REST. Spark master cùng file, cổng `:18080`, do `make airflow-up` bật.
+- `make airflow-up`: Airflow `:18082` (`airflow` / `airflow`). DAG tạo ra ở trạng thái paused.
+- `make stream-up`: Flink UI `:18081`.
+- `make datahub-up`: UI `:9002` (`datahub` / `datahub`), GMS `:18083`.
+- `make feast-redis-up`: Redis `:16379`.
+- `make serving-up` rồi `make serving-api`: ClickHouse `:18123`, API host `:18083`.
+- `make lakehouse-ui`: `:8088`.
+
+DataHub GMS và FastAPI cùng cổng `18083`. Chạy `make datahub-up` thì tắt cụm đó trước khi chạy `make serving-api`, và ngược lại.
+
+`make stream-job-run` nộp job lên cụm Flink và cần `CINESTREAM_ALLOW_STREAMING=true`. Quick start không gồm lệnh này.
+
+<a id="cay-thu-muc"></a>
+
+## Cây thư mục
+
+```
+generator/            Parquet offline, heartbeat Kafka, injector skew / duplicate / schema / late arrival
+transformation/       Job Spark: baseline, salting, AQE, bronze, silver, gold, feature offline
+streaming/            Job Flink baseline và cửa sổ heartbeat
+storage/              DDL Iceberg bronze / silver / gold, UI lakehouse, xuất quan hệ dim-fact
+serving/              ClickHouse, FastAPI, dashboard
+orchestration/        DAG Airflow DP1–DP4
+governance/           Catalog inventory.py và emit DataHub
+ml/                   Feast offline, materialize Redis db 1, sync cửa sổ sang Redis db 2
+infra/                docker-compose và Dockerfile multi-stage
+tests/                Unit test và các kiểm tra theo phase
+docs/proof/           Bằng chứng từng phase
+make/                 Target Make. make help in menu
+```
+
+Parquet sinh ra nằm ở `data_generator/output/`.
+
+<a id="quick-start"></a>
+
+## Quick start
+
+Cần Docker, Docker Compose và `uv`. Spark local trong [`make/spark.mk`](make/spark.mk) tự lấy Python 3.12. `make help` in menu lệnh.
+
+### Không cần Docker
+
+`make demo-layer1` sinh Parquet scale 0.1, kiểm generator, dry-run heartbeat và dry-run ánh xạ MinIO. Ba lệnh Spark đọc `data_generator/output/scale_0_1`. `SPARK_HOLD=120` giữ Spark UI tại `:4040`.
+
+```bash
+make demo-layer1
+SPARK_HOLD=120 make spark-baseline
+SPARK_HOLD=120 make spark-optimized
+SPARK_HOLD=120 make spark-aqe
+make stream-test
+make governance-check
+make test
+```
+
+`make test` chỉ chạy `tests/unit/`.
+
+### Có Docker
+
+Mỗi phase một cụm và một proof.
+
+Dữ liệu nhỏ:
+
+```bash
+make gen-offline
+make verify-generator
+```
+
+Scale 100 là lệnh riêng, khoảng 27,5 GB trên đĩa. Số đo và lệnh nằm ở [`docs/proof/23_dataset_scale_100.md`](docs/proof/23_dataset_scale_100.md).
+
+Lakehouse, namespace `it_af_dp`:
+
+```bash
+make airflow-up
+make airflow-dp-it
+```
+
+Proof: [`docs/proof/14_airflow_dp_e2e.md`](docs/proof/14_airflow_dp_e2e.md).
+
+Spark đã đo trên `data_generator/output/scale_0_1`: [`docs/proof/03_spark_optimizations_proof.md`](docs/proof/03_spark_optimizations_proof.md). Ba target ở phase không cần Docker là lệnh tương ứng.
+
+Flink local, `--engine local` chạy trên máy:
+
+```bash
+uv run python -m streaming.flink.jobs.heartbeat_baseline_job --engine local --scenario proof
+uv run python -m streaming.flink.jobs.heartbeat_window_job --engine local --scenario proof
+```
+
+Ảnh UI cụm: [`docs/proof/21_flink_baseline_ui.md`](docs/proof/21_flink_baseline_ui.md).
+
+DataHub. Bật cụm, rồi chạy lệnh emit trong proof. GMS chiếm cổng `18083`.
+
+```bash
+make datahub-up
+```
+
+Proof: [`docs/proof/20_datahub_lineage.md`](docs/proof/20_datahub_lineage.md).
+
+Feast. `make feast-online-it`, `make feast-airflow-it` và `make feast-streaming-it` tự gọi `make feast-redis-up`.
+
+```bash
+make feast-offline-it
+make feast-online-it
+make feast-airflow-it
+make feast-streaming-it
+```
+
+Proof: [`docs/proof/15_feast_offline.md`](docs/proof/15_feast_offline.md), [`docs/proof/16_feast_online.md`](docs/proof/16_feast_online.md), [`docs/proof/17_feast_streaming.md`](docs/proof/17_feast_streaming.md).
+
+Image multi-stage và quan hệ dim/fact: [`docs/proof/20_docker_multistage.md`](docs/proof/20_docker_multistage.md), [`docs/proof/19_dim_fact_relationship.md`](docs/proof/19_dim_fact_relationship.md).
+
+<a id="docs"></a>
+
+## Docs
+
+Một dòng một file đã chạy.
+
+- [`docs/proof/01_data_generator_proof.md`](docs/proof/01_data_generator_proof.md): generator scale 0.1.
+- [`docs/proof/02_lakehouse_storage_proof.md`](docs/proof/02_lakehouse_storage_proof.md): lakehouse Iceberg.
+- [`docs/proof/03_spark_optimizations_proof.md`](docs/proof/03_spark_optimizations_proof.md): baseline, salting, AQE, schema, dedup.
+- [`docs/proof/04_streaming_flink_proof.md`](docs/proof/04_streaming_flink_proof.md): cửa sổ tumbling Flink.
+- [`docs/proof/05_incremental_batch_proof.md`](docs/proof/05_incremental_batch_proof.md): batch lakehouse tăng dần.
+- [`docs/proof/05_orchestration_governance_proof.md`](docs/proof/05_orchestration_governance_proof.md): Airflow và governance.
+- [`docs/proof/06_consumption_serving_proof.md`](docs/proof/06_consumption_serving_proof.md): ClickHouse cho Gold đã publish.
+- [`docs/proof/07_analytics_dashboard.md`](docs/proof/07_analytics_dashboard.md): dashboard analytics.
+- [`docs/proof/08_data_governance_lineage.md`](docs/proof/08_data_governance_lineage.md): governance và lineage.
+- [`docs/proof/09_governance_observability.md`](docs/proof/09_governance_observability.md): drift metadata và quan sát pipeline.
+- [`docs/proof/10_governance_findings_triage.md`](docs/proof/10_governance_findings_triage.md): phân loại finding.
+- [`docs/proof/11_schema_contract_validation.md`](docs/proof/11_schema_contract_validation.md): hợp đồng schema.
+- [`docs/proof/12_governance_dashboard.md`](docs/proof/12_governance_dashboard.md): governance dashboard.
+- [`docs/proof/13_offline_features.md`](docs/proof/13_offline_features.md): feature offline và ba DAG.
+- [`docs/proof/14_airflow_dp_e2e.md`](docs/proof/14_airflow_dp_e2e.md): DP1–DP3 trên Spark và Iceberg, namespace `it_af_dp`.
+- [`docs/proof/15_feast_offline.md`](docs/proof/15_feast_offline.md): Feast offline và point-in-time.
+- [`docs/proof/16_feast_online.md`](docs/proof/16_feast_online.md): materialize snapshot sang Redis db 1.
+- [`docs/proof/17_feast_streaming.md`](docs/proof/17_feast_streaming.md): cửa sổ Flink sang Feast và Redis db 2.
+- [`docs/proof/18_datahub_lineage.md`](docs/proof/18_datahub_lineage.md): DataHub chiếu DP1–DP3.
+- [`docs/proof/19_dim_fact_relationship.md`](docs/proof/19_dim_fact_relationship.md): quan hệ dim và fact.
+- [`docs/proof/20_datahub_lineage.md`](docs/proof/20_datahub_lineage.md): lineage và assertion DP1–DP3 trên GMS.
+- [`docs/proof/20_docker_multistage.md`](docs/proof/20_docker_multistage.md): kích thước image trước và sau multi-stage.
+- [`docs/proof/21_flink_baseline_ui.md`](docs/proof/21_flink_baseline_ui.md): baseline và job cửa sổ trên cùng JobManager.
+- [`docs/proof/22_multistage_images.md`](docs/proof/22_multistage_images.md): số byte image multi-stage.
+- [`docs/proof/23_dataset_scale_100.md`](docs/proof/23_dataset_scale_100.md): dataset scale-factor 100, khoảng 27,5 GB.
+- [`docs/ml/01_offline_prediction.md`](docs/ml/01_offline_prediction.md): nhãn điểm cao sau một mốc thời gian.
+- [`docs/ml/02_feast_offline.md`](docs/ml/02_feast_offline.md): Feast offline cho hai bảng feature.
+
+`docs/spec/` và `docs/domain/` (`movie_lens/`, `ecommerce/`) là bản thiết kế. Lệnh để chạy nằm ở Quick start và ở từng file `docs/proof/`.
