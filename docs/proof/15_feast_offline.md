@@ -1,8 +1,20 @@
 # 15 — Feast offline và point-in-time
 
+**Phạm vi.** Chạy lúc 2026-10-25. `make feast-offline-it`, PASS. Feast `0.67.0`. Warehouse `file://`, namespace `it_b1`. Không ghi `bronze` / `silver` / `gold`.
+
+**Trong phạm vi này.** Bài này không materialize và không ghi Redis. Redis db 1 và db 2 là file 16 và 17.
+
+**Đọc tiếp.** [Tour](00_system_tour.md) · [16 — Redis db 1](16_feast_online.md)
+
+```mermaid
+flowchart LR
+  ice[feat Iceberg file it_b1] --> feast[Feast offline]
+  feast --> pit[historical_features]
+```
+
 Chạy lúc 2026-10-25. Lệnh `make feast-offline-it` kết thúc PASS. Sáu test đơn vị OK. Log đối chiếu snapshot: `docs/proof/logs/phase_b1_feast_offline.json`. Feast `0.67.0`.
 
-HEAD git vẫn `51b22ba`. Phần B1 nằm trên working tree, chưa commit. Không ghi namespace `bronze`, `silver`, `gold`. Không bật streaming. Không materialize, không Redis, không Kubeflow, không MLflow, không KServe. Online serving chưa sẵn sàng.
+HEAD git vẫn `51b22ba`. Phần B1 nằm trên working tree, chưa commit. Không ghi namespace `bronze`, `silver`, `gold`. Không bật streaming. Bài offline này không materialize và không ghi Redis. Online serving đã chạy sau đó: Redis db 1 ở [16_feast_online.md](16_feast_online.md), Redis db 2 ở [17_feast_streaming.md](17_feast_streaming.md). Không có Kubeflow, MLflow, KServe.
 
 ## Catalog production lúc chạy
 

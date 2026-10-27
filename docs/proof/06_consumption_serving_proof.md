@@ -1,11 +1,26 @@
 # 06 — ClickHouse serving cho Gold đã publish
 
+**Phạm vi.** `make serving-it` lúc 2026-10-18 07:47 UTC. Log `docs/proof/logs/phase3a_clickhouse_it.json`. ClickHouse nhận Gold đã có marker `published: true` và `gold_snapshots`.
+
+**Trong phạm vi này.** Feast và DataHub nằm ở các file sau. Dashboard đọc API ở file 07.
+
+**Đọc tiếp.** [Tour](00_system_tour.md) · [07 — dashboard](07_analytics_dashboard.md)
+
+```mermaid
+flowchart LR
+  marker[marker gold_snapshots] --> spark[Spark VERSION AS OF]
+  spark --> stage[ClickHouse stage]
+  stage --> rename[RENAME]
+  rename --> serve[movie_engagement va movie_ratings]
+```
+
 ClickHouse chỉ nhận Gold đã có marker `published: true` và ba snapshot id. Job sync không gọi snapshot mới nhất của bảng khi marker không ghi id đó.
 
 Lệnh đã chạy lúc 2026-10-18 07:47 UTC:
 
 ```bash
-make serving-it
+make serving-it:
+- Chỉ kiểm tra luồng Spark đọc Iceberg → ghi vào ClickHouse an toàn.
 ```
 
 Kết quả `PASS`. Log: `docs/proof/logs/phase3a_clickhouse_it.json`.
@@ -85,7 +100,8 @@ Bảng rỗng trả 200, số 0 và `mean_rating` null. `limit=0` hoặc `limit=
 Lệnh lúc 2026-10-18 08:06 UTC:
 
 ```bash
-make serving-it-api
+make serving-it-api:
+- Kiểm tra toàn diện từ Iceberg → ClickHouse → FastAPI Endpoint (kiểm tra cả độ trễ mili-giây và khả năng phục vụ request của API).
 ```
 
 Kết quả `PASS`. Log: `docs/proof/logs/phase3b_api_it.json`. Namespace `it_api_gold`, database `it_api`.

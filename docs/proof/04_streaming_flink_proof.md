@@ -1,5 +1,11 @@
 # Layer 4 — Flink tumbling window
 
+**Phạm vi.** Job PyFlink 1.18.1, topic `movie.playback.heartbeat` và `movie.playback.deadletter`, bảng `stg_playback_heartbeats` và `stg_playback_windows`. Lệnh `make stream-test`, `make stream-verify`.
+
+**Trong phạm vi này.** Lần đo này không có savepoint production và không có Feast. Ảnh hai job trên topic `it.module1.heartbeat` nằm ở file 21. Cửa sổ sang Redis db 2 nằm ở file 17.
+
+**Đọc tiếp.** [Tour](00_system_tour.md) · [21 — UI baseline](21_flink_baseline_ui.md)
+
 Tài liệu ghi phần đã có trong source và phần đã đo trên cụm local. Nhãn:
 
 | Nhãn | Nghĩa |

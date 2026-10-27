@@ -1,5 +1,17 @@
 # 07 — Dashboard analytics
 
+**Phạm vi.** `make serving-it-dashboard` lúc 2026-10-18 13:17 UTC. Batch Gold ở database `it_it_af_real`. Cửa sổ Flink ở `it_e2e`. API `127.0.0.1:18083`, dashboard `127.0.0.1:18084`.
+
+**Trong phạm vi này.** Dashboard chỉ gọi FastAPI. DataHub GMS ở file 20 cũng ghi cổng 18083 trên một lần chạy khác.
+
+**Đọc tiếp.** [Tour](00_system_tour.md) · [15 — Feast offline](15_feast_offline.md)
+
+```mermaid
+flowchart LR
+  ch[ClickHouse] --> api[FastAPI]
+  api --> dash[Dashboard]
+```
+
 Dashboard chỉ gọi FastAPI. Không đọc Iceberg, Kafka hay ClickHouse, và không bật streaming production.
 
 Lệnh đã chạy lúc 2026-10-18 13:17 UTC:

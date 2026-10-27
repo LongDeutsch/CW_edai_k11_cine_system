@@ -1,5 +1,21 @@
 # 09 — Metadata drift và quan sát pipeline
 
+**Phạm vi.** Phase 5B, Git `4e90eda009a4498c198fa399f9c75c47919eee86`. Lệnh `governance.collect` và unittest lineage/observe. Chỉ GET và SELECT. Namespace đã thấy gồm `bronze`, `silver`, `gold` và mười namespace `it_*` liệt kê trong file.
+
+**Trong phạm vi này.** Không ALTER, không DROP, không submit Flink, không bật `CINESTREAM_ALLOW_STREAMING`. DataHub chưa nằm trong lần đọc này.
+
+**Đọc tiếp.** [Tour](00_system_tour.md) · [10 — triage](10_governance_findings_triage.md)
+
+```mermaid
+flowchart LR
+  code[inventory.py] --> collect[governance.collect]
+  rest[Iceberg REST] --> collect
+  af[Airflow] --> collect
+  marker[MinIO marker] --> collect
+  ch[ClickHouse] --> collect
+  flink[Flink overview] --> collect
+```
+
 Phase 5B đọc code tại Git `4e90eda009a4498c198fa399f9c75c47919eee86` và đối chiếu cụm bằng GET/SELECT. Không ALTER, không DROP, không submit Flink, không bật `CINESTREAM_ALLOW_STREAMING`.
 
 ```bash

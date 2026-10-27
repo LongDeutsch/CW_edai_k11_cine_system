@@ -1,5 +1,18 @@
 # 14 — Airflow DP1, DP2, DP3 trên Spark và Iceberg
 
+**Phạm vi.** Chạy lúc 2026-10-23. `make airflow-dp-it`, PASS. Namespace `it_af_dp`, ClickHouse `it_af_dp_ch`, logical date `2026-05-01`. Không ghi `bronze` / `silver` / `gold` và không ghi `cinestream_serving`.
+
+**Trong phạm vi này.** “Không cài Feast” đúng với phase A2. Feast nằm ở file 15–17. DataHub của cùng ba DAG nằm ở file 18 và 20.
+
+**Đọc tiếp.** [Tour](00_system_tour.md) · [08 — governance](08_data_governance_lineage.md)
+
+```mermaid
+flowchart LR
+  minio[MinIO it_af_dp] --> dp1[DP1 bronze]
+  dp1 --> dp2[DP2 gold va ClickHouse]
+  dp2 --> dp3[DP3 feat]
+```
+
 Chạy lúc 2026-10-23. Lệnh `make airflow-dp-it` kết thúc PASS. Log đầy đủ: `docs/proof/logs/phase_a2_airflow_e2e.json`. Ba DAG vẫn paused, schedule là None. Không ghi namespace `bronze`, `silver`, `gold`. Không ghi database `cinestream_serving`. Không bật streaming. Không cài Feast, Kubeflow, MLflow hay KServe.
 
 HEAD git vẫn `51b22ba`. Phần A2 nằm trên working tree, chưa commit.
@@ -63,6 +76,3 @@ Logical date `2026-05-04` trigger DP1 với namespace `bronze`/`silver`/`gold` v
 | `gold.feat_user_movie_stats_daily` | `-1` |
 | `gold.feat_movie_engagement_stats_daily` | `-1` |
 
-## Việc còn lại
-
-Module 1 chưa hoàn tất. Rubric R22–R27 chuyển sang VERIFIED vì có run Airflow, log task và ảnh UI. Các hạng còn lại không đổi: DataHub, Feast, Kubeflow, MLflow, KServe, streaming production, và bảng `feat_*` production vẫn trống. Một lần chạy trước đó sync ClickHouse thất bại vì container ClickHouse đã thoát mã 137. Lần PASS trong log này chạy sau khi container đó được start lại, và chỉ ghi `it_af_dp_ch`.

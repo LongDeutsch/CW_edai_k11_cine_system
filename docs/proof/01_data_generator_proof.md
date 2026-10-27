@@ -1,12 +1,19 @@
 # 01 — Data Generator Proof (scale-factor 0.1)
 
+**Phạm vi.** Lần đo scale-factor `0.1`, seed `ml-latest-small`, `--random-seed 42`, thư mục `data_generator/output/scale_0_1`. Lệnh `python -m generator.offline_generator --scale-factor 0.1 --output-dir data_generator/output/scale_0_1`.
+
+**Trong phạm vi này.** Sơ đồ dừng ở generator, Parquet local, MinIO và Kafka. Bronze, Spark và Flink nằm ở các file sau. Ước lượng khoảng 101 GB là đặc tả của scale 100, không phải số byte của lần đo này.
+
+**Đọc tiếp.** [Tour](00_system_tour.md) · [23 — scale 100](23_dataset_scale_100.md)
+
 Bằng chứng số liệu cho Layer `generator/`, đo trên artifact
 `data_generator/output/scale_0_1/` sinh từ seed
 `data_generator/data_offline/ml-latest-small/` với `--random-seed 42`.
 
-`--scale-factor 100` là đúng volume đặc tả (~101 GB Parquet: 100000 phim,
-5000000 user). Lần chạy này dùng `0.1`, tức **0.1%** volume đó, để kiểm
-tra phân phối và tiêm lỗi trước khi phóng to.
+`--scale-factor 100` trong đặc tả ước lượng khoảng 101 GB Parquet (100000 phim,
+5000000 user). Số đã đo trên đĩa là 27,527,170,951 byte, ghi ở
+[23_dataset_scale_100.md](23_dataset_scale_100.md). Lần chạy này dùng `0.1`,
+tức **0.1%** volume đặc tả, để kiểm phân phối và tiêm lỗi trước khi phóng to.
 
 ## Kiến trúc hệ thống
 
@@ -174,7 +181,11 @@ Tổng 27,803,072 byte. Spark đọc lại chính các key này bằng `s3a://ex
 
 ```bash
 make up
+- gọi Docker Compose để khởi động các dịch vụ nền tảng chạy ngầm trên máy, bao gồm minio, kafka/kafkaUI, iceberg rest catalog:
+
 make minio-sync
+- Đồng bộ/Upload dữ liệu thật lên MinIO, đẩy các file dữ liệu offline lên bucket:
+
 ```
 
 `make up` bật MinIO tại http://localhost:9000 (console http://localhost:9001, `minioadmin` / `minioadmin`).
@@ -182,6 +193,8 @@ make minio-sync
 
 ```bash
 make minio-sync-dry
+- chạy thử nghiệm để kiểm tra kết quả giả định mà không thực hiện thay đổi dữ liệu:
+
 ```
 
 ## 7. Ý nghĩa các trường do generator sinh

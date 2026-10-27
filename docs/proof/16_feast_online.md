@@ -1,5 +1,17 @@
 # 16 — Feast online và materialize theo snapshot
 
+**Phạm vi.** Chạy lúc 2026-10-25. Feast `0.67.0`. Redis `7.4-alpine`, cổng host `16379`, database `1`. Namespace Airflow `it_af_dp_b2`, ClickHouse `it_af_dp_b2_ch`. Lệnh `make feast-redis-up`, `make feast-online-it`, `make feast-airflow-it`.
+
+**Trong phạm vi này.** Không ghi `bronze` / `silver` / `gold`, không đổi `cinestream_serving`, không bật streaming production. Database 2 là file 17.
+
+**Đọc tiếp.** [Tour](00_system_tour.md) · [17 — Redis db 2](17_feast_streaming.md)
+
+```mermaid
+flowchart LR
+  ice[export snapshot] --> feast[Feast materialize]
+  feast --> redis[Redis db 1]
+```
+
 Chạy lúc 2026-10-25. Feast `0.67.0`. Redis `7.4-alpine`, cổng host `16379`, database `1`. HEAD git vẫn `51b22ba`. Phần B2 nằm trên working tree, chưa commit.
 
 Namespace `bronze`, `silver`, `gold` không bị ghi. `cinestream_serving` không đổi. Streaming production không được bật. Không có Kubeflow, MLflow, KServe, và không có số liệu model.

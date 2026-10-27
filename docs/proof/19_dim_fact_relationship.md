@@ -1,5 +1,20 @@
 # 19 — Quan hệ dim và fact
 
+**Phạm vi.** Ảnh từ metadata Iceberg trên MinIO. Lệnh `python -m storage.lakehouse.export_erd`. REST không còn namespace `gold` sau khi container catalog được tạo lại.
+
+**Trong phạm vi này.** ClickHouse `cinestream_serving` chỉ có `movie_ratings` và `movie_engagement`. Phụ lục này không cần để đi hết luồng.
+
+**Đọc tiếp.** [Tour](00_system_tour.md) · [05 — batch tăng dần](05_incremental_batch_proof.md)
+
+```mermaid
+flowchart LR
+  du[dim_users] --> fr[fact_ratings]
+  dm[dim_movies] --> fr
+  du --> fw[fact_watch_sessions]
+  dm --> fw
+  fw --> obt[obt_movie_engagement]
+```
+
 Ảnh xuất từ metadata Iceberg đang nằm trên MinIO, không phải sơ đồ Mermaid vẽ tay. Lệnh:
 
 ```bash

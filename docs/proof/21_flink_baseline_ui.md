@@ -1,5 +1,20 @@
 # 21 — Flink baseline và job đã tối ưu trên cùng JobManager
 
+**Phạm vi.** Image `cinestream-flink:1.18.1`, UI `http://localhost:18081`. Topic `it.module1.heartbeat`. Job `heartbeat-baseline` `0097d2511c7f9c26ced7aed8dbc8b1e1` và `heartbeat-optimized` `aefaa640f7e378ccb10aff8554b71bf9`.
+
+**Trong phạm vi này.** Không đụng topic `movie.playback.heartbeat`. Bốn message của lần chụp này.
+
+**Đọc tiếp.** [Tour](00_system_tour.md) · [06 — ClickHouse](06_consumption_serving_proof.md)
+
+```mermaid
+flowchart LR
+  topic[it.module1.heartbeat] --> base[heartbeat-baseline]
+  topic --> opt[heartbeat-optimized]
+  base --> iceB[it_baseline]
+  opt --> iceO[it_opt]
+  opt --> dlq[it.module1.deadletter]
+```
+
 Cụm là image multi-stage `cinestream-flink:1.18.1`. UI: `http://localhost:18081`. Hai job đọc cùng topic `it.module1.heartbeat`, không đụng topic production `movie.playback.heartbeat`.
 
 | Job | ID | Sink |

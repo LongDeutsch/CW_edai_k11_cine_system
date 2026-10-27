@@ -1,5 +1,19 @@
 # 17 — Cửa sổ Flink sang Feast offline và Redis
 
+**Phạm vi.** Chạy lúc 2026-10-25. Redis database `2`, cổng `16379`. Topic `it.p2.b3.heartbeat`. Bảng `cinestream.silver.it_p2_b3_windows`. Job `eb8f2f890e868020ffdabf28b6ad5a97`. Lệnh `make feast-streaming-it`.
+
+**Trong phạm vi này.** Không submit `movie.playback.heartbeat`. Offset và snapshot production ghi trong file được giữ nguyên. Không có Kubeflow, MLflow, KServe.
+
+**Đọc tiếp.** [Tour](00_system_tour.md) · [05 — Airflow](05_orchestration_governance_proof.md)
+
+```mermaid
+flowchart LR
+  kafka[it.p2.b3.heartbeat] --> flink[Flink windows]
+  flink --> ice[it_p2_b3_windows]
+  ice --> feast[Feast streaming]
+  feast --> redis[Redis db 2]
+```
+
 Chạy lúc 2026-10-25. Feast `0.67.0`. Redis database `2` trên cổng host `16379`. Job Flink `eb8f2f890e868020ffdabf28b6ad5a97`, tên `it_p2_b3_windows`. Log `docs/proof/logs/phase_b3_streaming_features.json`, status PASS. HEAD git vẫn `51b22ba`. Phần B3 nằm trên working tree, chưa commit.
 
 Topic là `it.p2.b3.heartbeat`. Bảng là `cinestream.silver.it_p2_b3_windows`. Không submit `movie.playback.heartbeat`. Offset production của topic đó giữ `469 / 513 / 519`. Snapshot `stg_playback_heartbeats` giữ `2913439599822163993`. Snapshot `stg_playback_windows` giữ `4894481358013256565`. Không có Kubeflow, MLflow, KServe.

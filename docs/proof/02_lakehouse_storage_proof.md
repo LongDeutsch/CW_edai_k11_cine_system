@@ -1,5 +1,11 @@
 # 02 — Lakehouse Storage Proof (Layer 2)
 
+**Phạm vi.** Layer `storage/`: DDL Iceberg, SCD2 trên 5 user, compaction mục tiêu 128MB. Lệnh `make demo-layer2`.
+
+**Trong phạm vi này.** Job Spark ghi `s3a://lakehouse/` được nhắc như lớp kế tiếp. Số đo skew và Gold của scale 0.1 nằm ở file 03.
+
+**Đọc tiếp.** [Tour](00_system_tour.md) · [19 — quan hệ dim và fact](19_dim_fact_relationship.md)
+
 Bằng chứng cho Layer `storage/`: DDL Medallion trên Apache Iceberg, SCD Type 2
 trên mẫu 5 user, và mô phỏng bin-packing gom file nhỏ về mục tiêu 128MB.
 
@@ -46,6 +52,7 @@ Lệnh tái lập trên terminal:
 
 ```bash
 make demo-layer2
+- kiểm chứng nhanh toàn bộ logic cốt lõi của Layer 2 (Lakehouse Iceberg) ngay trên Terminal bằng Python mà không cần khởi động Docker hay cụm Spark nặng nề
 ```
 
 Tương đương ba lệnh:

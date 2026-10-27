@@ -1,5 +1,20 @@
 # 10 — Phân loại finding governance
 
+**Phạm vi.** Phase 5C, cùng Git `4e90eda`. Unittest lineage, observe, triage. Log `docs/proof/logs/phase5c_triage.json`. Run production `manual__2026-10-18T06:26:38+00:00`.
+
+**Trong phạm vi này.** Không ALTER, không DROP, không sync production, không bật streaming, không điền snapshot id.
+
+**Đọc tiếp.** [Tour](00_system_tour.md) · [11 — hợp đồng schema](11_schema_contract_validation.md)
+
+```mermaid
+flowchart LR
+  a[Phase 5A inventory] --> triage[test_triage]
+  b[Phase 5B JSON] --> triage
+  rest[Iceberg REST] --> triage
+  dag[Airflow metadata] --> triage
+  triage --> findings[phase5c findings]
+```
+
 Phase 5C đọc Git `4e90eda009a4498c198fa399f9c75c47919eee86`, inventory Phase 5A, báo cáo Phase 5B, REST Iceberg và metadata DAG Airflow. Không ALTER, không DROP, không sync production, không bật streaming, không điền snapshot id.
 
 ```bash

@@ -1,5 +1,19 @@
 # Feature offline và ba pipeline Airflow
 
+**Phạm vi.** HEAD `51b22ba`, phần này chưa commit. `make spark-features-it`, warehouse `file://`, namespace `it_a1`. Mốc fixture `T = 2026-06-01`.
+
+**Trong phạm vi này.** Mục “Chưa làm” liệt kê Feast, Redis, DataHub và ảnh UI của lần viết này. Ảnh UI và run Airflow nằm ở file 14. DataHub ở file 20. Feast ở file 15–17. Bảng `feat_*` production vẫn snapshot `-1`.
+
+**Đọc tiếp.** [Tour](00_system_tour.md) · [04 — Flink](04_streaming_flink_proof.md)
+
+```mermaid
+flowchart LR
+  silver[stg_ratings va stg_watch_sessions] --> job[build_offline_features]
+  job --> feat[feat_user va feat_movie]
+  dp1[DP1] --> dp2[DP2]
+  dp2 --> dp3[DP3 feat]
+```
+
 HEAD lúc bắt đầu phase là `51b22ba`. Phần này chưa commit. Không có ảnh Airflow, không có benchmark model.
 
 ## Bài toán

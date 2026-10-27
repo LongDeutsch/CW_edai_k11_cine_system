@@ -1,5 +1,18 @@
 # 11 — Kiểm tra hợp đồng schema
 
+**Phạm vi.** Phase 5D. Warehouse test `file://`, namespace `it_schema5d` và `it_schema5d_ddl`. Không ALTER, DROP hay overwrite bảng production.
+
+**Trong phạm vi này.** Fingerprint production trước và sau giống nhau. DataHub và Feast không thuộc bài này.
+
+**Đọc tiếp.** [Tour](00_system_tour.md) · [12 — dashboard governance](12_governance_dashboard.md)
+
+```mermaid
+flowchart LR
+  ddl[DDL] --> report[schema_reports]
+  frame[DataFrame] --> report
+  report --> write[created unchanged overwritten]
+```
+
 Phase 5D không ALTER, DROP hay overwrite bảng production. Warehouse của test mới là `file://` trong thư mục tạm, namespace `it_schema5d` và `it_schema5d_ddl`.
 
 ```bash

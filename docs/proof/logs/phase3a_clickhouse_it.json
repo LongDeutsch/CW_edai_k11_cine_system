@@ -7,9 +7,9 @@
       "status": "PASS",
       "expected": "current là v3 nhưng VERSION AS OF v1 ra session 1 và 2",
       "actual": {
-        "current_snapshot": 2167781481955030222,
-        "requested_snapshot": 7980605104700335618,
-        "v3_snapshot": 2167781481955030222,
+        "current_snapshot": 2453358805397225998,
+        "requested_snapshot": 870319139788161287,
+        "v3_snapshot": 2453358805397225998,
         "rows": [
           1,
           2
@@ -26,14 +26,14 @@
           "batch_id": "it-ch-v1",
           "gold_namespace": "it_ch_gold",
           "requested_snapshots": {
-            "dim_movies": 3752457156759397824,
-            "fact_ratings": 962723629922185449,
-            "obt_movie_engagement": 7980605104700335618
+            "dim_movies": 8828492218977529424,
+            "fact_ratings": 7393064486775466604,
+            "obt_movie_engagement": 870319139788161287
           },
           "current_snapshots": {
-            "dim_movies": 1068421404189628287,
-            "fact_ratings": 4376926707125998302,
-            "obt_movie_engagement": 2167781481955030222
+            "dim_movies": 6905010391529257657,
+            "fact_ratings": 1380460852748079860,
+            "obt_movie_engagement": 2453358805397225998
           },
           "engagement_rows": 2,
           "rating_rows": 2,
@@ -41,10 +41,10 @@
             "engagement_rows": 2,
             "rating_rows": 2,
             "engagement_snapshots": [
-              7980605104700335618
+              870319139788161287
             ],
             "rating_snapshots": [
-              962723629922185449
+              7393064486775466604
             ],
             "stage_engagement_rows": 0,
             "log_rows": 1
@@ -140,18 +140,18 @@
           "batch_id": "it-ch-v1",
           "gold_namespace": "it_ch_gold",
           "requested_snapshots": {
-            "dim_movies": 3752457156759397824,
-            "fact_ratings": 962723629922185449,
-            "obt_movie_engagement": 7980605104700335618
+            "dim_movies": 8828492218977529424,
+            "fact_ratings": 7393064486775466604,
+            "obt_movie_engagement": 870319139788161287
           },
           "serving": {
             "engagement_rows": 2,
             "rating_rows": 2,
             "engagement_snapshots": [
-              7980605104700335618
+              870319139788161287
             ],
             "rating_snapshots": [
-              962723629922185449
+              7393064486775466604
             ],
             "stage_engagement_rows": 0,
             "log_rows": 1
@@ -169,14 +169,14 @@
           "batch_id": "it-ch-v2",
           "gold_namespace": "it_ch_gold",
           "requested_snapshots": {
-            "dim_movies": 3036525610520099131,
-            "fact_ratings": 4577571207977681747,
-            "obt_movie_engagement": 3555233599705444375
+            "dim_movies": 3943033162958892746,
+            "fact_ratings": 4665912548384569773,
+            "obt_movie_engagement": 3142260923693240143
           },
           "current_snapshots": {
-            "dim_movies": 1068421404189628287,
-            "fact_ratings": 4376926707125998302,
-            "obt_movie_engagement": 2167781481955030222
+            "dim_movies": 6905010391529257657,
+            "fact_ratings": 1380460852748079860,
+            "obt_movie_engagement": 2453358805397225998
           },
           "engagement_rows": 2,
           "rating_rows": 2,
@@ -184,10 +184,10 @@
             "engagement_rows": 2,
             "rating_rows": 2,
             "engagement_snapshots": [
-              3555233599705444375
+              3142260923693240143
             ],
             "rating_snapshots": [
-              4577571207977681747
+              4665912548384569773
             ],
             "stage_engagement_rows": 2,
             "log_rows": 2
@@ -260,14 +260,14 @@
           "batch_id": "it-ch-v3",
           "gold_namespace": "it_ch_gold",
           "requested_snapshots": {
-            "dim_movies": 1068421404189628287,
-            "fact_ratings": 4376926707125998302,
-            "obt_movie_engagement": 2167781481955030222
+            "dim_movies": 6905010391529257657,
+            "fact_ratings": 1380460852748079860,
+            "obt_movie_engagement": 2453358805397225998
           },
           "current_snapshots": {
-            "dim_movies": 1068421404189628287,
-            "fact_ratings": 4376926707125998302,
-            "obt_movie_engagement": 2167781481955030222
+            "dim_movies": 6905010391529257657,
+            "fact_ratings": 1380460852748079860,
+            "obt_movie_engagement": 2453358805397225998
           },
           "engagement_rows": 3,
           "rating_rows": 3,
@@ -275,10 +275,10 @@
             "engagement_rows": 3,
             "rating_rows": 3,
             "engagement_snapshots": [
-              2167781481955030222
+              2453358805397225998
             ],
             "rating_snapshots": [
-              4376926707125998302
+              1380460852748079860
             ],
             "stage_engagement_rows": 2,
             "log_rows": 3
@@ -396,16 +396,16 @@
       "expected": "snapshot production không đổi",
       "actual": {
         "before": {
-          "namespaces/silver/tables/stg_watch_sessions": 1975472564804901513,
-          "namespaces/bronze/tables/raw_users": 7954921826504091397,
-          "namespaces/silver/tables/stg_playback_heartbeats": "http:404",
-          "namespaces/silver/tables/stg_playback_windows": "http:404"
+          "namespaces/silver/tables/stg_watch_sessions": "http:404",
+          "namespaces/bronze/tables/raw_users": "http:404",
+          "namespaces/silver/tables/stg_playback_heartbeats": 2913439599822163993,
+          "namespaces/silver/tables/stg_playback_windows": 4894481358013256565
         },
         "after": {
-          "namespaces/silver/tables/stg_watch_sessions": 1975472564804901513,
-          "namespaces/bronze/tables/raw_users": 7954921826504091397,
-          "namespaces/silver/tables/stg_playback_heartbeats": "http:404",
-          "namespaces/silver/tables/stg_playback_windows": "http:404"
+          "namespaces/silver/tables/stg_watch_sessions": "http:404",
+          "namespaces/bronze/tables/raw_users": "http:404",
+          "namespaces/silver/tables/stg_playback_heartbeats": 2913439599822163993,
+          "namespaces/silver/tables/stg_playback_windows": 4894481358013256565
         },
         "unchanged": true
       }

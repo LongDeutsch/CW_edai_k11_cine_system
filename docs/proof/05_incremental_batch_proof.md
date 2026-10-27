@@ -1,5 +1,19 @@
 # 05 — Incremental batch lakehouse
 
+**Phạm vi.** `make spark-batch-it` lúc 2026-10-17 18:02:54 UTC. Warehouse `file://`, namespace `it_*`. Không ghi bảng production.
+
+**Trong phạm vi này.** `stg_playback_heartbeats` và `stg_playback_windows` không bị job này đọc hay ghi. Airflow bọc cùng job ở file 05 orchestration.
+
+**Đọc tiếp.** [Tour](00_system_tour.md) · [03 — Spark](03_spark_optimizations_proof.md)
+
+```mermaid
+flowchart LR
+  raw[Parquet] --> bronze[Bronze append]
+  bronze --> silver[Silver]
+  silver --> dim[dim SCD2]
+  silver --> fact[fact va OBT]
+```
+
 Raw Parquet → Bronze Iceberg → Silver → Gold. Test chạy trên catalog Hadoop `file://`, namespace `it_*`. Không ghi bảng production.
 
 Lệnh:

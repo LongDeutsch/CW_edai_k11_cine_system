@@ -1,6 +1,8 @@
 {
-  "status": "PASS",
-  "failed": [],
+  "status": "FAIL",
+  "failed": [
+    "DAG nối sync sau publish"
+  ],
   "cases": [
     {
       "name": "tham số sync Airflow",
@@ -64,14 +66,14 @@
           "batch_id": "it-api-v1",
           "gold_namespace": "it_api_gold",
           "requested_snapshots": {
-            "dim_movies": 4409700040202515195,
-            "fact_ratings": 7950205731285171810,
-            "obt_movie_engagement": 2498171074224000699
+            "dim_movies": 7548656765062861989,
+            "fact_ratings": 4828010031204493300,
+            "obt_movie_engagement": 3325436567460806009
           },
           "current_snapshots": {
-            "dim_movies": 8629147992333052187,
-            "fact_ratings": 6267605782806107594,
-            "obt_movie_engagement": 7769091751642152589
+            "dim_movies": 6403764371079621860,
+            "fact_ratings": 1623584209233714523,
+            "obt_movie_engagement": 9192759200747208436
           },
           "engagement_rows": 2,
           "rating_rows": 2,
@@ -79,20 +81,20 @@
             "engagement_rows": 2,
             "rating_rows": 2,
             "engagement_snapshots": [
-              2498171074224000699
+              3325436567460806009
             ],
             "rating_snapshots": [
-              7950205731285171810
+              4828010031204493300
             ],
             "stage_engagement_rows": 0,
             "log_rows": 1
           }
         },
         "overview": {
-          "engagement_snapshot_id": 2498171074224000699,
-          "ratings_snapshot_id": 7950205731285171810,
+          "engagement_snapshot_id": 3325436567460806009,
+          "ratings_snapshot_id": 4828010031204493300,
           "batch_id": "it-api-v1",
-          "published_at": "2026-10-18 08:07:06.527",
+          "published_at": "2026-10-27 13:56:18.197",
           "session_count": 2,
           "total_watch_seconds": 90,
           "watched_movie_count": 2,
@@ -101,7 +103,7 @@
           "mean_rating": 4.5
         },
         "rated": {
-          "ratings_snapshot_id": 7950205731285171810,
+          "ratings_snapshot_id": 4828010031204493300,
           "items": [
             {
               "movie_id": 20,
@@ -109,7 +111,7 @@
               "content_rating": "R",
               "rating_count": 1,
               "avg_rating": 5.0,
-              "iceberg_snapshot_id": 7950205731285171810,
+              "iceberg_snapshot_id": 4828010031204493300,
               "batch_id": "it-api-v1"
             },
             {
@@ -118,27 +120,27 @@
               "content_rating": "PG",
               "rating_count": 1,
               "avg_rating": 4.0,
-              "iceberg_snapshot_id": 7950205731285171810,
+              "iceberg_snapshot_id": 4828010031204493300,
               "batch_id": "it-api-v1"
             }
           ]
         },
         "watched": {
-          "engagement_snapshot_id": 2498171074224000699,
+          "engagement_snapshot_id": 3325436567460806009,
           "items": [
             {
               "movie_id": 10,
               "title": "A",
               "watch_seconds": 60,
               "session_count": 1,
-              "iceberg_snapshot_id": 2498171074224000699
+              "iceberg_snapshot_id": 3325436567460806009
             },
             {
               "movie_id": 20,
               "title": "B",
               "watch_seconds": 30,
               "session_count": 1,
-              "iceberg_snapshot_id": 2498171074224000699
+              "iceberg_snapshot_id": 3325436567460806009
             }
           ]
         },
@@ -154,11 +156,11 @@
       "expected": "đo 30 GET /analytics/overview trên localhost",
       "actual": {
         "requests": 30,
-        "min_ms": 9.096,
-        "p50_ms": 11.065,
-        "max_ms": 18.679,
-        "mean_ms": 11.079,
-        "published_at": "2026-10-18 08:07:06.527"
+        "min_ms": 9.409,
+        "p50_ms": 10.483,
+        "max_ms": 43.838,
+        "mean_ms": 11.579,
+        "published_at": "2026-10-27 13:56:18.197"
       }
     },
     {
@@ -171,28 +173,28 @@
           "batch_id": "it-api-v1",
           "gold_namespace": "it_api_gold",
           "requested_snapshots": {
-            "dim_movies": 4409700040202515195,
-            "fact_ratings": 7950205731285171810,
-            "obt_movie_engagement": 2498171074224000699
+            "dim_movies": 7548656765062861989,
+            "fact_ratings": 4828010031204493300,
+            "obt_movie_engagement": 3325436567460806009
           },
           "serving": {
             "engagement_rows": 2,
             "rating_rows": 2,
             "engagement_snapshots": [
-              2498171074224000699
+              3325436567460806009
             ],
             "rating_snapshots": [
-              7950205731285171810
+              4828010031204493300
             ],
             "stage_engagement_rows": 0,
             "log_rows": 1
           }
         },
         "before": {
-          "engagement_snapshot_id": 2498171074224000699,
-          "ratings_snapshot_id": 7950205731285171810,
+          "engagement_snapshot_id": 3325436567460806009,
+          "ratings_snapshot_id": 4828010031204493300,
           "batch_id": "it-api-v1",
-          "published_at": "2026-10-18 08:07:06.527",
+          "published_at": "2026-10-27 13:56:18.197",
           "session_count": 2,
           "total_watch_seconds": 90,
           "watched_movie_count": 2,
@@ -201,10 +203,10 @@
           "mean_rating": 4.5
         },
         "after": {
-          "engagement_snapshot_id": 2498171074224000699,
-          "ratings_snapshot_id": 7950205731285171810,
+          "engagement_snapshot_id": 3325436567460806009,
+          "ratings_snapshot_id": 4828010031204493300,
           "batch_id": "it-api-v1",
-          "published_at": "2026-10-18 08:07:06.527",
+          "published_at": "2026-10-27 13:56:18.197",
           "session_count": 2,
           "total_watch_seconds": 90,
           "watched_movie_count": 2,
@@ -220,27 +222,27 @@
       "status": "PASS",
       "expected": "response 200 chỉ thấy một cặp snapshot đã publish; 409 nếu hai bảng lệch",
       "actual": {
-        "reads": 273,
-        "consistent_200": 273,
+        "reads": 293,
+        "consistent_200": 293,
         "conflict_409": 0,
         "unavailable_503": 0,
         "other": [],
         "watched": {
-          "engagement_snapshot_id": 5255351261980842741,
+          "engagement_snapshot_id": 4726663041970486679,
           "items": [
             {
               "movie_id": 10,
               "title": "A",
               "watch_seconds": 60,
               "session_count": 1,
-              "iceberg_snapshot_id": 5255351261980842741
+              "iceberg_snapshot_id": 4726663041970486679
             },
             {
               "movie_id": 30,
               "title": "C",
               "watch_seconds": 10,
               "session_count": 1,
-              "iceberg_snapshot_id": 5255351261980842741
+              "iceberg_snapshot_id": 4726663041970486679
             }
           ]
         }
@@ -253,10 +255,10 @@
       "actual": {
         "failed": "dừng giữa bulk load",
         "during": {
-          "engagement_snapshot_id": 5255351261980842741,
-          "ratings_snapshot_id": 5800640016169927666,
+          "engagement_snapshot_id": 4726663041970486679,
+          "ratings_snapshot_id": 2410898334917370067,
           "batch_id": "it-api-v2",
-          "published_at": "2026-10-18 08:07:08.187",
+          "published_at": "2026-10-27 13:56:20.030",
           "session_count": 2,
           "total_watch_seconds": 70,
           "watched_movie_count": 2,
@@ -266,10 +268,10 @@
         },
         "stage_rows": 1,
         "after": {
-          "engagement_snapshot_id": 7769091751642152589,
-          "ratings_snapshot_id": 6267605782806107594,
+          "engagement_snapshot_id": 9192759200747208436,
+          "ratings_snapshot_id": 1623584209233714523,
           "batch_id": "it-api-v3",
-          "published_at": "2026-10-18 08:07:09.685",
+          "published_at": "2026-10-27 13:56:21.519",
           "session_count": 3,
           "total_watch_seconds": 75,
           "watched_movie_count": 3,
@@ -295,10 +297,10 @@
           "it-api-badsnap": "cinestream.it_api_gold.obt_movie_engagement không có snapshot 1"
         },
         "overview": {
-          "engagement_snapshot_id": 7769091751642152589,
-          "ratings_snapshot_id": 6267605782806107594,
+          "engagement_snapshot_id": 9192759200747208436,
+          "ratings_snapshot_id": 1623584209233714523,
           "batch_id": "it-api-v3",
-          "published_at": "2026-10-18 08:07:09.685",
+          "published_at": "2026-10-27 13:56:21.519",
           "session_count": 3,
           "total_watch_seconds": 75,
           "watched_movie_count": 3,
@@ -324,14 +326,14 @@
           "batch_id": "it-api-v3",
           "gold_namespace": "it_api_gold",
           "requested_snapshots": {
-            "dim_movies": 8629147992333052187,
-            "fact_ratings": 6267605782806107594,
-            "obt_movie_engagement": 7769091751642152589
+            "dim_movies": 6403764371079621860,
+            "fact_ratings": 1623584209233714523,
+            "obt_movie_engagement": 9192759200747208436
           },
           "current_snapshots": {
-            "dim_movies": 8629147992333052187,
-            "fact_ratings": 6267605782806107594,
-            "obt_movie_engagement": 7769091751642152589
+            "dim_movies": 6403764371079621860,
+            "fact_ratings": 1623584209233714523,
+            "obt_movie_engagement": 9192759200747208436
           },
           "engagement_rows": 3,
           "rating_rows": 3,
@@ -339,20 +341,20 @@
             "engagement_rows": 3,
             "rating_rows": 3,
             "engagement_snapshots": [
-              7769091751642152589
+              9192759200747208436
             ],
             "rating_snapshots": [
-              6267605782806107594
+              1623584209233714523
             ],
             "stage_engagement_rows": 3,
             "log_rows": 4
           }
         },
         "after": {
-          "engagement_snapshot_id": 7769091751642152589,
-          "ratings_snapshot_id": 6267605782806107594,
+          "engagement_snapshot_id": 9192759200747208436,
+          "ratings_snapshot_id": 1623584209233714523,
           "batch_id": "it-api-v3",
-          "published_at": "2026-10-18 08:07:10.728",
+          "published_at": "2026-10-27 13:56:22.775",
           "session_count": 3,
           "total_watch_seconds": 75,
           "watched_movie_count": 3,
@@ -364,10 +366,12 @@
     },
     {
       "name": "DAG nối sync sau publish",
-      "status": "PASS",
+      "status": "FAIL",
       "expected": "publish_success rồi sync_clickhouse, retry 1",
       "actual": {
-        "import_errors": {},
+        "import_errors": {
+          "/opt/cinestream/orchestration/dags/cinestream_daily_batch_lakehouse.py": "AirflowDagDuplicatedIdException: Ignoring DAG cinestream_daily_batch_lakehouse from /opt/cinestream/orchestration/dags/cinestream_daily_batch_lakehouse.py - also found in /opt/cinestream/orchestration/dags/cinestream_dp4_materialize_online.py"
+        },
         "downstream": {
           "check_source_ready": [
             "spark_raw_to_bronze"
@@ -391,7 +395,7 @@
         },
         "retries": 1,
         "schedule": "None",
-        "clickhouse_http": ""
+        "clickhouse_http": "http://clickhouse:8123"
       }
     },
     {
@@ -400,16 +404,16 @@
       "expected": "snapshot production không đổi",
       "actual": {
         "before": {
-          "namespaces/silver/tables/stg_watch_sessions": 1975472564804901513,
-          "namespaces/bronze/tables/raw_users": 7954921826504091397,
-          "namespaces/silver/tables/stg_playback_heartbeats": "http:404",
-          "namespaces/silver/tables/stg_playback_windows": "http:404"
+          "namespaces/silver/tables/stg_watch_sessions": "http:404",
+          "namespaces/bronze/tables/raw_users": "http:404",
+          "namespaces/silver/tables/stg_playback_heartbeats": 2913439599822163993,
+          "namespaces/silver/tables/stg_playback_windows": 4894481358013256565
         },
         "after": {
-          "namespaces/silver/tables/stg_watch_sessions": 1975472564804901513,
-          "namespaces/bronze/tables/raw_users": 7954921826504091397,
-          "namespaces/silver/tables/stg_playback_heartbeats": "http:404",
-          "namespaces/silver/tables/stg_playback_windows": "http:404"
+          "namespaces/silver/tables/stg_watch_sessions": "http:404",
+          "namespaces/bronze/tables/raw_users": "http:404",
+          "namespaces/silver/tables/stg_playback_heartbeats": 2913439599822163993,
+          "namespaces/silver/tables/stg_playback_windows": 4894481358013256565
         },
         "unchanged": true
       }

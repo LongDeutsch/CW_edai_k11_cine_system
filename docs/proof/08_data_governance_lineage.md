@@ -1,6 +1,12 @@
 # 08 — Data governance và lineage
 
-Inventory này đọc code tại Git `4e90eda` và đối chiếu bằng lệnh chỉ đọc. Không có DataHub, không ghi Iceberg, Kafka hay ClickHouse.
+**Phạm vi.** Đọc code tại Git `4e90eda`. Lệnh `make governance-check` và `python -m governance.audit_readonly`. Không ghi Iceberg, Kafka hay ClickHouse.
+
+**Trong phạm vi này.** Câu không có DataHub đúng với commit `4e90eda`. Bản chiếu DataHub nằm ở file 20. Inventory trong `governance/inventory.py` vẫn là catalog gốc.
+
+**Đọc tiếp.** [Tour](00_system_tour.md) · [09 — quan sát](09_governance_observability.md)
+
+Inventory này đọc code tại Git `4e90eda` và đối chiếu bằng lệnh chỉ đọc. Câu “không có DataHub” đúng với commit đó. Source hiện có `governance/datahub/emit.py` và `infra/compose/docker-compose.datahub.yml`. Catalog gốc vẫn là `governance/inventory.py`. DataHub chỉ là bản chiếu, ghi ở [20_datahub_lineage.md](20_datahub_lineage.md). Lần đọc này không ghi Iceberg, Kafka hay ClickHouse.
 
 ```bash
 make governance-check

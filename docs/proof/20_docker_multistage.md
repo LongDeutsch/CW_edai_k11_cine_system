@@ -1,8 +1,17 @@
 # 20 — Kích thước image trước và sau multi-stage
 
-Bốn Dockerfile (`infra/docker/Dockerfile.spark`, `Dockerfile.flink`, `Dockerfile.airflow`, `Dockerfile.lakehouse-ui`) tách stage `builder` và image chạy. Stage builder giữ `apt`, `curl`, JDK và gcc. Image chạy chỉ copy JAR, Python và code.
+**Phạm vi.** Một lần `docker image inspect` trường `Size`, cùng cột `docker images` trên máy đó. Bốn image: Spark, Flink, Airflow, Lakehouse UI. Tag `:single-stage` và `:multi-stage`.
 
-Số byte là `docker image inspect --format '{{.Size}}'`. Cột `docker images` là SIZE mà lệnh in ra trên máy này. Không dùng mức giảm 88% đã viết trong README trước đó, vì Dockerfile lúc ấy không tương ứng.
+**Trong phạm vi này.** Flink sau multi-stage trên lần này là 1,271,375,322 byte, cột `docker images` 3.15GB. Lần inspect sau đo Flink 1,271,104,760 byte. Hai lần inspect. Cách đọc `Size` và layer dùng chung nằm ở file 22.
+
+**Đọc tiếp.** [Tour](00_system_tour.md) · [22 — Size và layer](22_multistage_images.md)
+
+```mermaid
+flowchart LR
+  builder[Stage builder] --> run[Image chay]
+```
+
+Mạch đọc nằm ở [22_multistage_images.md](22_multistage_images.md). Bảng dưới giữ cột `docker images` của lần đo này.
 
 | Image | Trước (`:single-stage`) | Sau (`:multi-stage`) | `docker images` trước | `docker images` sau |
 |---|---:|---:|---:|---:|
@@ -10,11 +19,3 @@ Số byte là `docker image inspect --format '{{.Size}}'`. Cột `docker images`
 | Flink | 1,814,918,517 | 1,271,375,322 | 4.55GB | 3.15GB |
 | Airflow | 1,195,486,812 | 1,202,369,880 | 3.91GB | 3.95GB |
 | Lakehouse UI | 43,551,511 | 43,551,518 | 203MB | 203MB |
-
-Spark giảm 1,355,078 byte. Base `apache/spark` chiếm gần hết image. Runtime không còn `curl` và cache apt.
-
-Flink giảm 543,543,195 byte. Runtime chỉ cài `python3` và `python3-pkg-resources`. JAR Iceberg/Hadoop, RocksDB và `apache-flink` được copy từ builder bằng `COPY --chown`, không có layer `chown -R` thứ hai. `gcc`, JDK và `curl` ở lại builder.
-
-Airflow tăng 6,883,068 byte. Runtime bỏ `curl` nhưng cài `acryl-datahub==0.14.1` để task `publish_datahub` có package. JRE và bản Spark đã copy từ stage `spark-fetch`.
-
-Lakehouse UI lệch 7 byte. Image gốc đã là `python:3.12-slim` chỉ copy `storage/`, nên stage builder không bỏ thêm gói nào.

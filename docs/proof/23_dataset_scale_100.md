@@ -1,5 +1,17 @@
 # 23 — Dataset offline scale-factor 100
 
+**Phạm vi.** `python -m generator.offline_generator --scale-factor 100 --allow-large-scale`. Listing MinIO ngày 2026-10-26, bucket `s3://external-source-lake/`.
+
+**Trong phạm vi này.** 27,527,170,951 byte là số đã đo. Ước lượng 101 GB trong file 01 là đặc tả, không phải lần đo này. 47 object `it-airflow` có từ trước, không thuộc lần sinh.
+
+**Đọc tiếp.** [Tour](00_system_tour.md) · [02 — lakehouse](02_lakehouse_storage_proof.md)
+
+```mermaid
+flowchart LR
+  gen[offline_generator scale 100] --> disk["Parquet 27527170951 byte"]
+  disk --> minio[MinIO external-source-lake]
+```
+
 Sinh bằng `python -m generator.offline_generator --scale-factor 100 --allow-large-scale`.
 Cùng Zipf, Pareto, Beta, duplicate 2.5% và schema evolution từ partition 45.
 Đường chunk chỉ đổi cách ghi khi số dòng watch vượt bộ nhớ một mảng.

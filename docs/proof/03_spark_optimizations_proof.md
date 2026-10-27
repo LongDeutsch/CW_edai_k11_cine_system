@@ -1,5 +1,11 @@
 # 03 — Spark Batch Proof (Layer 3)
 
+**Phạm vi.** Layer 3 trên `data_generator/output/scale_0_1` (256410 ratings, 100 phim), Spark 3.5.5, `local[*]`. Lệnh `make spark-baseline`, `make spark-optimized`, `make spark-aqe`, `make spark-build-gold`.
+
+**Trong phạm vi này.** Airflow, ClickHouse, Feast và DataHub nằm ở các chặng sau. Sơ đồ dưới đây là ba lớp generator, DDL và Spark.
+
+**Đọc tiếp.** [Tour](00_system_tour.md) · [13 — feature offline](13_offline_features.md)
+
 Bằng chứng thực nghiệm cho Layer 3 `transformation/batch/`: 
 1. **Khử lệch dữ liệu (Data Skew):** So sánh đối chuẩn giữa **Baseline** (chưa tối ưu), **Salting Key** (thêm muối 16 bucket) và **Spark AQE** (Adaptive Query Execution Skew Join tự động).
 2. **Schema Evolution:** Kiểm chứng `mergeSchema=true` bảo toàn 3 cột tiến hóa mới (`content_rating`, `hdr_format`, `audio_spatial`).

@@ -1,5 +1,18 @@
 # 12 — Governance dashboard
 
+**Phạm vi.** Phase 5E. `git rev-parse HEAD` lúc đọc live là `f089b7c9d5de0808396d0597d7e3fb9851415eb2`. Code phase này trên working tree. API `127.0.0.1:18083`, trang `http://127.0.0.1:18084/governance.html`.
+
+**Trong phạm vi này.** Câu không thêm DataHub hay Feast đúng với phase 5E. DataHub là file 18 và 20. Feast là file 15–17.
+
+**Đọc tiếp.** [Tour](00_system_tour.md) · [18 — emit IT](18_datahub_lineage.md)
+
+```mermaid
+flowchart LR
+  inv[inventory] --> api[FastAPI governance]
+  marker[MinIO marker] --> api
+  api --> page[governance.html]
+```
+
 Phase 5E thêm API chỉ đọc và một trang lineage trên dashboard hiện có. Không ALTER, không ghi marker, không bật streaming, không thêm DataHub hay Feast.
 
 `git rev-parse HEAD` lúc đọc live là `f089b7c9d5de0808396d0597d7e3fb9851415eb2`. Code của phase này nằm trên working tree, chưa nằm trong commit đó. API không đọc `docs/proof/logs/phase5a`–`phase5d` để kết luận sức khỏe.
@@ -84,6 +97,4 @@ Click một dòng catalog chọn dataset đó, tô dòng và nút, rồi vẽ l�
 
 Lần đọc lúc kiểm tra này là `2026-10-23T07:30:10Z`: health `read`, batch pipeline `disabled`, freshness `published_without_snapshot_pins`, streaming `disabled`, serving `not_run`, 111 dataset. `fact_ratings` snapshot `1324146680817977793`, 57665 dòng. `fact_watch_sessions` snapshot `4699535929651689042`, 662830 dòng, không có downstream và không có cạnh tới `obt_movie_engagement`. Playback `expected_absent` với pipeline `disabled`. `integration.resources` và feature table không có cạnh. Log `phase5e_governance_live.json` là lần đọc khi Docker tắt, không phải sức khỏe của lần này.
 
-## Giới hạn
 
-Phase dừng ở dashboard. Drift production đã ghi ở phase 5D không được sửa. Bảng `it_*` chỉ được đếm tên, không tải metadata từng bảng. Lần đọc đầu, khi Docker tắt, nằm trong `phase5e_governance_live.json` và không được dùng làm sức khỏe hiện tại.

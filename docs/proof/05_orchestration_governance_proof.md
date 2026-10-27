@@ -1,15 +1,27 @@
 # 05 — Điều phối Airflow và governance
 
+**Phạm vi.** `make airflow-up` và `make airflow-it` lúc 2026-10-18 03:07:54 UTC. Namespace `it_af_missing`, `it_af_contract`, `it_af_ok`, `it_af_retry`, `it_af_backfill`, rồi `it_af_badts`, `it_af_real`, `it_af_real_retry`. Không ghi `bronze` / `silver` / `gold`.
+
+**Trong phạm vi này.** Câu chưa có DataHub, Feast, ClickHouse hay lớp serving đúng với ngày 2026-10-18. ClickHouse có từ file 06, Feast từ file 15–17, DataHub từ file 20.
+
+**Đọc tiếp.** [Tour](00_system_tour.md) · [14 — DP1 đến DP3](14_airflow_dp_e2e.md)
+
 Airflow lập lịch, chờ nguồn, gửi `spark-submit` sang cụm Spark có sẵn, rồi ghi dấu publish. Phép biến đổi Bronze → Silver → Gold vẫn là job Phase 1. Airflow không tự tính lại fact trong worker.
 
 Lệnh đã chạy lúc 2026-10-18 03:07:54 UTC:
 
 ```bash
 make airflow-up
+- Khởi động toàn bộ cụm điều phối Airflow
+
 make airflow-it
+- Kiểm tra cơ chế Batch Identity ~ chống chạy trùng lặp: nếu cùng 1 file/batch mà chạy lại thì Airflow phải từ chối ghi đè
+
+make airflow-dp-it
 ```
 
 `make airflow-it` gồm 4 test fingerprint nguồn và 9 case DAG. Kết quả `PASS`. Log: `docs/proof/logs/phase2_airflow_it.json`.
+- kiểm thử End-to-End (E2E) cấp cao nhất của hệ thống điều phối, kiểm tra sự phối hợp nhịp nhàng giữa 3 pipeline độc lập, Chạy trên namespace tạm it_af_dp, hoàn toàn không đụng đến dữ liệu Production.
 
 UI: http://localhost:18082, user `airflow`. Ảnh màn hình không chụp được vì form đăng nhập chặn điền mật khẩu tự động. Bằng chứng là log JSON và các `dag_run_id` bên dưới.
 
@@ -119,7 +131,7 @@ Ingest ghi quarantine rồi raise `QualityThresholdExceeded` trước khi append
 - Namespace `bronze`, `silver`, `gold` cần `CINESTREAM_ALLOW_PRODUCTION=true` hoặc conf `allow_production=true`. Khi biến môi trường còn `false`, DAG không có lịch nên unpause không tạo run production.
 - Bật DAG không tự backfill lịch sử. Backfill là trigger tay với logical date chưa dùng.
 - File parquet mới, dù cùng nội dung, là file identity mới và sẽ append. Rerun an toàn khi object MinIO không đổi.
-- Không có DataHub, Feast, ClickHouse hay lớp serving. Catalog SQLite của Iceberg REST nằm trong filesystem container, không có volume riêng.
+- Lần `make airflow-it` ngày 2026-10-18 chưa có DataHub, Feast, ClickHouse hay lớp serving. ClickHouse bắt đầu ở [06_consumption_serving_proof.md](06_consumption_serving_proof.md), Feast ở [15_feast_offline.md](15_feast_offline.md), [16_feast_online.md](16_feast_online.md) và [17_feast_streaming.md](17_feast_streaming.md), DataHub ở [20_datahub_lineage.md](20_datahub_lineage.md). Catalog SQLite của Iceberg REST nằm trong filesystem container, không có volume riêng.
 - Driver Spark trong scheduler dùng `--driver-memory 1g`. Một retry ngay sau ingest đủ nguồn thật có thể bị SIGKILL, exit `-9`. Lần chạy sau bỏ qua file đã commit theo `đường dẫn|kích thước|mtime`, không nhân đôi dòng.
 
 ## Sẵn sàng production
