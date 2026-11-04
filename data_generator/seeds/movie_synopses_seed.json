@@ -1,0 +1,1484 @@
+[
+  {
+    "movie_id": 1,
+    "title": "Toy Story (1995)",
+    "overview": "Led by Woody, Andy's toys live happily when humans aren't around. However, Woody's position as favorite toy is threatened when Andy gets Buzz Lightyear, an arrogant space ranger unaware he is a toy.",
+    "genres": "Adventure|Animation|Children|Comedy|Fantasy"
+  },
+  {
+    "movie_id": 2,
+    "title": "Jumanji (1995)",
+    "overview": "When two siblings discover and play an enchanted magical board game, they release a man trapped inside for decades and unleash jungle dangers that can only be stopped by finishing the game.",
+    "genres": "Adventure|Children|Fantasy"
+  },
+  {
+    "movie_id": 3,
+    "title": "Grumpier Old Men (1995)",
+    "overview": "A family feud between two cantankerous next-door neighbors and fishing buddies reaches new heights when an alluring Italian woman moves across the street to open a restaurant.",
+    "genres": "Comedy|Romance"
+  },
+  {
+    "movie_id": 4,
+    "title": "Waiting to Exhale (1995)",
+    "overview": "Four African-American female friends navigate love, career, and marital heartbreak while leaning on each other for emotional support as they search for true companionship.",
+    "genres": "Comedy|Drama|Romance"
+  },
+  {
+    "movie_id": 5,
+    "title": "Father of the Bride Part II (1995)",
+    "overview": "George Banks finds his comfortable middle-aged life turned upside down when both his newly married daughter and his middle-aged wife announce that they are pregnant at the same time.",
+    "genres": "Comedy"
+  },
+  {
+    "movie_id": 6,
+    "title": "Heat (1995)",
+    "overview": "A master criminal and his disciplined crew prepare for one final massive heist on a bank, pursued relentlessly by a dedicated, obsessive LAPD robbery-homicide detective.",
+    "genres": "Action|Crime|Thriller"
+  },
+  {
+    "movie_id": 7,
+    "title": "Sabrina (1995)",
+    "overview": "The daughter of a wealthy family's chauffeur returns from Paris transformed into an elegant woman, attracting the romantic attention of both the playboy younger son and the workaholic older brother.",
+    "genres": "Comedy|Romance"
+  },
+  {
+    "movie_id": 8,
+    "title": "Tom and Huck (1995)",
+    "overview": "A mischievous young boy and his rebellious friend witness a graveyard murder by a vengeful thief, forcing them to embark on a dangerous adventure down the Mississippi River.",
+    "genres": "Adventure|Children"
+  },
+  {
+    "movie_id": 9,
+    "title": "Sudden Death (1995)",
+    "overview": "A former firefighter turned stadium security officer must rescue his children and stop terrorists who have taken the Vice President hostage during the Stanley Cup Finals.",
+    "genres": "Action"
+  },
+  {
+    "movie_id": 10,
+    "title": "GoldenEye (1995)",
+    "overview": "James Bond battles a former ally and rogue MI6 agent who has hijacked the GoldenEye satellite weapon with plans to cause economic devastation to the global financial system.",
+    "genres": "Action|Adventure|Thriller"
+  },
+  {
+    "movie_id": 11,
+    "title": "American President, The (1995)",
+    "overview": "A widowed US President pursuing re-election falls in love with an environmental lobbyist, sparking a fierce political backlash from his conservative opponents.",
+    "genres": "Comedy|Drama|Romance"
+  },
+  {
+    "movie_id": 12,
+    "title": "Dracula: Dead and Loving It (1995)",
+    "overview": "The fumbling, eccentric vampire count Dracula moves to Victorian London to buy an abbey, causing comical chaos until vampire hunter Dr. Abraham Van Helsing intervenes.",
+    "genres": "Comedy|Horror"
+  },
+  {
+    "movie_id": 13,
+    "title": "Balto (1995)",
+    "overview": "An outcast wolf-dog hybrid leads a desperate dogsled team across harsh Alaskan blizzard terrain to deliver lifesaving diphtheria antitoxin medicine to children in Nome.",
+    "genres": "Adventure|Animation|Children"
+  },
+  {
+    "movie_id": 14,
+    "title": "Nixon (1995)",
+    "overview": "A complex biographical dramatization of the rise and disgraceful fall of Richard Nixon, capturing his paranoia, political triumphs, and the Watergate scandal.",
+    "genres": "Drama"
+  },
+  {
+    "movie_id": 15,
+    "title": "Cutthroat Island (1995)",
+    "overview": "A fearless female pirate and her educated Latin-translating companion embark on a high-seas race against her ruthless uncle to find a legendary treasure island.",
+    "genres": "Action|Adventure|Romance"
+  },
+  {
+    "movie_id": 16,
+    "title": "Casino (1995)",
+    "overview": "A meticulous sports handicapper is chosen by the Chicago mob to oversee operations at the Tangiers Casino in Las Vegas, but his volatile enforcer friend and troubled wife threaten to ruin everything.",
+    "genres": "Crime|Drama"
+  },
+  {
+    "movie_id": 17,
+    "title": "Sense and Sensibility (1995)",
+    "overview": "Two impoverished sisters must navigate the rigid social expectations, financial pressures, and romantic complications of 19th-century English society after their father's death.",
+    "genres": "Drama|Romance"
+  },
+  {
+    "movie_id": 18,
+    "title": "Four Rooms (1995)",
+    "overview": "A frantic hotel bellhop endures four bizarre, increasingly chaotic encounters with eccentric guests across four separate rooms on New Year's Eve.",
+    "genres": "Comedy"
+  },
+  {
+    "movie_id": 19,
+    "title": "Ace Ventura: When Nature Calls (1995)",
+    "overview": "The zany pet detective Ace Ventura travels to Africa to find a sacred white bat belonging to an indigenous tribe before rival factions trigger an all-out war.",
+    "genres": "Comedy"
+  },
+  {
+    "movie_id": 20,
+    "title": "Money Train (1995)",
+    "overview": "Two transit cop foster brothers decide to pull off an ambitious robbery of a high-tech armored train carrying Subway transit revenues on New Year's Eve.",
+    "genres": "Action|Comedy|Crime|Drama|Thriller"
+  },
+  {
+    "movie_id": 21,
+    "title": "Get Shorty (1995)",
+    "overview": "A smooth-talking Miami loan shark travels to Hollywood to collect a debt and discovers that the cutthroat film industry bears surprising similarities to the mob world.",
+    "genres": "Comedy|Crime|Thriller"
+  },
+  {
+    "movie_id": 22,
+    "title": "Copycat (1995)",
+    "overview": "An agoraphobic criminal psychologist and an ambitious homicide detective join forces to track down an elusive serial killer who meticulously copies famous past murders.",
+    "genres": "Crime|Drama|Horror|Mystery|Thriller"
+  },
+  {
+    "movie_id": 23,
+    "title": "Assassins (1995)",
+    "overview": "A seasoned veteran hitman finds himself targeted by an arrogant, tech-savvy rival assassin while trying to protect an innocent female surveillance expert.",
+    "genres": "Action|Crime|Thriller"
+  },
+  {
+    "movie_id": 24,
+    "title": "Powder (1995)",
+    "overview": "An albino youth with mysterious electromagnetic abilities and intellect is brought out of isolation into a rural town where prejudice and awe collide.",
+    "genres": "Drama|Sci-Fi"
+  },
+  {
+    "movie_id": 25,
+    "title": "Leaving Las Vegas (1995)",
+    "overview": "A fictionalized account of the passionate, doomed romance between actress Elizabeth Taylor and British actor Richard Burton amid the filming of Cleopatra.",
+    "genres": "Drama|Romance"
+  },
+  {
+    "movie_id": 26,
+    "title": "Othello (1995)",
+    "overview": "A tragic Shakespearean drama transposed to a stylized military setting, recounting the downfall of an honorable general deceived by an envious confidant.",
+    "genres": "Drama"
+  },
+  {
+    "movie_id": 27,
+    "title": "Now and Then (1995)",
+    "overview": "An eccentric, optimistic middle-aged American travels to England to take up an inherited peerage, bewildering high society with his earnest enthusiasm.",
+    "genres": "Comedy|Drama"
+  },
+  {
+    "movie_id": 28,
+    "title": "Persuasion (1995)",
+    "overview": "The artistic and romantic struggles of a gifted 19th-century author living in Victorian England, balancing societal expectations with fierce personal ambition.",
+    "genres": "Drama|Romance"
+  },
+  {
+    "movie_id": 29,
+    "title": "City of Lost Children, The (Cité des enfants perdus, La) (1995)",
+    "overview": "In a surreal dystopian future, an eccentric scientist kidnaps children to steal their dreams, prompting a circus strongman and an orphan girl to mount a rescue.",
+    "genres": "Adventure|Drama|Fantasy|Sci-Fi"
+  },
+  {
+    "movie_id": 30,
+    "title": "Shanghai Triad (Yao a yao yao dao waipo qiao) (1995)",
+    "overview": "An elderly Chinese woman recounts her bittersweet journey of emigration, arranged marriage, and family resilience across generations to her modern daughters.",
+    "genres": "Drama"
+  },
+  {
+    "movie_id": 31,
+    "title": "Dangerous Minds (1995)",
+    "overview": "A young inner-city teacher inspires his cynical, underprivileged students through the power of creative writing and empathy, defying school bureaucracy.",
+    "genres": "Drama"
+  },
+  {
+    "movie_id": 32,
+    "title": "Twelve Monkeys (a.k.a. 12 Monkeys) (1995)",
+    "overview": "In a post-apocalyptic world devastated by a deadly virus, a prisoner travels back in time to locate the biological outbreak's origin, haunted by recurring childhood memories.",
+    "genres": "Mystery|Sci-Fi|Thriller"
+  },
+  {
+    "movie_id": 34,
+    "title": "Babe (1995)",
+    "overview": "An innocent, orphaned piglet raised by sheepdogs learns to herd sheep with politeness, winning the affection of his kindly farmer and a chance at the county championship.",
+    "genres": "Children|Drama"
+  },
+  {
+    "movie_id": 36,
+    "title": "Dead Man Walking (1995)",
+    "overview": "A passionate, idealistic criminal defense attorney defends an innocent death row inmate in a racially charged civil rights murder case in the American South.",
+    "genres": "Drama"
+  },
+  {
+    "movie_id": 38,
+    "title": "It Takes Two (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Children|Comedy"
+  },
+  {
+    "movie_id": 39,
+    "title": "Clueless (1995)",
+    "overview": "A spirited high school girl in Beverly Hills spends her time matchmaking friends and redecorating lives, until personal introspection reveals her own romantic flaws.",
+    "genres": "Comedy|Romance"
+  },
+  {
+    "movie_id": 40,
+    "title": "Cry, the Beloved Country (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Drama"
+  },
+  {
+    "movie_id": 41,
+    "title": "Richard III (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Drama|War"
+  },
+  {
+    "movie_id": 42,
+    "title": "Dead Presidents (1995)",
+    "overview": "After returning from combat duty in Vietnam, a young black veteran struggles to find legitimate work in the Bronx and orchestrates an audacious armored car robbery.",
+    "genres": "Action|Crime|Drama"
+  },
+  {
+    "movie_id": 43,
+    "title": "Restoration (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Drama"
+  },
+  {
+    "movie_id": 44,
+    "title": "Mortal Kombat (1995)",
+    "overview": "Two teenage computer geeks are framed by a sinister corporate cybersecurity officer for a catastrophic computer worm, triggering a high-stakes digital manhunt.",
+    "genres": "Action|Crime|Thriller"
+  },
+  {
+    "movie_id": 45,
+    "title": "To Die For (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Comedy|Drama|Thriller"
+  },
+  {
+    "movie_id": 46,
+    "title": "How to Make an American Quilt (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Drama|Romance"
+  },
+  {
+    "movie_id": 47,
+    "title": "Seven (a.k.a. Se7en) (1995)",
+    "overview": "A retiring veteran detective and his brash new partner hunt down an elusive, methodical serial killer whose gruesome murders mirror the Seven Deadly Sins.",
+    "genres": "Mystery|Thriller"
+  },
+  {
+    "movie_id": 48,
+    "title": "Pocahontas (1995)",
+    "overview": "A troubled, fiercely imaginative young girl in 1960s England seeks refuge from her parents' unstable marriage through a secret bond with a young fugitive.",
+    "genres": "Drama"
+  },
+  {
+    "movie_id": 49,
+    "title": "When Night Is Falling (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Drama|Romance"
+  },
+  {
+    "movie_id": 50,
+    "title": "Usual Suspects, The (1995)",
+    "overview": "A lone survivor recounts the convoluted, twist-filled story of how five seasoned criminals came together for an armed heist masterminded by the mythical crime lord Keyser Söze.",
+    "genres": "Crime|Mystery|Thriller"
+  },
+  {
+    "movie_id": 52,
+    "title": "Mighty Aphrodite (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Comedy|Drama|Romance"
+  },
+  {
+    "movie_id": 53,
+    "title": "Lamerica (1994)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Adventure|Drama"
+  },
+  {
+    "movie_id": 54,
+    "title": "Big Green, The (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Children|Comedy"
+  },
+  {
+    "movie_id": 55,
+    "title": "Georgia (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Drama"
+  },
+  {
+    "movie_id": 57,
+    "title": "Home for the Holidays (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Drama"
+  },
+  {
+    "movie_id": 58,
+    "title": "Postman, The (Postino, Il) (1994)",
+    "overview": "A dedicated postal clerk on a secluded Mediterranean island forms a life-changing friendship with exiled Chilean poet Pablo Neruda, learning the power of metaphor and love.",
+    "genres": "Comedy|Drama|Romance"
+  },
+  {
+    "movie_id": 60,
+    "title": "Indian in the Cupboard, The (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Adventure|Children|Fantasy"
+  },
+  {
+    "movie_id": 61,
+    "title": "Eye for an Eye (1996)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Drama|Thriller"
+  },
+  {
+    "movie_id": 62,
+    "title": "Mr. Holland's Opus (1995)",
+    "overview": "An accomplished military commander during the American Revolution must reconcile his battlefield duty with his deep love for his family and home.",
+    "genres": "Action|Drama|War"
+  },
+  {
+    "movie_id": 63,
+    "title": "Don't Be a Menace to South Central While Drinking Your Juice in the Hood (1996)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Comedy|Crime"
+  },
+  {
+    "movie_id": 64,
+    "title": "Two if by Sea (1996)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Comedy|Romance"
+  },
+  {
+    "movie_id": 65,
+    "title": "Bio-Dome (1996)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Comedy"
+  },
+  {
+    "movie_id": 66,
+    "title": "Lawnmower Man 2: Beyond Cyberspace (1996)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Action|Sci-Fi|Thriller"
+  },
+  {
+    "movie_id": 68,
+    "title": "French Twist (Gazon maudit) (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Comedy|Romance"
+  },
+  {
+    "movie_id": 69,
+    "title": "Friday (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Comedy"
+  },
+  {
+    "movie_id": 70,
+    "title": "From Dusk Till Dawn (1996)",
+    "overview": "Two blue-collar slackers in small-town New Jersey spend an eventful Saturday sitting outside a convenience store, dealing with eccentric visitors, shoplifters, and existential angst.",
+    "genres": "Comedy"
+  },
+  {
+    "movie_id": 71,
+    "title": "Fair Game (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Action"
+  },
+  {
+    "movie_id": 72,
+    "title": "Kicking and Screaming (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Comedy|Drama"
+  },
+  {
+    "movie_id": 73,
+    "title": "Misérables, Les (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Drama|War"
+  },
+  {
+    "movie_id": 74,
+    "title": "Bed of Roses (1996)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Drama|Romance"
+  },
+  {
+    "movie_id": 75,
+    "title": "Big Bully (1996)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Comedy|Drama"
+  },
+  {
+    "movie_id": 76,
+    "title": "Screamers (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Action|Sci-Fi|Thriller"
+  },
+  {
+    "movie_id": 77,
+    "title": "Nico Icon (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Documentary"
+  },
+  {
+    "movie_id": 78,
+    "title": "Crossing Guard, The (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Action|Crime|Drama|Thriller"
+  },
+  {
+    "movie_id": 79,
+    "title": "Juror, The (1996)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Drama|Thriller"
+  },
+  {
+    "movie_id": 80,
+    "title": "White Balloon, The (Badkonake sefid) (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Children|Drama"
+  },
+  {
+    "movie_id": 81,
+    "title": "Things to Do in Denver When You're Dead (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Crime|Drama|Romance"
+  },
+  {
+    "movie_id": 82,
+    "title": "Antonia's Line (Antonia) (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Comedy|Drama"
+  },
+  {
+    "movie_id": 83,
+    "title": "Once Upon a Time... When We Were Colored (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Drama|Romance"
+  },
+  {
+    "movie_id": 85,
+    "title": "Angels and Insects (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Drama|Romance"
+  },
+  {
+    "movie_id": 86,
+    "title": "White Squall (1996)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Action|Adventure|Drama"
+  },
+  {
+    "movie_id": 87,
+    "title": "Dunston Checks In (1996)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Children|Comedy"
+  },
+  {
+    "movie_id": 88,
+    "title": "Black Sheep (1996)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Comedy"
+  },
+  {
+    "movie_id": 89,
+    "title": "Nick of Time (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Action|Thriller"
+  },
+  {
+    "movie_id": 92,
+    "title": "Mary Reilly (1996)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Drama|Horror|Thriller"
+  },
+  {
+    "movie_id": 93,
+    "title": "Vampire in Brooklyn (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Comedy|Horror|Romance"
+  },
+  {
+    "movie_id": 94,
+    "title": "Beautiful Girls (1996)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Comedy|Drama|Romance"
+  },
+  {
+    "movie_id": 95,
+    "title": "Broken Arrow (1996)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Action|Adventure|Thriller"
+  },
+  {
+    "movie_id": 96,
+    "title": "In the Bleak Midwinter (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Comedy|Drama"
+  },
+  {
+    "movie_id": 97,
+    "title": "Hate (Haine, La) (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Crime|Drama"
+  },
+  {
+    "movie_id": 99,
+    "title": "Heidi Fleiss: Hollywood Madam (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Documentary"
+  },
+  {
+    "movie_id": 100,
+    "title": "City Hall (1996)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Drama|Thriller"
+  },
+  {
+    "movie_id": 101,
+    "title": "Bottle Rocket (1996)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Adventure|Comedy|Crime|Romance"
+  },
+  {
+    "movie_id": 102,
+    "title": "Mr. Wrong (1996)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Comedy"
+  },
+  {
+    "movie_id": 103,
+    "title": "Unforgettable (1996)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Mystery|Sci-Fi|Thriller"
+  },
+  {
+    "movie_id": 104,
+    "title": "Happy Gilmore (1996)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Comedy"
+  },
+  {
+    "movie_id": 105,
+    "title": "Bridges of Madison County, The (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Drama|Romance"
+  },
+  {
+    "movie_id": 106,
+    "title": "Nobody Loves Me (Keiner liebt mich) (1994)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Comedy|Drama"
+  },
+  {
+    "movie_id": 107,
+    "title": "Muppet Treasure Island (1996)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Adventure|Children|Comedy|Musical"
+  },
+  {
+    "movie_id": 108,
+    "title": "Catwalk (1996)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Documentary"
+  },
+  {
+    "movie_id": 110,
+    "title": "Braveheart (1995)",
+    "overview": "Sir William Wallace leads a ferocious rebellion of Scottish clans against the cruel tyranny of King Edward I of England to win freedom for his homeland.",
+    "genres": "Action|Drama|War"
+  },
+  {
+    "movie_id": 111,
+    "title": "Taxi Driver (1976)",
+    "overview": "A daring private detective investigates the disappearance of a wealthy oil heiress in Miami, unearthing a tangled web of insurance fraud, blackmail, and murder.",
+    "genres": "Drama|Mystery|Thriller"
+  },
+  {
+    "movie_id": 112,
+    "title": "Rumble in the Bronx (Hont faan kui) (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Action|Adventure|Comedy|Crime"
+  },
+  {
+    "movie_id": 113,
+    "title": "Before and After (1996)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Drama|Mystery"
+  },
+  {
+    "movie_id": 116,
+    "title": "Anne Frank Remembered (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Documentary"
+  },
+  {
+    "movie_id": 117,
+    "title": "Young Poisoner's Handbook, The (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Crime|Drama"
+  },
+  {
+    "movie_id": 118,
+    "title": "If Lucy Fell (1996)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Comedy|Romance"
+  },
+  {
+    "movie_id": 119,
+    "title": "Steal Big, Steal Little (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Comedy"
+  },
+  {
+    "movie_id": 121,
+    "title": "Boys of St. Vincent, The (1992)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Drama"
+  },
+  {
+    "movie_id": 122,
+    "title": "Boomerang (1992)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Comedy|Romance"
+  },
+  {
+    "movie_id": 123,
+    "title": "Chungking Express (Chung Hing sam lam) (1994)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Drama|Mystery|Romance"
+  },
+  {
+    "movie_id": 125,
+    "title": "Flirting With Disaster (1996)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Comedy"
+  },
+  {
+    "movie_id": 126,
+    "title": "NeverEnding Story III, The (1994)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Adventure|Children|Fantasy"
+  },
+  {
+    "movie_id": 128,
+    "title": "Jupiter's Wife (1994)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Documentary"
+  },
+  {
+    "movie_id": 129,
+    "title": "Pie in the Sky (1996)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Comedy|Romance"
+  },
+  {
+    "movie_id": 132,
+    "title": "Jade (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Thriller"
+  },
+  {
+    "movie_id": 135,
+    "title": "Down Periscope (1996)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Comedy"
+  },
+  {
+    "movie_id": 137,
+    "title": "Man of the Year (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Documentary"
+  },
+  {
+    "movie_id": 140,
+    "title": "Up Close and Personal (1996)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Drama|Romance"
+  },
+  {
+    "movie_id": 141,
+    "title": "Birdcage, The (1996)",
+    "overview": "A sharp satirical dark comedy about an ambitious suburban weather reporter whose obsession with television celebrity leads her to manipulate three naive teenagers into murder.",
+    "genres": "Comedy|Drama"
+  },
+  {
+    "movie_id": 144,
+    "title": "Brothers McMullen, The (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Comedy"
+  },
+  {
+    "movie_id": 145,
+    "title": "Bad Boys (1995)",
+    "overview": "A hardened undercover detective infiltrates a crew of thrill-seeking bank robbers who wear masks of former presidents and live by an extreme sports surfing code.",
+    "genres": "Action|Crime|Thriller"
+  },
+  {
+    "movie_id": 146,
+    "title": "Amazing Panda Adventure, The (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Adventure|Children"
+  },
+  {
+    "movie_id": 147,
+    "title": "Basketball Diaries, The (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Drama"
+  },
+  {
+    "movie_id": 148,
+    "title": "Awfully Big Adventure, An (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Drama"
+  },
+  {
+    "movie_id": 149,
+    "title": "Amateur (1994)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Crime|Drama|Thriller"
+  },
+  {
+    "movie_id": 150,
+    "title": "Apollo 13 (1995)",
+    "overview": "The harrowing true story of three astronauts aboard the Apollo 13 lunar mission whose spacecraft suffers an explosion, turning their moon landing into a fight for survival.",
+    "genres": "Adventure|Drama|IMAX"
+  },
+  {
+    "movie_id": 151,
+    "title": "Rob Roy (1995)",
+    "overview": "A passionate period drama chronicling the secret, forbidden love affair between an artistic English aristocrat and a passionate French groundskeeper.",
+    "genres": "Drama|Romance"
+  },
+  {
+    "movie_id": 152,
+    "title": "Addiction, The (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Drama|Horror"
+  },
+  {
+    "movie_id": 153,
+    "title": "Batman Forever (1995)",
+    "overview": "The dark, gritty vigilante Batman faces off against the eccentric supervillains Two-Face and The Riddler while forging an alliance with an acrobatic orphan named Robin.",
+    "genres": "Action|Adventure|Comedy|Crime"
+  },
+  {
+    "movie_id": 154,
+    "title": "Beauty of the Day (Belle de jour) (1967)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Drama"
+  },
+  {
+    "movie_id": 155,
+    "title": "Beyond Rangoon (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Adventure|Drama|War"
+  },
+  {
+    "movie_id": 156,
+    "title": "Blue in the Face (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Comedy|Drama"
+  },
+  {
+    "movie_id": 157,
+    "title": "Canadian Bacon (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Comedy|War"
+  },
+  {
+    "movie_id": 158,
+    "title": "Casper (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Adventure|Children"
+  },
+  {
+    "movie_id": 159,
+    "title": "Clockers (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Crime|Drama|Mystery"
+  },
+  {
+    "movie_id": 160,
+    "title": "Congo (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Action|Adventure|Mystery|Sci-Fi"
+  },
+  {
+    "movie_id": 161,
+    "title": "Crimson Tide (1995)",
+    "overview": "The intense courtroom drama of a decorated naval officer court-martialed for mutiny during a hurricane after relieving his unstable commander of duty.",
+    "genres": "Drama|War"
+  },
+  {
+    "movie_id": 162,
+    "title": "Crumb (1994)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Documentary"
+  },
+  {
+    "movie_id": 163,
+    "title": "Desperado (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Action|Romance|Western"
+  },
+  {
+    "movie_id": 164,
+    "title": "Devil in a Blue Dress (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Crime|Film-Noir|Mystery|Thriller"
+  },
+  {
+    "movie_id": 165,
+    "title": "Die Hard: With a Vengeance (1995)",
+    "overview": "A master secret agent framed for the murder of his entire covert operations team must break into CIA headquarters to expose the real mole and clear his name.",
+    "genres": "Action|Adventure|Mystery|Thriller"
+  },
+  {
+    "movie_id": 166,
+    "title": "Doom Generation, The (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Comedy|Crime|Drama"
+  },
+  {
+    "movie_id": 168,
+    "title": "First Knight (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Action|Drama|Romance"
+  },
+  {
+    "movie_id": 169,
+    "title": "Free Willy 2: The Adventure Home (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Adventure|Children|Drama"
+  },
+  {
+    "movie_id": 170,
+    "title": "Hackers (1995)",
+    "overview": "A futuristic law enforcement officer in a violent metropolis is framed for murder and banished to the wasteland, fighting his way back to clear his name.",
+    "genres": "Action|Crime|Sci-Fi"
+  },
+  {
+    "movie_id": 171,
+    "title": "Jeffrey (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Comedy|Drama"
+  },
+  {
+    "movie_id": 172,
+    "title": "Johnny Mnemonic (1995)",
+    "overview": "A courageous pilot, an eccentric scientist, and a brave US President lead a desperate counter-offensive against an alien invasion fleet annihilating Earth's major cities.",
+    "genres": "Action|Adventure|Sci-Fi"
+  },
+  {
+    "movie_id": 173,
+    "title": "Judge Dredd (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Action|Crime|Sci-Fi"
+  },
+  {
+    "movie_id": 174,
+    "title": "Jury Duty (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Comedy"
+  },
+  {
+    "movie_id": 175,
+    "title": "Kids (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Drama"
+  },
+  {
+    "movie_id": 176,
+    "title": "Living in Oblivion (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Comedy"
+  },
+  {
+    "movie_id": 177,
+    "title": "Lord of Illusions (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Horror"
+  },
+  {
+    "movie_id": 178,
+    "title": "Love & Human Remains (1993)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Comedy|Drama"
+  },
+  {
+    "movie_id": 179,
+    "title": "Mad Love (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Drama|Romance"
+  },
+  {
+    "movie_id": 180,
+    "title": "Mallrats (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Comedy|Romance"
+  },
+  {
+    "movie_id": 181,
+    "title": "Mighty Morphin Power Rangers: The Movie (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Action|Children"
+  },
+  {
+    "movie_id": 183,
+    "title": "Mute Witness (1994)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Comedy|Horror|Thriller"
+  },
+  {
+    "movie_id": 184,
+    "title": "Nadja (1994)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Drama"
+  },
+  {
+    "movie_id": 185,
+    "title": "Net, The (1995)",
+    "overview": "A female network security analyst stumbles across a shadowy cyber conspiracy, only to find her official identity, passport, and bank accounts erased by cyber criminals.",
+    "genres": "Action|Crime|Thriller"
+  },
+  {
+    "movie_id": 186,
+    "title": "Nine Months (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Comedy|Romance"
+  },
+  {
+    "movie_id": 187,
+    "title": "Party Girl (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Comedy"
+  },
+  {
+    "movie_id": 188,
+    "title": "Prophecy, The (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Fantasy|Horror|Mystery"
+  },
+  {
+    "movie_id": 189,
+    "title": "Reckless (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Comedy|Fantasy"
+  },
+  {
+    "movie_id": 190,
+    "title": "Safe (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Thriller"
+  },
+  {
+    "movie_id": 191,
+    "title": "Scarlet Letter, The (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Drama|Romance"
+  },
+  {
+    "movie_id": 193,
+    "title": "Showgirls (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Drama"
+  },
+  {
+    "movie_id": 194,
+    "title": "Smoke (1995)",
+    "overview": "A celebrated classic film featuring compelling character drama, intricate storytelling, and defining cinematic moments set across an unforgettable narrative.",
+    "genres": "Comedy|Drama"
+  },
+  {
+    "movie_id": 208,
+    "title": "Waterworld (1995)",
+    "overview": "In a post-apocalyptic future where the polar ice caps have completely melted, a mutated drifter with gills helps a woman and child search for the mythical dry land.",
+    "genres": "Action|Adventure|Sci-Fi"
+  },
+  {
+    "movie_id": 215,
+    "title": "Before Sunrise (1995)",
+    "overview": "A streetwise Baltimore teenager caught up in the violent drug trade struggles to escape the cyclical poverty of his neighborhood with the help of a caring mentor.",
+    "genres": "Drama"
+  },
+  {
+    "movie_id": 223,
+    "title": "Clerks (1994)",
+    "overview": "A pair of disaffected suburban convenience store clerks endure relationship crises, annoying customers, and hockey games on the roof of their run-down shop.",
+    "genres": "Comedy"
+  },
+  {
+    "movie_id": 231,
+    "title": "Dumb & Dumber (Dumb and Dumber) (1994)",
+    "overview": "A young boy helps an ancient, sarcastic talking dragon and an honorable knight battle a tyrannical, dragon-slaying king across medieval England.",
+    "genres": "Action|Adventure|Fantasy"
+  },
+  {
+    "movie_id": 232,
+    "title": "Eat Drink Man Woman (Yin shi nan nu) (1994)",
+    "overview": "An emotionally distant architect discovers he has terminal cancer and decides to rebuild his relationship with his rebellious son by demolishing and rebuilding their home.",
+    "genres": "Drama"
+  },
+  {
+    "movie_id": 235,
+    "title": "Ed Wood (1994)",
+    "overview": "A gritty biographical look at the passionate, tragic, and controversial life of author Valerie Solanas and her obsession with pop artist Andy Warhol.",
+    "genres": "Drama"
+  },
+  {
+    "movie_id": 246,
+    "title": "Hoop Dreams (1994)",
+    "overview": "A comedic spoof following the hilarious adventures of a bumbling, well-intentioned police detective who constantly causes mass destruction while solving cases.",
+    "genres": "Comedy"
+  },
+  {
+    "movie_id": 253,
+    "title": "Interview with the Vampire: The Vampire Chronicles (1994)",
+    "overview": "A troubled teen obsessed with video games and supernatural legends travels into a dangerous mythical realm to rescue a warrior princess from dark warlords.",
+    "genres": "Action|Adventure|Fantasy"
+  },
+  {
+    "movie_id": 257,
+    "title": "Just Cause (1995)",
+    "overview": "A courageous young attorney discovers a terrifying conspiracy inside a prestigious law firm that sacrifices its morals and clients for astronomical wealth.",
+    "genres": "Drama|Mystery|Thriller"
+  },
+  {
+    "movie_id": 260,
+    "title": "Star Wars: Episode IV - A New Hope (1977)",
+    "overview": "Luke Skywalker leaves his desert home to join Jedi Knight Obi-Wan Kenobi, a swaggering smuggler, and two droids on a quest to rescue Princess Leia and destroy the Death Star.",
+    "genres": "Action|Adventure|Sci-Fi"
+  },
+  {
+    "movie_id": 261,
+    "title": "Little Women (1994)",
+    "overview": "An introspective drama exploring the tender relationship between an elderly Midwestern widow and a lonely traveling salesman over a quiet, nostalgic weekend.",
+    "genres": "Drama"
+  },
+  {
+    "movie_id": 265,
+    "title": "Like Water for Chocolate (Como agua para chocolate) (1992)",
+    "overview": "A young boy and his courageous grandfather battle an unscrupulous real estate mogul trying to destroy their beloved neighborhood community center.",
+    "genres": "Children|Drama"
+  },
+  {
+    "movie_id": 288,
+    "title": "Natural Born Killers (1994)",
+    "overview": "A retired master cat burglar is coerced into performing one final, impossible international heist to save the life of his abducted younger brother.",
+    "genres": "Action|Crime|Thriller"
+  },
+  {
+    "movie_id": 293,
+    "title": "Léon: The Professional (a.k.a. The Professional) (Léon) (1994)",
+    "overview": "A solitary, professional hitman living in New York reluctantly takes in an orphan twelve-year-old girl whose family was murdered by a corrupt DEA officer.",
+    "genres": "Action|Crime|Drama|Thriller"
+  },
+  {
+    "movie_id": 296,
+    "title": "Pulp Fiction (1994)",
+    "overview": "The lives of two philosophical mob hitmen, a boxer on the run, a gangster's glamorous wife, and two armed diner bandits intertwine in four tales of violence and redemption.",
+    "genres": "Comedy|Crime|Drama|Thriller"
+  },
+  {
+    "movie_id": 316,
+    "title": "Stargate (1994)",
+    "overview": "A determined female astronaut travels to an uncharted deep-space mining station to uncover the truth behind a mysterious communications blackout.",
+    "genres": "Action|Adventure|Sci-Fi"
+  },
+  {
+    "movie_id": 318,
+    "title": "Shawshank Redemption, The (1994)",
+    "overview": "A mild-mannered banker wrongly convicted of murder enters the harsh Shawshank State Penitentiary, forging a deep friendship with an older prisoner and clinging to hope.",
+    "genres": "Crime|Drama"
+  },
+  {
+    "movie_id": 329,
+    "title": "Star Trek: Generations (1994)",
+    "overview": "Two space explorers crash-land on a hostile desert alien planet and must overcome their bitter hatred to survive the deadly indigenous fauna and harsh environment.",
+    "genres": "Action|Sci-Fi"
+  },
+  {
+    "movie_id": 344,
+    "title": "Ace Ventura: Pet Detective (1994)",
+    "overview": "An idiosyncratic, hyperactive pet detective takes on an assignment to find the missing mascot dolphin of the Miami Dolphins football team before the Super Bowl.",
+    "genres": "Comedy"
+  },
+  {
+    "movie_id": 350,
+    "title": "Client, The (1994)",
+    "overview": "A historical docudrama following the tragic journey of a doomed Scottish clan displaced by the ruthless Enclosure acts of the 18th century.",
+    "genres": "Drama|History"
+  },
+  {
+    "movie_id": 356,
+    "title": "Forrest Gump (1994)",
+    "overview": "The life of an earnest, kind-hearted Alabama man with a low IQ who unwittingly witnesses and influences several defining historical events of the 20th century.",
+    "genres": "Comedy|Drama|Romance|War"
+  },
+  {
+    "movie_id": 364,
+    "title": "Lion King, The (1994)",
+    "overview": "A young lion prince is duped by his scheming uncle into fleeing his pride, only to discover his true strength, responsibility, and destiny when adulthood calls.",
+    "genres": "Adventure|Animation|Children|Drama|Musical|IMAX"
+  },
+  {
+    "movie_id": 367,
+    "title": "Mask, The (1994)",
+    "overview": "A mild-mannered bank clerk discovers an ancient Nordic mask that grants him superhuman reality-bending powers, turning him into an unpredictable green-faced troublemaker.",
+    "genres": "Action|Comedy|Crime|Fantasy"
+  },
+  {
+    "movie_id": 370,
+    "title": "Naked Gun 33 1/3: The Final Insult (1994)",
+    "overview": "A cynical New York cop on vacation in an African wildlife sanctuary finds himself protecting a rare baby elephant from an organized poaching syndicate.",
+    "genres": "Action|Adventure|Children"
+  },
+  {
+    "movie_id": 377,
+    "title": "Speed (1994)",
+    "overview": "A charismatic, fast-talking bus driver and a resourceful female passenger must prevent a public transit bus from detonating by keeping its speed above 50 miles per hour.",
+    "genres": "Action|Romance|Thriller"
+  },
+  {
+    "movie_id": 380,
+    "title": "True Lies (1994)",
+    "overview": "A rogue ex-intelligence officer hijacks the experimental spy plane True Lies and threatens national security unless his political demands are met.",
+    "genres": "Action|Adventure|Thriller"
+  },
+  {
+    "movie_id": 410,
+    "title": "Addams Family Values (1993)",
+    "overview": "A family takes in a troubled, gentle foster child whose telekinetic powers threaten to expose him to clandestine government research agents.",
+    "genres": "Drama|Sci-Fi"
+  },
+  {
+    "movie_id": 420,
+    "title": "Beverly Hills Cop III (1994)",
+    "overview": "An investigative reporter teams up with a cynical computer hacker to uncover a multi-million-dollar banking conspiracy linked to an offshore syndicate.",
+    "genres": "Action|Crime|Thriller"
+  },
+  {
+    "movie_id": 432,
+    "title": "City Slickers II: The Legend of Curly's Gold (1994)",
+    "overview": "A group of scrappy neighborhood kids band together over a nostalgic summer to save their beloved local sandlot baseball field from a wealthy developer.",
+    "genres": "Children|Comedy|Drama"
+  },
+  {
+    "movie_id": 434,
+    "title": "Cliffhanger (1993)",
+    "overview": "A wealthy playboy teams up with a seasoned international spy to stop a deranged media mogul from instigating a third world war to secure global broadcasting rights.",
+    "genres": "Action|Adventure|Thriller"
+  },
+  {
+    "movie_id": 440,
+    "title": "Dave (1993)",
+    "overview": "A high school student accidentally switches bodies with a middle-aged suburban mother, resulting in hilarious complications and newfound empathy on both sides.",
+    "genres": "Comedy|Fantasy"
+  },
+  {
+    "movie_id": 442,
+    "title": "Demolition Man (1993)",
+    "overview": "A young female soldier uncovers corruption within her remote military outpost and embarks on a dangerous covert mission to bring the truth to light.",
+    "genres": "Action|Drama|War"
+  },
+  {
+    "movie_id": 454,
+    "title": "Firm, The (1993)",
+    "overview": "A wealthy, brilliant criminal defense attorney is hired by an accused killer who claims demonic possession forced him to commit unspeakable ritual murders.",
+    "genres": "Drama|Mystery|Thriller"
+  },
+  {
+    "movie_id": 457,
+    "title": "Fugitive, The (1993)",
+    "overview": "A brilliant, obsessive former FBI fugitive hunter is called back into service to track down an elusive serial killer known as the Tooth Fairy with help from Hannibal Lecter.",
+    "genres": "Crime|Mystery|Thriller"
+  },
+  {
+    "movie_id": 474,
+    "title": "In the Line of Fire (1993)",
+    "overview": "A resilient pioneer woman and her family brave dangerous territory, harsh winters, and ruthless outlaws on the American frontier to claim their destiny.",
+    "genres": "Drama|Western"
+  },
+  {
+    "movie_id": 480,
+    "title": "Jurassic Park (1993)",
+    "overview": "Industrialists construct a revolutionary wildlife park populated by cloned dinosaurs, but a security sabotage during a tropical storm unleashes prehistoric terror upon the visitors.",
+    "genres": "Action|Adventure|Sci-Fi|Thriller"
+  },
+  {
+    "movie_id": 494,
+    "title": "Executive Decision (1996)",
+    "overview": "A stylish, hard-hitting detective investigates the assassination of a political activist, unraveling ties between municipal leaders and organized crime.",
+    "genres": "Crime|Drama|Thriller"
+  },
+  {
+    "movie_id": 500,
+    "title": "Mrs. Doubtfire (1993)",
+    "overview": "A group of rebellious, working-class teenagers in an English coastal town spend their nights listening to rock music and cruising the seaside pier.",
+    "genres": "Comedy|Drama"
+  },
+  {
+    "movie_id": 508,
+    "title": "Philadelphia (1993)",
+    "overview": "A gritty Philadelphia detective investigates the sudden disappearance of several troubled runaway youths, confronting institutional neglect in the inner city.",
+    "genres": "Crime|Drama|Mystery"
+  },
+  {
+    "movie_id": 509,
+    "title": "Piano, The (1993)",
+    "overview": "A high-stakes thriller following a squad of elite secret service operatives charged with extracting a defecting diplomat from an active warzone.",
+    "genres": "Action|Thriller"
+  },
+  {
+    "movie_id": 527,
+    "title": "Schindler's List (1993)",
+    "overview": "A hedonistic German businessman and Nazi party member rescues over a thousand Polish-Jewish refugees from the Holocaust by employing them in his enamelware factory.",
+    "genres": "Drama|War"
+  },
+  {
+    "movie_id": 538,
+    "title": "Six Degrees of Separation (1993)",
+    "overview": "A struggling jazz musician falls into an intense, dark romance with an enigmatic singer whose ties to an underground mob syndicate endanger them both.",
+    "genres": "Drama|Romance"
+  },
+  {
+    "movie_id": 539,
+    "title": "Sleepless in Seattle (1993)",
+    "overview": "An elderly couple reflects on fifty years of love, sacrifices, and shifting fortunes as they prepare to sell their beloved rural farmhouse.",
+    "genres": "Drama|Romance"
+  },
+  {
+    "movie_id": 541,
+    "title": "Blade Runner (1982)",
+    "overview": "A former corporate security officer turns investigative whistleblower when he uncovers lethal contamination in a leading pharmaceutical company's infant formula.",
+    "genres": "Drama|Thriller"
+  },
+  {
+    "movie_id": 551,
+    "title": "Nightmare Before Christmas, The (1993)",
+    "overview": "A sweeping biographical account of the nightmarish final years of a once-beloved dictator, capturing his paranoia and the collapse of his regime.",
+    "genres": "Drama|History"
+  },
+  {
+    "movie_id": 552,
+    "title": "Three Musketeers, The (1993)",
+    "overview": "Three generations of vibrant Italian-American women share recipes, passionate romances, and familial feuds in a colorful New York bakery.",
+    "genres": "Comedy|Drama|Romance"
+  },
+  {
+    "movie_id": 553,
+    "title": "Tombstone (1993)",
+    "overview": "A fearless young photojournalist ventures into an active Eastern European conflict zone to document war crimes, finding unexpected allies in an underground clinic.",
+    "genres": "Drama|War"
+  },
+  {
+    "movie_id": 555,
+    "title": "True Romance (1993)",
+    "overview": "An unconventional romance blooms between an eccentric eccentric recluse and a lively veterinarian across a series of humorous misunderstandings.",
+    "genres": "Comedy|Romance"
+  },
+  {
+    "movie_id": 588,
+    "title": "Aladdin (1992)",
+    "overview": "A lonely street urchin in ancient Agrabah wins the heart of Princess Jasmine with the help of a shape-shifting, magical Genie while defeating an evil sorcerer.",
+    "genres": "Adventure|Animation|Children|Comedy|Musical"
+  },
+  {
+    "movie_id": 589,
+    "title": "Terminator 2: Judgment Day (1991)",
+    "overview": "A reprogrammed, protective cyborg is sent back in time to defend ten-year-old John Connor from an advanced, shape-shifting liquid metal assassin.",
+    "genres": "Action|Sci-Fi"
+  },
+  {
+    "movie_id": 590,
+    "title": "Dances with Wolves (1990)",
+    "overview": "A disillusioned Civil War lieutenant requests a posting to a remote Western outpost and forms a deep, transformative bond with the local Sioux tribe.",
+    "genres": "Adventure|Drama|Western"
+  },
+  {
+    "movie_id": 592,
+    "title": "Batman (1989)",
+    "overview": "The brooding vigilante billionaire Bruce Wayne battles criminal mastermind The Joker, whose psychopathic reign of terror grips the dark streets of Gotham City.",
+    "genres": "Action|Crime|Thriller"
+  },
+  {
+    "movie_id": 593,
+    "title": "Silence of the Lambs, The (1991)",
+    "overview": "An ambitious young FBI trainee seeks the guidance of the brilliant, imprisoned cannibalistic psychiatrist Dr. Hannibal Lecter to catch an active serial killer.",
+    "genres": "Crime|Horror|Thriller"
+  },
+  {
+    "movie_id": 595,
+    "title": "Beauty and the Beast (1991)",
+    "overview": "A beautiful, book-loving French maiden agrees to live in the enchanted castle of a monstrous Beast to save her father, learning to look past physical appearances to find true love.",
+    "genres": "Animation|Children|Fantasy|Musical|Romance|IMAX"
+  },
+  {
+    "movie_id": 597,
+    "title": "Pretty Woman (1990)",
+    "overview": "A teenage orphan from the slums of Victorian London is recruited by a charismatic rogue into a gang of juvenile pickpockets, dreaming of family and freedom.",
+    "genres": "Adventure|Drama|Musical"
+  },
+  {
+    "movie_id": 608,
+    "title": "Fargo (1996)",
+    "overview": "A heavily pregnant, sharp-witted Minnesota police chief investigates a bumbling kidnapping scheme orchestrated by a desperate car salesman that spirals into multiple murders.",
+    "genres": "Comedy|Crime|Drama|Thriller"
+  },
+  {
+    "movie_id": 648,
+    "title": "Mission: Impossible (1996)",
+    "overview": "A rogue, cynical secret agent is recalled to lead a high-stakes, off-the-books mission to neutralize a rogue general holding San Francisco hostage with chemical nerve gas.",
+    "genres": "Action|Adventure|Mystery|Thriller"
+  },
+  {
+    "movie_id": 673,
+    "title": "Space Jam (1996)",
+    "overview": "A family of space tourists lands on a peaceful alien world, only to realize that the planet's tranquil environment hides a psychological defense mechanism.",
+    "genres": "Adventure|Sci-Fi"
+  },
+  {
+    "movie_id": 708,
+    "title": "Truth About Cats & Dogs, The (1996)",
+    "overview": "An aspiring female executive and her competitive male colleague fight for a prestigious promotion while battling their undeniable mutual attraction.",
+    "genres": "Comedy|Romance"
+  },
+  {
+    "movie_id": 720,
+    "title": "Wallace & Gromit: The Best of Aardman Animation (1996)",
+    "overview": "An unconventional stop-motion animated tale following Wallace and his intelligent dog Gromit as they uncover a sinister plot involving mechanical trousers and an evil penguin.",
+    "genres": "Animation|Comedy|Crime"
+  },
+  {
+    "movie_id": 733,
+    "title": "Rock, The (1996)",
+    "overview": "A rogue military officer and a team of ex-soldiers seize Alcatraz Island with biological rockets, threatening San Francisco unless financial reparations are paid to fallen soldiers.",
+    "genres": "Action|Adventure|Thriller"
+  },
+  {
+    "movie_id": 736,
+    "title": "Twister (1996)",
+    "overview": "A team of storm chasers deploy a cutting-edge scientific sensor package directly into the core of violent, destructive tornadoes across the Oklahoma plains.",
+    "genres": "Action|Adventure|Romance|Thriller"
+  },
+  {
+    "movie_id": 741,
+    "title": "Ghost in the Shell (Kôkaku kidôtai) (1995)",
+    "overview": "A young Japanese girl travels into a mystical forest inhabited by animal spirits and ancient forest guardians fighting to survive against human industrial encroachment.",
+    "genres": "Adventure|Animation|Drama|Fantasy"
+  },
+  {
+    "movie_id": 750,
+    "title": "Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb (1964)",
+    "overview": "An unhinged, brilliant military general orders a preemptive nuclear strike on the Soviet Union, prompting the US President and his eccentric war council to prevent an apocalypse.",
+    "genres": "Comedy|War"
+  },
+  {
+    "movie_id": 778,
+    "title": "Trainspotting (1996)",
+    "overview": "A veteran police lieutenant with deep personal demons attempts to solve an impossible double homicide involving an elite diplomatic compound.",
+    "genres": "Crime|Drama|Mystery"
+  },
+  {
+    "movie_id": 780,
+    "title": "Independence Day (a.k.a. ID4) (1996)",
+    "overview": "Extraterrestrial spacecraft arrive over Earth's major cities and launch devastating simultaneous attacks, forcing human survivors to unite on the Fourth of July for freedom.",
+    "genres": "Action|Adventure|Sci-Fi|Thriller"
+  },
+  {
+    "movie_id": 802,
+    "title": "Phenomenon (1996)",
+    "overview": "A young boy helps an enchanted, tiny alien creature evade government agents and build a communicator to contact his mothership and return home.",
+    "genres": "Adventure|Children|Drama|Sci-Fi"
+  },
+  {
+    "movie_id": 805,
+    "title": "Time to Kill, A (1996)",
+    "overview": "A historical docudrama recounting the dramatic, bloody revolution that toppled an authoritarian monarchy in early 20th-century Eastern Europe.",
+    "genres": "Drama|History"
+  },
+  {
+    "movie_id": 832,
+    "title": "Ransom (1996)",
+    "overview": "An elite sniper team deployed in the South American jungle finds their extraction team ambushed and must survive against heavily armed insurgent mercenaries.",
+    "genres": "Action|Drama|Thriller"
+  },
+  {
+    "movie_id": 858,
+    "title": "Godfather, The (1972)",
+    "overview": "The aging patriarch of an organized crime dynasty transfers control of his clandestine empire to his reluctant, war-hero youngest son amid a bloody turf war.",
+    "genres": "Crime|Drama"
+  },
+  {
+    "movie_id": 899,
+    "title": "Singin' in the Rain (1952)",
+    "overview": "The whimsical, timeless musical journey of Dorothy and her dog Toto, swept away by a tornado from Kansas to the magical Land of Oz to seek the mysterious Wizard.",
+    "genres": "Adventure|Children|Fantasy|Musical"
+  },
+  {
+    "movie_id": 902,
+    "title": "Breakfast at Tiffany's (1961)",
+    "overview": "A charismatic, charming British pilot returns from WWII and rebuilds his family's rural distillery into an internationally acclaimed enterprise.",
+    "genres": "Drama|Romance"
+  },
+  {
+    "movie_id": 904,
+    "title": "Rear Window (1954)",
+    "overview": "A wheelchair-bound photojournalist recuperating from a broken leg spends his days observing his neighbors across the courtyard and suspects one of them has committed murder.",
+    "genres": "Mystery|Thriller"
+  },
+  {
+    "movie_id": 908,
+    "title": "North by Northwest (1959)",
+    "overview": "An investigative reporter teams up with an elusive retired thief to solve a string of museum burglaries across the picturesque French Riviera.",
+    "genres": "Comedy|Crime|Romance"
+  },
+  {
+    "movie_id": 912,
+    "title": "Casablanca (1942)",
+    "overview": "An American expatriate running a nightclub in wartime Casablanca must choose between his love for a married woman and helping her husband escape the Nazis.",
+    "genres": "Drama|Romance"
+  },
+  {
+    "movie_id": 914,
+    "title": "My Fair Lady (1964)",
+    "overview": "A brilliant phonetics professor makes a wager that he can transform an unrefined cockney flower girl into an elegant duchess capable of passing in high society.",
+    "genres": "Comedy|Drama|Musical|Romance"
+  },
+  {
+    "movie_id": 919,
+    "title": "Wizard of Oz, The (1939)",
+    "overview": "A young girl, a scarecrow seeking a brain, a tin man seeking a heart, and a cowardly lion seeking courage journey together to the Emerald City.",
+    "genres": "Adventure|Children|Fantasy|Musical"
+  },
+  {
+    "movie_id": 920,
+    "title": "Gone with the Wind (1939)",
+    "overview": "A spoiled Southern belle struggles to survive the devastation of the Civil War and the Reconstruction era while pursuing the elusive object of her desire.",
+    "genres": "Drama|Romance|War"
+  },
+  {
+    "movie_id": 923,
+    "title": "Citizen Kane (1941)",
+    "overview": "A legendary detective and his loyal physician companion investigate a series of bizarre nocturnal attacks linked to a prehistoric ancestral curse.",
+    "genres": "Crime|Mystery|Thriller"
+  },
+  {
+    "movie_id": 924,
+    "title": "2001: A Space Odyssey (1968)",
+    "overview": "A mysterious extraterrestrial monolith discovered on the moon triggers an ambitious expedition to Jupiter, accompanied by the sentient, increasingly unstable computer HAL 9000.",
+    "genres": "Adventure|Drama|Sci-Fi"
+  },
+  {
+    "movie_id": 953,
+    "title": "It's a Wonderful Life (1946)",
+    "overview": "A weary detective is hired by a mysterious socialite to look into the blackmail of her father, plunging him into a labyrinth of gambling, narcotics, and deceit.",
+    "genres": "Crime|Drama|Film-Noir|Mystery"
+  },
+  {
+    "movie_id": 968,
+    "title": "Night of the Living Dead (1968)",
+    "overview": "A psychological thriller about an emotionally damaged night clerk at an isolated California motel whose domineering mother exerts a lethal influence on visiting guests.",
+    "genres": "Horror|Mystery|Thriller"
+  }
+]

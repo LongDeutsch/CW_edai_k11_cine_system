@@ -34,6 +34,8 @@ CREATE TABLE IF NOT EXISTS cinestream.bronze.raw_movies (
     content_rating STRING,
     hdr_format STRING,
     audio_spatial BOOLEAN,
+    overview STRING,
+    genres STRING,
     _ingest_ts TIMESTAMP NOT NULL,
     _source_file STRING
 )

@@ -37,6 +37,8 @@ BASE_FIELDS = (
     pa.field("budget", pa.int64(), nullable=False),
     pa.field("director_id", pa.int64(), nullable=False),
     pa.field("created_ts", pa.timestamp("s"), nullable=False),
+    pa.field("overview", pa.string(), nullable=True),
+    pa.field("genres", pa.string(), nullable=True),
 )
 EVOLVED_FIELDS = (
     pa.field("content_rating", pa.string(), nullable=True),

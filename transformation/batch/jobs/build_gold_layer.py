@@ -63,6 +63,8 @@ def run(spark, source, warehouse: str) -> dict[str, int]:
         F.col("release_year").cast("int").alias("release_year"),
         "content_rating",
         "hdr_format",
+        (F.col("overview") if "overview" in movies.columns else F.lit(None).cast("string")).alias("overview"),
+        (F.col("genres") if "genres" in movies.columns else F.lit(None).cast("string")).alias("genres"),
         F.col("created_ts").alias("valid_from_ts"),
         F.lit(None).cast(TimestampType()).alias("valid_to_ts"),
         F.lit(True).alias("is_current"),

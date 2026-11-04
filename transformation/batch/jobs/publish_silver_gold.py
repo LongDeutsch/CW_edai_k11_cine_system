@@ -79,9 +79,11 @@ class MovieVersion:
     release_year: int | None
     content_rating: str | None
     hdr_format: str | None
-    valid_from_ts: datetime
-    valid_to_ts: datetime | None
-    is_current: bool
+    overview: str | None = None
+    genres: str | None = None
+    valid_from_ts: datetime = datetime.now(timezone.utc)
+    valid_to_ts: datetime | None = None
+    is_current: bool = True
 
 
 def publish(
@@ -196,6 +198,8 @@ def plan_movies(current: list[MovieVersion], incoming, effective: datetime) -> l
             release_year=None if raw["release_year"] is None else int(raw["release_year"]),
             content_rating=raw["content_rating"] if "content_rating" in raw.asDict() else None,
             hdr_format=raw["hdr_format"] if "hdr_format" in raw.asDict() else None,
+            overview=raw["overview"] if "overview" in raw.asDict() else None,
+            genres=raw["genres"] if "genres" in raw.asDict() else None,
             valid_from_ts=opened_at,
             valid_to_ts=None,
             is_current=True,
@@ -310,6 +314,8 @@ def _project_movies(frame):
         optional("content_rating", "string"),
         optional("hdr_format", "string"),
         optional("audio_spatial", "boolean"),
+        optional("overview", "string"),
+        optional("genres", "string"),
     )
 
 
@@ -377,6 +383,8 @@ def _load_movies(spark, table: str) -> list[MovieVersion]:
                 release_year=None if raw["release_year"] is None else int(raw["release_year"]),
                 content_rating=raw["content_rating"],
                 hdr_format=raw["hdr_format"],
+                overview=raw["overview"] if "overview" in raw.asDict() else None,
+                genres=raw["genres"] if "genres" in raw.asDict() else None,
                 valid_from_ts=_aware(raw["valid_from_ts"]),
                 valid_to_ts=_aware(raw["valid_to_ts"]),
                 is_current=bool(raw["is_current"]),
@@ -396,6 +404,8 @@ def _movie_frame(spark, rows: list[MovieVersion]):
             StructField("release_year", IntegerType(), True),
             StructField("content_rating", StringType(), True),
             StructField("hdr_format", StringType(), True),
+            StructField("overview", StringType(), True),
+            StructField("genres", StringType(), True),
             StructField("valid_from_ts", TimestampType(), False),
             StructField("valid_to_ts", TimestampType(), True),
             StructField("is_current", BooleanType(), False),
@@ -409,6 +419,8 @@ def _movie_frame(spark, rows: list[MovieVersion]):
             row.release_year,
             row.content_rating,
             row.hdr_format,
+            row.overview,
+            row.genres,
             _naive(row.valid_from_ts),
             _naive(row.valid_to_ts),
             row.is_current,
@@ -469,7 +481,7 @@ def _assert_movie_history(rows: list[MovieVersion]) -> None:
 
 
 def _movie_attrs(row: MovieVersion) -> tuple:
-    return (row.title, row.release_year, row.content_rating, row.hdr_format)
+    return (row.title, row.release_year, row.content_rating, row.hdr_format, row.overview, row.genres)
 
 
 def _movie_surrogate(movie_id: int, rows: list[MovieVersion]) -> int:

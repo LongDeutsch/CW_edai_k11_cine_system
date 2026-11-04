@@ -1,0 +1,35 @@
+{
+  "timestamp": "2026-11-04T07:45:41.456553+00:00",
+  "models": {
+    "churn": {
+      "artifact": "churn_model.joblib",
+      "features": [
+        "user_total_ratings_90d",
+        "user_avg_rating_90d",
+        "user_total_watch_hours_30d"
+      ],
+      "metrics": {
+        "accuracy": 0.8,
+        "samples": 50,
+        "framework": "lightweight_numpy"
+      }
+    },
+    "recommendation": {
+      "artifact": "recommendation_model.joblib",
+      "features": [
+        "user_total_ratings_90d",
+        "user_avg_rating_90d",
+        "user_total_watch_hours_30d",
+        "movie_rating_count_30d",
+        "movie_avg_rating_30d",
+        "movie_completion_rate_30d",
+        "movie_trending_score_7d"
+      ],
+      "metrics": {
+        "accuracy": 0.6333,
+        "samples": 300,
+        "framework": "lightweight_numpy"
+      }
+    }
+  }
+}

@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import json
 import logging
 import re
 import shutil
@@ -341,6 +342,25 @@ def _load_seed(seed_dir: Path) -> dict[str, object]:
     }
 
 
+def _load_synopses() -> dict[int, dict[str, str]]:
+    candidates = [
+        Path("data_generator/seeds/movie_synopses_seed.json"),
+        Path(__file__).resolve().parent.parent / "data_generator/seeds/movie_synopses_seed.json",
+    ]
+    path = next((p for p in candidates if p.exists()), None)
+    if path is None:
+        return {}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        if isinstance(data, list):
+            return {int(row["movie_id"]): row for row in data if "movie_id" in row}
+        if isinstance(data, dict):
+            return {int(k): v for k, v in data.items()}
+    except Exception:
+        return {}
+    return {}
+
+
 def _build_movies(
     movies_by_id: dict[int, dict[str, str]],
     n_movies: int,
@@ -349,9 +369,14 @@ def _build_movies(
     movie_id = np.arange(1, n_movies + 1, dtype=np.int64)
     titles = np.empty(n_movies, dtype=object)
     years = np.empty(n_movies, dtype=np.int32)
+    overviews = np.empty(n_movies, dtype=object)
+    genres_col = np.empty(n_movies, dtype=object)
     genre_lists: list[list[str]] = []
+    synopses = _load_synopses()
+
     for index, mid in enumerate(movie_id.tolist()):
         seed_row = movies_by_id.get(mid)
+        syn = synopses.get(mid)
         if seed_row is None:
             year = int(rng.integers(1970, 2025))
             titles[index] = f"Synthetic Feature {mid} ({year})"
@@ -361,6 +386,13 @@ def _build_movies(
             titles[index] = seed_row["title"]
             years[index] = _parse_year(seed_row["title"])
             genre_lists.append(_parse_genres(seed_row["genres"]))
+
+        if syn and syn.get("overview"):
+            overviews[index] = syn["overview"]
+            genres_col[index] = syn.get("genres") or (seed_row["genres"] if seed_row else "Drama")
+        else:
+            overviews[index] = None
+            genres_col[index] = seed_row["genres"] if seed_row else None
 
     runtime = rng.integers(80, 181, size=n_movies).astype(np.int32)
     language = rng.choice(_LANGUAGES, size=n_movies, p=_LANGUAGE_P)
@@ -379,6 +411,8 @@ def _build_movies(
         "budget": budget,
         "director_id": rng.integers(1, 20_001, size=n_movies, dtype=np.int64),
         "created_ts": created,
+        "overview": overviews,
+        "genres": genres_col,
         **evolved,
     }
     return columns, genre_lists

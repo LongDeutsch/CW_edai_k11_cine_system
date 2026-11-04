@@ -1,0 +1,21 @@
+# Ollama trên host :11434. Image không ghim model.
+# Tên model là OLLAMA_MODEL, make llm-pull đọc biến đó rồi pull.
+
+name: cinestream
+
+services:
+  ollama:
+    image: ollama/ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 5s
+      timeout: 10s
+      retries: 20
+      start_period: 5s
+
+volumes:
+  ollama_models:

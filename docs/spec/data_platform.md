@@ -119,7 +119,7 @@ Thiết kế theo mô hình chiều kim tự tháp (Kimball Dimensional Modeling
    - `dim_users`: Quản lý lịch sử thay đổi gói thuê bao người dùng (`subscription_tier` từ Free -> VIP -> Premium).
      - Các cột kỹ thuật bắt buộc: `user_sk` (Surrogate Key), `user_id`, `country`, `subscription_tier`, `valid_from_ts`, `valid_to_ts`, `is_current` (BOOLEAN).
    - `dim_movies`: Lưu trữ thông tin phim, hỗ trợ cập nhật danh mục và giấy phép bản quyền.
-     - Cột: `movie_sk`, `movie_id`, `title`, `release_year`, `content_rating`, `hdr_format`, `valid_from_ts`, `valid_to_ts`, `is_current`.
+     - Cột: `movie_sk`, `movie_id`, `title`, `release_year`, `content_rating`, `hdr_format`, `overview`, `genres`, `valid_from_ts`, `valid_to_ts`, `is_current`.
 
 2. **Bảng sự thật (Fact Tables):**
    - `fact_ratings`: Một dòng cho mỗi lượt đánh giá hợp lệ (`rating_sk`, `user_sk`, `movie_sk`, `rating_val`, `rating_date_key`, `created_ts`).
@@ -128,7 +128,7 @@ Thiết kế theo mô hình chiều kim tự tháp (Kimball Dimensional Modeling
 3. **Bảng hợp nhất phẳng (One Big Table - OBT):**
    - `obt_movie_engagement`: Phục vụ truy vấn phân tích tức thời (BI Dashboard) không cần join nhiều bảng: Denormalized từ `fact_watch_sessions` + `dim_movies` + `dim_users`.
 
-4. **Bảng đặc trưng (Feature Tables) phục vụ Feature Store (Feast):**
+4. **Bảng đặc trưng (Feature Tables) phục vụ Feature Store (Feast) & Bảng nhãn ML:**
    Tuân thủ nghiêm ngặt chuẩn định dạng Feast: bắt buộc chứa `entity_id`, `event_timestamp`, và `created_timestamp`:
    - `feat_user_movie_stats_daily`:
      - Keys: `user_id`, `event_timestamp`, `created_timestamp`
@@ -136,6 +136,9 @@ Thiết kế theo mô hình chiều kim tự tháp (Kimball Dimensional Modeling
    - `feat_movie_engagement_stats_daily`:
      - Keys: `movie_id`, `event_timestamp`, `created_timestamp`
      - Features: `movie_rating_count_30d`, `movie_avg_rating_30d`, `movie_completion_rate_30d`, `movie_trending_score_7d`.
+   - `label_user_churn_14d` (Bảng nhãn dự đoán Churn người dùng trong 14 ngày):
+     - Keys: `user_id`, `as_of_date` (Partition)
+     - Label: `is_churned` (1 nếu người dùng không có phiên xem trong $[T, T + 14\text{ ngày}]$, ngược lại 0), `created_ts`.
 
 ### 5.2. Storage Optimizations (Lakehouse & Data Warehouse)
 

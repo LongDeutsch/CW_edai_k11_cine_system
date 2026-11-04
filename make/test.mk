@@ -4,7 +4,11 @@
 
 ##@ 3. Kiểm thử & Chất lượng mã nguồn (Quality & Clean)
 
-.PHONY: test lint governance-check governance-dashboard-it clean-cache clean-data clean
+.PHONY: test lint governance-check governance-dashboard-it clean-cache clean-data clean verify-all
+
+verify-all: ## Chạy toàn bộ Verification & Validation (Unit + Integration + Latency Trace)
+	@echo -e "$(BOLD)$(CYAN)Đang thực hiện Xác thực & Kiểm thử toàn diện (V&V)...$(RESET)"
+	PYTHONPATH=. $(UV) run --with pandas python -m tests.integration.run_verification
 
 test: ## Chạy toàn bộ Unit Tests với báo cáo kiểm tra lỗi
 	@echo -e "$(BOLD)$(BLUE)Đang chạy kiểm thử Unit Tests...$(RESET)"

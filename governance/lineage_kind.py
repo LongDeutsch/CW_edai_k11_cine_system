@@ -36,6 +36,7 @@ _CLASSIFIED: dict[tuple[str, str, str, str], str] = {
     ("iceberg.silver.stg_watch_sessions", "iceberg.gold.feat_user_movie_stats_daily", "transformation/batch/jobs/build_offline_features.py", "user_total_watch_hours_30d"): "data_flow",
     ("iceberg.silver.stg_ratings", "iceberg.gold.feat_movie_engagement_stats_daily", "transformation/batch/jobs/build_offline_features.py", "movie_rating_count_30d"): "data_flow",
     ("iceberg.silver.stg_watch_sessions", "iceberg.gold.feat_movie_engagement_stats_daily", "transformation/batch/jobs/build_offline_features.py", "movie_completion_rate_30d"): "data_flow",
+    ("iceberg.silver.stg_watch_sessions", "iceberg.gold.label_user_churn_14d", "transformation/batch/jobs/build_churn_labels.py", "label_user_churn_14d"): "data_flow",
     ("iceberg.silver.stg_watch_sessions", "iceberg.gold.fact_watch_sessions", "transformation/batch/jobs/build_gold_layer.py", "fact_watch"): "data_flow",
     ("iceberg.gold.dim_users", "iceberg.gold.fact_watch_sessions", "transformation/batch/jobs/build_gold_layer.py", "subscription_tier"): "data_flow",
     ("iceberg.gold.dim_movies", "iceberg.gold.fact_watch_sessions", "transformation/batch/jobs/build_gold_layer.py", "m.is_current"): "data_flow",

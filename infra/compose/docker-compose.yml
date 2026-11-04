@@ -155,5 +155,20 @@ services:
       spark-master:
         condition: service_healthy
 
+  qdrant:
+    image: qdrant/qdrant:v1.12.1
+    ports:
+      - "${QDRANT_REST_PORT:-16333}:6333"
+      - "${QDRANT_GRPC_PORT:-16334}:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/127.0.0.1/6333' || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 5s
+
 volumes:
   minio_data:
+  qdrant_data:

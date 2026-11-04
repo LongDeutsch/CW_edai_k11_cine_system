@@ -27,6 +27,8 @@ CREATE TABLE IF NOT EXISTS cinestream.gold.dim_movies (
     release_year INT,
     content_rating STRING,
     hdr_format STRING,
+    overview STRING,
+    genres STRING,
     valid_from_ts TIMESTAMP NOT NULL,
     valid_to_ts TIMESTAMP,
     is_current BOOLEAN NOT NULL
@@ -114,6 +116,19 @@ CREATE TABLE IF NOT EXISTS cinestream.gold.obt_movie_engagement (
 )
 USING iceberg
 PARTITIONED BY (session_date_key)
+TBLPROPERTIES (
+    'format-version' = '2',
+    'write.target-file-size-bytes' = '134217728'
+);
+
+CREATE TABLE IF NOT EXISTS cinestream.gold.label_user_churn_14d (
+    user_id BIGINT NOT NULL,
+    as_of_date DATE NOT NULL,
+    is_churned INT NOT NULL,
+    created_ts TIMESTAMP NOT NULL
+)
+USING iceberg
+PARTITIONED BY (as_of_date)
 TBLPROPERTIES (
     'format-version' = '2',
     'write.target-file-size-bytes' = '134217728'

@@ -100,7 +100,7 @@ MOVIES = DatasetContract(
         "director_id",
         "created_ts",
     ),
-    optional=("content_rating", "hdr_format", "audio_spatial"),
+    optional=("content_rating", "hdr_format", "audio_spatial", "overview", "genres"),
     business_keys=("movie_id",),
     integral=("movie_id", "release_year", "runtime_minutes", "budget", "director_id"),
     timestamps=("created_ts",),

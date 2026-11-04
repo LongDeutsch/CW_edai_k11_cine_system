@@ -19,6 +19,7 @@ include make/airflow.mk
 include make/serving.mk
 include make/test.mk
 include make/ml.mk
+include make/llm.mk
 
 ##@ 0. Luồng công việc tổng hợp (Quickstart Workflows)
 

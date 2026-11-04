@@ -110,6 +110,15 @@ Dữ liệu xem phim và đánh giá trong thực tế không bao giờ phân b�
 ### 4.6. Tiêm Out-of-Order Events (Online Problem bổ sung)
 - Trong một phiên xem phim kéo dài 100 nhịp tim (`heartbeat_seq = 1, 2, ..., 100`), khoảng 3% các nhịp tim bị tráo đổi thứ tự khi gửi vào Kafka (ví dụ nhịp số 45 đến sau nhịp số 48) do đi qua các đường mạng khác nhau.
 
+### 4.7. Bổ sung Movie Synopses & Nhãn Churn (ML / RAG Readiness)
+1. **Nội dung tóm tắt phim (Movie Synopses / Plot):**
+   - Nạp từ file tĩnh `data_generator/seeds/movie_synopses_seed.json` chứa 150 – 200 phim kinh điển (các phim thuộc nhóm Head có `movie_id \le 1000`).
+   - Cột bổ sung trong bảng `movies`: `overview` (STRING, nullable) và `genres` (STRING, nullable).
+   - Với các phim nằm trong seed: điền đầy đủ tóm tắt nội dung và thể loại. Các phim sinh số lượng lớn còn lại (`movie_id > 1000`): mang giá trị NULL.
+2. **Nhãn Churn 14 ngày (`label_user_churn_14d`):**
+   - Được tính toán bằng Spark job (`transformation/batch/jobs/build_churn_labels.py`) dựa trên các phiên xem trong `stg_watch_sessions`.
+   - Tại mốc thời gian $T$, nếu người dùng không có phiên xem nào trong $[T, T + 14\text{ ngày}]$ thì `is_churned = 1`, ngược lại `0`. Cấu trúc: `user_id BIGINT`, `as_of_date DATE`, `is_churned INT`, `created_ts TIMESTAMP`.
+
 ---
 
 ## 5. Kiến trúc lưu trữ đích của Data Generator

@@ -30,7 +30,9 @@ CREATE TABLE IF NOT EXISTS cinestream.silver.stg_movies (
     created_ts TIMESTAMP,
     content_rating STRING,
     hdr_format STRING,
-    audio_spatial BOOLEAN
+    audio_spatial BOOLEAN,
+    overview STRING,
+    genres STRING
 )
 USING iceberg
 TBLPROPERTIES (
